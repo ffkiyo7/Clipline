@@ -79,3 +79,25 @@
 
 /* PeggedView */
 "Copied" = "已复制";
+
+/* Editor */
+"Select" = "选择";
+"Rectangle" = "矩形";
+"Ellipse" = "椭圆";
+"Arrow" = "箭头";
+"Pen" = "画笔";
+"Text" = "文字";
+"Number" = "序号";
+"Mosaic" = "马赛克";
+"Thin" = "细";
+"Thick" = "粗";
+"Undo" = "撤销";
+"Redo" = "重做";
+"Done" = "完成";
+"Type here" = "在此输入";
+"Discard your marks?" = "放弃这些标注？";
+"The screenshot stays as it was." = "截图会保持原样。";
+"Keep Editing" = "继续编辑";
+"Open in System Markup" = "用系统“标记”打开";
+"Edit Text" = "编辑文字";
+"Delete" = "删除";

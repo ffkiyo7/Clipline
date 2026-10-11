@@ -53,6 +53,7 @@ struct GrabArea: NSViewRepresentable {
             if !isRecording {
                 menu.addItem(ClosureMenuItem(L("Pin to Screen")) { line.pin(id) })
                 menu.addItem(ClosureMenuItem(L("Markup"), hint: L("Press and hold")) { line.markup(id) })
+                menu.addItem(ClosureMenuItem(L("Open in System Markup")) { line.systemMarkup(id) })
             }
             menu.addItem(ClosureMenuItem(L("Show in Finder")) { line.reveal(id) })
             let inInbox = line.isInInbox(id)

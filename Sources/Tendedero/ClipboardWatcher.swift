@@ -18,6 +18,9 @@ final class ClipboardWatcher {
 
     private static let enabledKey = "clipboardEnabled"
 
+    /// The clipboard as Tendedero itself last wrote it, which never hangs.
+    static var ownChangeCount = -1
+
     static var isEnabled: Bool {
         get { UserDefaults.standard.bool(forKey: enabledKey) }
         set { UserDefaults.standard.set(newValue, forKey: enabledKey) }
@@ -64,6 +67,7 @@ final class ClipboardWatcher {
         let count = pb.changeCount
         guard count != lastCount else { return }
         lastCount = count
+        guard count != Self.ownChangeCount else { return }
         guard let items = pb.pasteboardItems, !items.isEmpty,
               items.allSatisfy({ Self.ignoredTypes.isDisjoint(with: $0.types) }),
               let type = pb.availableType(from: [.png, .tiff]),

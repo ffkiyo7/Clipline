@@ -81,3 +81,25 @@
 
 /* PeggedView */
 "Copied" = "Copied";
+
+/* Editor */
+"Select" = "Select";
+"Rectangle" = "Rectangle";
+"Ellipse" = "Ellipse";
+"Arrow" = "Arrow";
+"Pen" = "Pen";
+"Text" = "Text";
+"Number" = "Number";
+"Mosaic" = "Mosaic";
+"Thin" = "Thin";
+"Thick" = "Thick";
+"Undo" = "Undo";
+"Redo" = "Redo";
+"Done" = "Done";
+"Type here" = "Type here";
+"Discard your marks?" = "Discard your marks?";
+"The screenshot stays as it was." = "The screenshot stays as it was.";
+"Keep Editing" = "Keep Editing";
+"Open in System Markup" = "Open in System Markup";
+"Edit Text" = "Edit Text";
+"Delete" = "Delete";

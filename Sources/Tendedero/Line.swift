@@ -279,8 +279,14 @@ final class Line: ObservableObject {
         if item.isRecording {
             Trim.shared.edit(item.url, size: item.thumb.size)
         } else {
-            Markup.shared.edit(item.url)
+            Editor.edit(item.url) { [weak self] url in self?.reloadThumbnail(for: url) }
         }
+    }
+
+    /// The system's Markup, still a menu item away.
+    func systemMarkup(_ id: UUID) {
+        guard let item = items.first(where: { $0.id == id }), !item.isRecording else { return }
+        Markup.shared.edit(item.url)
     }
 
     /// Pins the photo to the screen, floating above every window.

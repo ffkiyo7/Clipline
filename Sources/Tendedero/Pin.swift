@@ -15,8 +15,10 @@ final class Pin: NSPanel {
 
     /// Pins a copy of the image. The pin keeps its own copy in memory, so it
     /// stays up even if the file is discarded from the line afterwards.
-    static func show(_ url: URL) {
-        guard let image = NSImage(contentsOf: url) else { NSSound.beep(); return }
+    /// `image` stands in for the file's contents, like a marked-up version
+    /// not saved yet.
+    static func show(_ url: URL, image: NSImage? = nil) {
+        guard let image = image ?? NSImage(contentsOf: url) else { NSSound.beep(); return }
         let pin = Pin(image: image, url: url)
         open.append(pin)
         pin.makeKeyAndOrderFront(nil)
@@ -32,7 +34,9 @@ final class Pin: NSPanel {
         self.image = image
         self.url = url
         let screen = Self.screen(for: url)
-        natural = Self.naturalSize(of: image, on: screen)
+        let pixels = image.cgImage(forProposedRect: nil, context: nil, hints: nil)
+            .map { CGSize(width: $0.width, height: $0.height) } ?? image.size
+        natural = Self.naturalSize(ofPixels: pixels, url: url)
 
         // Over the spot it was captured from when that is known, as if it
         // lifted off the screen; otherwise centred under the pointer.
@@ -86,16 +90,19 @@ final class Pin: NSPanel {
 
     // MARK: Size
 
-    /// Screenshots record their resolution, so their size in points is right
-    /// as it is. A copied image often says 72 dpi while holding the screen's
-    /// pixels; it is shown at one pixel per pixel of the screen.
-    private static func naturalSize(of image: NSImage, on screen: NSScreen?) -> NSSize {
-        guard let rep = image.representations.first, rep.pixelsWide > 0 else { return image.size }
-        let scale = screen?.backingScaleFactor ?? NSScreen.main?.backingScaleFactor ?? 2
-        if CGFloat(rep.pixelsWide) == image.size.width && scale > 1 {
-            return NSSize(width: image.size.width / scale, height: image.size.height / scale)
+    /// The size in points of an image from this file. Screenshots record
+    /// their resolution (144 dpi on Retina) and are sized by it. A copied
+    /// image often says 72 dpi while holding the screen's pixels; it is shown
+    /// at one pixel per pixel of the screen.
+    static func naturalSize(ofPixels pixels: CGSize, url: URL) -> NSSize {
+        var dpi: CGFloat = 72
+        if let source = CGImageSourceCreateWithURL(url as CFURL, nil),
+           let props = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any],
+           let value = props[kCGImagePropertyDPIWidth] as? NSNumber {
+            dpi = CGFloat(truncating: value)
         }
-        return image.size
+        let scale = dpi > 72 ? dpi / 72 : (screen(for: url)?.backingScaleFactor ?? NSScreen.main?.backingScaleFactor ?? 2)
+        return NSSize(width: pixels.width / scale, height: pixels.height / scale)
     }
 
     private static func screen(for url: URL) -> NSScreen? {
