@@ -51,6 +51,12 @@
 "App name" = "App name";
 "App icon only" = "App icon only";
 "Hidden" = "Hidden";
+"Pin to Screen" = "Pin to Screen";
+"Save As…" = "Save As…";
+"Actual Size" = "Actual Size";
+"Opacity" = "Opacity";
+"Close" = "Close";
+"Close All Pins" = "Close All Pins";
 
 /* GrabArea */
 "Copy" = "Copy";

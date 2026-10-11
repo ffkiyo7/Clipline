@@ -49,6 +49,12 @@
 "App name" = "显示 App 名";
 "App icon only" = "只显示图标";
 "Hidden" = "隐藏";
+"Pin to Screen" = "贴到屏幕";
+"Save As…" = "另存为…";
+"Actual Size" = "实际大小";
+"Opacity" = "不透明度";
+"Close" = "关闭";
+"Close All Pins" = "关闭所有贴图";
 
 /* GrabArea */
 "Copy" = "复制";

@@ -283,6 +283,12 @@ final class Line: ObservableObject {
         }
     }
 
+    /// Pins the photo to the screen, floating above every window.
+    func pin(_ id: UUID) {
+        guard let item = items.first(where: { $0.id == id }), !item.isRecording else { return }
+        Pin.show(item.url)
+    }
+
     /// After editing, the photo on the line shows the new version.
     func reloadThumbnail(for url: URL) {
         guard let i = items.firstIndex(where: { $0.url == url && !$0.falling }),

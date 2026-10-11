@@ -657,6 +657,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         clearItem.isEnabled = line.liveCount > 0
         menu.addItem(clearItem)
 
+        if Pin.count > 0 {
+            menu.addItem(ClosureMenuItem(L("Close All Pins")) { Pin.closeAll() })
+        }
+
         let inbox = ClosureMenuItem(L("Handle screenshots")) { [weak self] in
             self?.setInbox(!Inbox.isEnabled)
         }
