@@ -63,6 +63,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         set { UserDefaults.standard.set(!newValue, forKey: "quietHang") }
     }
 
+    /// A new screenshot opens straight in Markup, so marking it up does not
+    /// wait for a long press. Off out of the box.
+    static var marksUpNew: Bool {
+        get { UserDefaults.standard.bool(forKey: "markUpNew") }
+        set { UserDefaults.standard.set(newValue, forKey: "markUpNew") }
+    }
+
     func applicationDidFinishLaunching(_ notification: Notification) {
         let host = NSHostingView(rootView: LineView(line: line))
         host.sizingOptions = []
@@ -290,6 +297,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             // Nothing hung after all, so an empty line goes away again.
             itemsChanged()
             return
+        }
+        // Markup opens once the photo has landed, not over the flight.
+        if Self.marksUpNew && !isRecording(url) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + CaptureFlight.duration + 0.1) { [weak self] in
+                self?.line.markup(id)
+            }
         }
         guard let from else { return }
         // Let the line come down and lay out before measuring the landing spot.
@@ -655,6 +668,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         clipboard.state = ClipboardWatcher.isEnabled ? .on : .off
         clipboard.toolTip = L("Images you copy hang on the line too")
         menu.addItem(clipboard)
+
+        let markUpNew = ClosureMenuItem(L("Mark up new screenshots")) {
+            AppDelegate.marksUpNew.toggle()
+        }
+        markUpNew.state = Self.marksUpNew ? .on : .off
+        markUpNew.toolTip = L("Each new screenshot opens in Markup as soon as it hangs")
+        menu.addItem(markUpNew)
 
         let bringDown = NSMenuItem(title: L("Bring the line down"), action: nil, keyEquivalent: "")
         let options = NSMenu()

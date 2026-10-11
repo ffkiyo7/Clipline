@@ -43,6 +43,8 @@
 "Hang copied images" = "挂上复制的图片";
 "Images you copy hang on the line too" = "复制的图片也会挂上绳";
 "Tendedero, hanging copied images" = "Tendedero，正在挂上复制的图片";
+"Mark up new screenshots" = "截图后立即标记";
+"Each new screenshot opens in Markup as soon as it hangs" = "新截图挂上后自动在“标记”中打开";
 
 /* GrabArea */
 "Copy" = "复制";

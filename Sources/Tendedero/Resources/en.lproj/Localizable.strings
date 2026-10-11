@@ -45,6 +45,8 @@
 "Hang copied images" = "Hang copied images";
 "Images you copy hang on the line too" = "Images you copy hang on the line too";
 "Tendedero, hanging copied images" = "Tendedero, hanging copied images";
+"Mark up new screenshots" = "Mark up new screenshots";
+"Each new screenshot opens in Markup as soon as it hangs" = "Each new screenshot opens in Markup as soon as it hangs";
 
 /* GrabArea */
 "Copy" = "Copy";
