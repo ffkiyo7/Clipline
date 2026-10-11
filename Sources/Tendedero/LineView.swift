@@ -24,7 +24,8 @@ enum Layout {
     static var photoMaxHeight: CGFloat { (104 * size.scale).rounded() }
     static var cardWidth: CGFloat { (150 * size.scale).rounded() }
     static var spacing: CGFloat { cardWidth + 24 }
-    static var panelHeight: CGFloat { photoMaxHeight + 106 }
+    /// Room below the photos for the source tags and the Copied label.
+    static var panelHeight: CGFloat { photoMaxHeight + 118 }
     static let ropeTop: CGFloat = 10
     static let pinAbove: CGFloat = 9.5
 
@@ -73,6 +74,7 @@ struct LineView: View {
                                      visible: line.visibleCount, scroll: line.scroll)
                     let ropeY = Layout.ropeY(x: x, width: width)
                     PeggedView(item: item, line: line)
+                        .zIndex(line.hoveredID == item.id ? 1 : 0)
                         .frame(width: Layout.cardWidth, height: Layout.panelHeight - ropeY, alignment: .top)
                         // Photos scrolled towards an edge fade out before they reach it.
                         .opacity(min(1, max(0, min(x, width - x) / 90)))
@@ -89,6 +91,9 @@ struct LineView: View {
         }
         .onPreferenceChange(HitRectsKey.self) { rects in
             line.hitRects = rects
+        }
+        .onPreferenceChange(TagRectsKey.self) { rects in
+            line.tagRects = rects
         }
     }
 }
@@ -135,6 +140,13 @@ struct Rope: View {
             ], startPoint: .leading, endPoint: .trailing)
         )
         .allowsHitTesting(false)
+    }
+}
+
+struct TagRectsKey: PreferenceKey {
+    static var defaultValue: [UUID: CGRect] = [:]
+    static func reduce(value: inout [UUID: CGRect], nextValue: () -> [UUID: CGRect]) {
+        value.merge(nextValue()) { $1 }
     }
 }
 

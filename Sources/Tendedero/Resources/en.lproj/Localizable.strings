@@ -47,6 +47,10 @@
 "Tendedero, hanging copied images" = "Tendedero, hanging copied images";
 "Mark up new screenshots" = "Mark up new screenshots";
 "Each new screenshot opens in Markup as soon as it hangs" = "Each new screenshot opens in Markup as soon as it hangs";
+"Source tags" = "Source tags";
+"App name" = "App name";
+"App icon only" = "App icon only";
+"Hidden" = "Hidden";
 
 /* GrabArea */
 "Copy" = "Copy";

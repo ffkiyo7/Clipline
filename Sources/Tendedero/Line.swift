@@ -10,6 +10,8 @@ struct Pegged: Identifiable, Equatable {
     let id = UUID()
     let url: URL
     var thumb: NSImage
+    /// The app it was captured from, when known.
+    var source: Source?
     /// Every photo hangs a little crooked, like on a real line.
     let tilt = Double.random(in: -2.5...2.5)
     var falling = false
@@ -20,6 +22,7 @@ struct Pegged: Identifiable, Equatable {
 
     static func == (a: Pegged, b: Pegged) -> Bool {
         a.id == b.id && a.falling == b.falling && a.flying == b.flying && a.thumb === b.thumb
+            && a.source == b.source
     }
 }
 
@@ -32,12 +35,19 @@ final class Line: ObservableObject {
     @Published var copiedID: UUID?
     @Published var draggingID: UUID?
     @Published var pressedID: UUID?
+    /// The photo under the pointer: it comes to the front, so its open tag
+    /// is not hidden behind the next photo.
+    @Published var hoveredID: UUID?
     /// Whether the line has slid down into view.
     @Published var revealed = false
+    /// How the source tags show, mirrored here so the cards redraw.
+    @Published var tagStyle = Source.tagStyle
 
     /// Card frames in window coordinates, reported by the views. The panel
     /// uses them to only catch clicks over photos and let the rest through.
     var hitRects: [UUID: CGRect] = [:]
+    /// The source tags below the photos, which also catch the pointer.
+    var tagRects: [UUID: CGRect] = [:]
 
     var maxItems = 8
     /// How many photos fit across the screen. With Keep on line set, the
@@ -67,6 +77,7 @@ final class Line: ObservableObject {
     var liveCount: Int { items.filter { !$0.falling }.count }
 
     private let storeKey = "pegged"
+    private let sourcesKey = "peggedSources"
 
     init() {
         restore()
@@ -76,10 +87,10 @@ final class Line: ObservableObject {
     // MARK: Hanging and dropping
 
     @discardableResult
-    func hang(_ url: URL, quietly: Bool = false, flying: Bool = false) -> UUID? {
+    func hang(_ url: URL, source: Source? = nil, quietly: Bool = false, flying: Bool = false) -> UUID? {
         guard !items.contains(where: { $0.url == url && !$0.falling }),
               let thumb = makeThumbnail(url) else { return nil }
-        var item = Pegged(url: url, thumb: thumb)
+        var item = Pegged(url: url, thumb: thumb, source: source)
         item.flying = flying
         items.append(item)
         scroll = 0
@@ -109,6 +120,7 @@ final class Line: ObservableObject {
         onFall?(items[i])
         items[i].falling = true
         hitRects[id] = nil
+        tagRects[id] = nil
         save()
         if !quietly { play("Pop", volume: 0.25) }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { [weak self] in
@@ -312,8 +324,13 @@ final class Line: ObservableObject {
     // MARK: Persistence
 
     private func save() {
-        let paths = items.filter { !$0.falling }.map(\.url.path)
-        UserDefaults.standard.set(paths, forKey: storeKey)
+        let live = items.filter { !$0.falling }
+        UserDefaults.standard.set(live.map(\.url.path), forKey: storeKey)
+        var sources: [String: Data] = [:]
+        for item in live {
+            if let source = item.source, let data = try? JSONEncoder().encode(source) { sources[item.url.path] = data }
+        }
+        UserDefaults.standard.set(sources, forKey: sourcesKey)
     }
 
     /// Everything comes back as it was. This runs before the line knows its
@@ -321,10 +338,12 @@ final class Line: ObservableObject {
     /// `hang` would let photos fall off a wide screen's line at every launch.
     private func restore() {
         let paths = UserDefaults.standard.stringArray(forKey: storeKey) ?? []
+        let sources = UserDefaults.standard.dictionary(forKey: sourcesKey) as? [String: Data] ?? [:]
         for path in paths where FileManager.default.fileExists(atPath: path) {
             let url = URL(fileURLWithPath: path)
             guard !items.contains(where: { $0.url == url }), let thumb = makeThumbnail(url) else { continue }
-            items.append(Pegged(url: url, thumb: thumb))
+            let source = sources[path].flatMap { try? JSONDecoder().decode(Source.self, from: $0) }
+            items.append(Pegged(url: url, thumb: thumb, source: source))
         }
     }
 

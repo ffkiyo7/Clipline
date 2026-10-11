@@ -8,11 +8,16 @@ struct PeggedView: View {
 
     @State private var swing: Double = 0
     @State private var arrived = false
-    @State private var hovering = false
+    @State private var hoveringCard = false
+    @State private var hoveringTag = false
+    /// The pointer over the photo or its tag: the tag counts as part of it,
+    /// so moving down onto the tag does not close it again.
+    private var hovering: Bool { hoveringCard || hoveringTag }
 
     private var copied: Bool { line.copiedID == item.id }
     private var dragging: Bool { line.draggingID == item.id }
     private var pressed: Bool { line.pressedID == item.id }
+    private var showsTag: Bool { item.source != nil && line.tagStyle != .hidden }
 
     var body: some View {
         VStack(spacing: -12) {
@@ -99,8 +104,22 @@ struct PeggedView: View {
                     .allowsHitTesting(false)
             }
             .overlay(GrabArea(item: item, line: line))
+            .overlay(alignment: .bottomTrailing) {
+                if let source = item.source, showsTag {
+                    SourceTag(source: source, style: line.tagStyle,
+                              expanded: hovering && !dragging, copied: copied,
+                              id: item.id, falling: item.falling) { inside in
+                        hoveringTag = inside
+                        updateHovered()
+                    }
+                        .alignmentGuide(.bottom) { $0[.top] }
+                        .padding(.trailing, 16)
+                        .opacity(dragging ? 0.45 : 1)
+                }
+            }
             .overlay(alignment: .bottom) {
-                if copied {
+                // With a tag, the tag itself says Copied.
+                if copied && !showsTag {
                     Label(L("Copied"), systemImage: "checkmark")
                         .font(.system(size: 11, weight: .semibold))
                         .foregroundStyle(.primary)
@@ -113,13 +132,20 @@ struct PeggedView: View {
             }
             .animation(.easeOut(duration: 0.18), value: hovering)
             .animation(.easeOut(duration: 0.2), value: copied)
-            .onHover { hovering = $0 }
+            .onHover { inside in
+                hoveringCard = inside
+                updateHovered()
+            }
             .background(
                 GeometryReader { g in
                     Color.clear.preference(key: HitRectsKey.self,
                                            value: item.falling ? [:] : [item.id: g.frame(in: .global)])
                 }
             )
+    }
+
+    private func updateHovered() {
+        if hovering { line.hoveredID = item.id } else if line.hoveredID == item.id { line.hoveredID = nil }
     }
 
     private func arrive() {
@@ -150,6 +176,87 @@ struct PeggedView: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
             withAnimation(.interpolatingSpring(stiffness: 38, damping: 2.4)) { swing = 0 }
         }
+    }
+}
+
+/// A small tag tied below the photo's corner on a thread, naming the app the
+/// capture came from. Resting, it shows the icon (and the name, if chosen);
+/// under the pointer it opens up to the window title too.
+struct SourceTag: View {
+    let source: Source
+    let style: Source.TagStyle
+    let expanded: Bool
+    let copied: Bool
+    let id: UUID
+    let falling: Bool
+    let onHover: (Bool) -> Void
+
+    private var showsName: Bool { style == .name || expanded || copied }
+    private var title: String? { expanded && !copied ? source.windowTitle : nil }
+    private var name: String { copied ? L("Copied") : source.appName }
+
+    private static let nameFont = NSFont.systemFont(ofSize: 10.5, weight: .semibold)
+    private static let titleFont = NSFont.systemFont(ofSize: 10)
+
+    /// The text's own width, up to what fits under the photo: the tag hugs
+    /// short names and only long ones are cut short.
+    private var textWidth: CGFloat {
+        func measure(_ s: String, _ font: NSFont) -> CGFloat {
+            (s as NSString).size(withAttributes: [.font: font]).width
+        }
+        let natural = max(measure(name, Self.nameFont), title.map { measure($0, Self.titleFont) } ?? 0)
+        let room = Layout.cardWidth - 20 - 3 - 14 - 5 - 7
+        return min(room, natural.rounded(.up) + 1)
+    }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Rectangle()
+                .fill(Color(white: 0.55))
+                .frame(width: 0.75, height: 9)
+            HStack(alignment: title == nil ? .center : .top, spacing: 5) {
+                if copied {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 8, weight: .bold))
+                        .frame(width: 14, height: 14)
+                } else if let icon = source.icon {
+                    Image(nsImage: icon).resizable().interpolation(.high).frame(width: 14, height: 14)
+                } else {
+                    Image(systemName: "app.dashed").font(.system(size: 10)).frame(width: 14, height: 14)
+                }
+                if showsName {
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text(name)
+                            .font(Font(Self.nameFont))
+                        if let title {
+                            Text(title)
+                                .font(Font(Self.titleFont))
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+                    .frame(width: textWidth, alignment: .leading)
+                }
+            }
+            .foregroundStyle(.primary)
+            .padding(.leading, 3)
+            .padding(.trailing, showsName ? 7 : 3)
+            .padding(.vertical, 3)
+            .glassFrame(cornerRadius: 6)
+            .shadow(color: .black.opacity(0.15), radius: 3, y: 1.5)
+        }
+        // It hangs a little crooked from its thread.
+        .rotationEffect(.degrees(-4), anchor: .top)
+        .animation(.spring(response: 0.3, dampingFraction: 0.75), value: expanded)
+        // The panel lets clicks through except over photos and their tags.
+        .background(
+            GeometryReader { g in
+                Color.clear.preference(key: TagRectsKey.self, value: falling ? [:] : [id: g.frame(in: .global)])
+            }
+        )
+        .contentShape(Rectangle())
+        .onHover(perform: onHover)
     }
 }
 

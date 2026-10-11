@@ -293,7 +293,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         // was taken on. On a full line the oldest photo then falls in view as
         // the new one flies in.
         comeDown(on: screen)
-        guard let id = line.hang(url, flying: from != nil) else {
+        let source = Source.detect(captureRect: from)
+        guard let id = line.hang(url, source: source, flying: from != nil) else {
             // Nothing hung after all, so an empty line goes away again.
             itemsChanged()
             return
@@ -552,6 +553,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let local = panel.convertPoint(fromScreen: mouse)
         let flipped = CGPoint(x: local.x, y: panel.frame.height - local.y)
         var overPhoto = line.hitRects.values.contains { $0.insetBy(dx: -4, dy: -4).contains(flipped) }
+            || line.tagRects.values.contains { $0.insetBy(dx: -4, dy: -4).contains(flipped) }
         // A line longer than the screen also takes the band the photos hang
         // in, gaps included, so a swipe anywhere along it moves it.
         if !overPhoto, line.items.count > line.visibleCount, Line.keepOnLine != nil {
@@ -675,6 +677,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         markUpNew.state = Self.marksUpNew ? .on : .off
         markUpNew.toolTip = L("Each new screenshot opens in Markup as soon as it hangs")
         menu.addItem(markUpNew)
+
+        let tagItem = NSMenuItem(title: L("Source tags"), action: nil, keyEquivalent: "")
+        let tags = NSMenu()
+        for (style, title) in [(Source.TagStyle.name, L("App name")), (.icon, L("App icon only")), (.hidden, L("Hidden"))] {
+            let item = ClosureMenuItem(title) { [weak self] in
+                Source.tagStyle = style
+                self?.line.tagStyle = style
+            }
+            item.state = Source.tagStyle == style ? .on : .off
+            tags.addItem(item)
+        }
+        tagItem.submenu = tags
+        menu.addItem(tagItem)
 
         let bringDown = NSMenuItem(title: L("Bring the line down"), action: nil, keyEquivalent: "")
         let options = NSMenu()
