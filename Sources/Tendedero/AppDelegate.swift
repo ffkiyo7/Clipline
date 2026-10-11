@@ -80,8 +80,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         if Inbox.isEnabled { Inbox.apply() }
         restoreSettingsOnTermination()
         startWatcher()
-        clipboardWatcher = ClipboardWatcher { [weak self] url in self?.hangCapture(url) }
-        if ClipboardWatcher.isEnabled { clipboardWatcher.start() }
+        clipboardWatcher = ClipboardWatcher(
+            onImage: { [weak self] url in self?.hangCapture(url) },
+            onText: { text, source in Notes.shared.add(text, source: source) })
+        clipboardWatcher.update()
 
         registerShortcut()
 
@@ -97,6 +99,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             self?.line.scroll(by: event.hasPreciseScrollingDeltas ? delta : delta * 12)
         }
         line.onFall = { [weak self] item in self?.fall(item) }
+        line.onOpenNotes = { rect in NotesPanel.toggle(below: rect) }
+        // Copied text only grows the clip's stack: the line stays where it is.
+        Notes.shared.$all
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in self?.notesChanged() }
+            .store(in: &cancellables)
 
         line.$items
             .receive(on: RunLoop.main)
@@ -239,7 +247,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     /// Watching the clipboard is opt in, from the menu bar only.
     private func setClipboard(_ on: Bool) {
         ClipboardWatcher.isEnabled = on
-        if on { clipboardWatcher.start() } else { clipboardWatcher.stop() }
+        clipboardWatcher.update()
         updateStatusIcon()
     }
 
@@ -260,14 +268,36 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     // MARK: Showing and hiding
 
-    /// An empty line goes away, unless it was opened on purpose.
+    /// An empty line goes away, unless it was opened on purpose. The note
+    /// clip counts: with notes in it, the line waits up there to be pulled
+    /// down, though copying never brings it down by itself.
     private func itemsChanged() {
-        guard line.liveCount == 0, !keepOpen else { return }
+        guard line.liveCount == 0, !line.noteClip, !keepOpen else { return }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) { [weak self] in
-            guard let self, self.line.liveCount == 0, !self.keepOpen else { return }
+            guard let self, self.line.liveCount == 0, !self.line.noteClip, !self.keepOpen else { return }
             self.wanted = false
             self.refresh()
         }
+    }
+
+    private func notesChanged() {
+        let shows = Notes.isEnabled && !Notes.shared.all.isEmpty
+        if line.noteClip != shows {
+            line.noteClip = shows
+            updateCapacity()
+        }
+        if shows && !wanted {
+            wanted = true
+            refresh()
+        } else if !shows {
+            itemsChanged()
+        }
+    }
+
+    private func setNotes(_ on: Bool) {
+        Notes.isEnabled = on
+        clipboardWatcher.update()
+        notesChanged()
     }
 
     /// The line comes down on that screen for a moment, then tucks away.
@@ -345,7 +375,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private func cardFrame(for id: UUID) -> CGRect? {
         guard let index = line.items.firstIndex(where: { $0.id == id }) else { return nil }
         let width = panel.frame.width
-        let x = Layout.x(index: index, count: line.items.count, width: width,
+        let x = Layout.x(index: index, count: line.slots, width: width,
                          visible: line.visibleCount, scroll: line.scroll)
         let viewTop = Layout.ropeY(x: x, width: width) - Layout.pinAbove
         let cardTop = viewTop + PeggedView.cardOffsetBelowTop
@@ -425,7 +455,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             setRevealed(false)
             if line.liveCount == 0 {
                 keepOpen = false
-                wanted = false
+                wanted = line.noteClip
                 refresh()
             }
         } else {
@@ -475,9 +505,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     /// The part of the menu bar that brings the line down. With a notch it is
     /// the notch and a little either side, where there are never menus or
-    /// icons; otherwise the middle 30% of the bar.
+    /// icons; otherwise the middle 30% of the bar. Only its upper part
+    /// counts: the pointer stops there against the top edge, while a quick
+    /// reach for a browser tab just below the bar does not get that high.
     static func revealZone(of screen: NSScreen) -> NSRect {
-        let band = menuBarBand(of: screen)
+        var band = menuBarBand(of: screen)
+        band.size.height = (band.height * 0.45).rounded()
+        band.origin.y = screen.frame.maxY - band.height
         guard opensFromMiddleOnly else { return band }
         if let left = screen.auxiliaryTopLeftArea, let right = screen.auxiliaryTopRightArea,
            right.minX > left.maxX {
@@ -554,7 +588,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let inside = NSMouseInRect(mouse, zone, false)
         if inside && pinned { pinned = false }
 
-        let busy = pinned || GrabView.isDragging || GrabView.isShowingMenu
+        let busy = pinned || GrabView.isDragging || GrabView.isShowingMenu || NotesPanel.isOpen
             || line.pressedID != nil || now < peekUntil
         if inside || busy {
             awaySince = nil
@@ -577,9 +611,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let flipped = CGPoint(x: local.x, y: panel.frame.height - local.y)
         var overPhoto = line.hitRects.values.contains { $0.insetBy(dx: -4, dy: -4).contains(flipped) }
             || line.tagRects.values.contains { $0.insetBy(dx: -4, dy: -4).contains(flipped) }
+            || (line.noteClip && line.clipRect?.insetBy(dx: -4, dy: -4).contains(flipped) == true)
         // A line longer than the screen also takes the band the photos hang
         // in, gaps included, so a swipe anywhere along it moves it.
-        if !overPhoto, line.items.count > line.visibleCount, Line.keepOnLine != nil {
+        if !overPhoto, line.slots > line.visibleCount, Line.keepOnLine != nil {
             let band = line.hitRects.values.reduce(CGRect.null) { $0.union($1) }
             overPhoto = !band.isNull && flipped.y >= band.minY - 4 && flipped.y <= band.maxY + 4
         }
@@ -635,7 +670,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let usable = panel.frame.width - 200
         let fits = max(3, min(12, Int(usable / Layout.spacing)))
         line.visibleCount = fits
-        line.maxItems = max(fits, Line.keepOnLine ?? fits)
+        // The note clip takes one of the places.
+        let photos = fits - (line.noteClip ? 1 : 0)
+        line.maxItems = max(photos, Line.keepOnLine ?? photos)
     }
 
     // MARK: Menu bar
@@ -697,6 +734,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         clipboard.state = ClipboardWatcher.isEnabled ? .on : .off
         clipboard.toolTip = L("Images you copy hang on the line too")
         menu.addItem(clipboard)
+
+        let notesItem = ClosureMenuItem(L("Keep copied text")) { [weak self] in
+            self?.setNotes(!Notes.isEnabled)
+        }
+        notesItem.state = Notes.isEnabled ? .on : .off
+        notesItem.toolTip = L("Text you copy goes into the clip at the end of the line")
+        menu.addItem(notesItem)
 
         let markUpNew = ClosureMenuItem(L("Mark up new screenshots")) {
             AppDelegate.marksUpNew.toggle()

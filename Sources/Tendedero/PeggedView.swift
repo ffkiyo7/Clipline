@@ -284,11 +284,13 @@ extension View {
     /// A crisp glass: the system's blurred material with a thin specular
     /// edge, lit from above. No refraction, so the background stays sharp
     /// around the frame instead of bending like gel.
-    func glassFrame(cornerRadius: CGFloat = 0, circle: Bool = false, capsule: Bool = false) -> some View {
+    /// `materialOpacity` below 1 lets more of what is behind show through.
+    func glassFrame(cornerRadius: CGFloat = 0, circle: Bool = false, capsule: Bool = false,
+                    materialOpacity: Double = 1) -> some View {
         let shape: AnyShape = circle ? AnyShape(Circle())
             : capsule ? AnyShape(Capsule())
             : AnyShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
-        return background(.ultraThinMaterial, in: shape)
+        return background(shape.fill(.ultraThinMaterial).opacity(materialOpacity))
             .overlay(
                 shape.stroke(
                     LinearGradient(colors: [Color.white.opacity(0.55), Color.white.opacity(0.12)],

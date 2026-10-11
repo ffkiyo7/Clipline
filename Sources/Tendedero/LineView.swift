@@ -63,14 +63,25 @@ struct LineView: View {
             ZStack(alignment: .topLeading) {
                 Rope(width: width)
 
-                if line.items.isEmpty {
+                if line.items.isEmpty && !line.noteClip {
                     Hint()
                         .position(x: width / 2, y: Layout.ropeY(x: width / 2, width: width) + 34)
                         .transition(.opacity)
                 }
 
+                // The note clip takes the next place after the newest photo.
+                if line.noteClip {
+                    let x = Layout.x(index: line.items.count, count: line.slots, width: width,
+                                     visible: line.visibleCount, scroll: line.scroll)
+                    let ropeY = Layout.ropeY(x: x, width: width)
+                    NoteClip(notes: .shared, line: line)
+                        .opacity(min(1, max(0, min(x, width - x) / 90)))
+                        .position(x: x, y: ropeY - Layout.pinAbove + NoteClip.height / 2)
+                        .transition(.opacity)
+                }
+
                 ForEach(Array(line.items.enumerated()), id: \.element.id) { index, item in
-                    let x = Layout.x(index: index, count: line.items.count, width: width,
+                    let x = Layout.x(index: index, count: line.slots, width: width,
                                      visible: line.visibleCount, scroll: line.scroll)
                     let ropeY = Layout.ropeY(x: x, width: width)
                     PeggedView(item: item, line: line)
@@ -83,6 +94,7 @@ struct LineView: View {
             }
             .animation(.spring(response: 0.55, dampingFraction: 0.78), value: line.items.map(\.id))
             .animation(.easeInOut(duration: 0.3), value: line.items.isEmpty)
+            .animation(.easeInOut(duration: 0.3), value: line.noteClip)
             // Tucked away, the whole line waits above the top edge and slides
             // out from under the menu bar, the way an auto-hiding Dock does.
             .offset(y: line.revealed ? 0 : -(Layout.panelHeight + 12))
@@ -94,6 +106,9 @@ struct LineView: View {
         }
         .onPreferenceChange(TagRectsKey.self) { rects in
             line.tagRects = rects
+        }
+        .onPreferenceChange(ClipRectKey.self) { rect in
+            line.clipRect = rect
         }
     }
 }
@@ -134,12 +149,19 @@ struct Rope: View {
         .mask(
             LinearGradient(stops: [
                 .init(color: .clear, location: 0),
-                .init(color: .black, location: 0.08),
-                .init(color: .black, location: 0.92),
+                .init(color: .black, location: 0.06),
+                .init(color: .black, location: 0.94),
                 .init(color: .clear, location: 1),
             ], startPoint: .leading, endPoint: .trailing)
         )
         .allowsHitTesting(false)
+    }
+}
+
+struct ClipRectKey: PreferenceKey {
+    static var defaultValue: CGRect? = nil
+    static func reduce(value: inout CGRect?, nextValue: () -> CGRect?) {
+        value = nextValue() ?? value
     }
 }
 

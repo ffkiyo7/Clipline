@@ -102,3 +102,16 @@
 "Open in System Markup" = "用系统“标记”打开";
 "Edit Text" = "编辑文字";
 "Delete" = "删除";
+"Search copied text" = "搜索复制过的文字";
+"Text you copy shows up here" = "复制的文字会出现在这里";
+"No matches" = "没有匹配项";
+"Unpin" = "取消置顶";
+"Keep at Top" = "置顶";
+"%d items" = "%d 条";
+"Clear" = "清空";
+"Clear copied text?" = "清空复制过的文字？";
+"Notes kept at the top stay." = "置顶的内容会保留。";
+"Cancel" = "取消";
+"Copied text" = "复制过的文字";
+"Keep copied text" = "记录复制的文字";
+"Text you copy goes into the clip at the end of the line" = "复制的文字会收进绳子末端的便签夹";

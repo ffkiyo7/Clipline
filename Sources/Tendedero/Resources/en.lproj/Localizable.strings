@@ -104,3 +104,16 @@
 "Open in System Markup" = "Open in System Markup";
 "Edit Text" = "Edit Text";
 "Delete" = "Delete";
+"Search copied text" = "Search copied text";
+"Text you copy shows up here" = "Text you copy shows up here";
+"No matches" = "No matches";
+"Unpin" = "Unpin";
+"Keep at Top" = "Keep at Top";
+"%d items" = "%d items";
+"Clear" = "Clear";
+"Clear copied text?" = "Clear copied text?";
+"Notes kept at the top stay." = "Notes kept at the top stay.";
+"Cancel" = "Cancel";
+"Copied text" = "Copied text";
+"Keep copied text" = "Keep copied text";
+"Text you copy goes into the clip at the end of the line" = "Text you copy goes into the clip at the end of the line";

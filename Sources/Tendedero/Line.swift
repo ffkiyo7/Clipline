@@ -48,6 +48,14 @@ final class Line: ObservableObject {
     var hitRects: [UUID: CGRect] = [:]
     /// The source tags below the photos, which also catch the pointer.
     var tagRects: [UUID: CGRect] = [:]
+    /// The note clip at the end of the line, which catches it too.
+    var clipRect: CGRect?
+    /// Whether the note clip hangs at the end of the line.
+    @Published var noteClip = false
+    /// Places taken on the line: the photos, and the note clip after them.
+    var slots: Int { items.count + (noteClip ? 1 : 0) }
+    /// The clip was clicked: open the notes below it, in screen coordinates.
+    var onOpenNotes: ((NSRect) -> Void)?
 
     var maxItems = 8
     /// How many photos fit across the screen. With Keep on line set, the
@@ -227,7 +235,7 @@ final class Line: ObservableObject {
     /// of that folder. If the Trash refuses it, it still leaves the line.
     /// Moves along a line that holds more than fit, from a scroll gesture.
     func scroll(by delta: CGFloat) {
-        let most = CGFloat(max(0, items.count - visibleCount)) * Layout.spacing
+        let most = CGFloat(max(0, slots - visibleCount)) * Layout.spacing
         let next = min(most, max(0, scroll + delta))
         if next != scroll { scroll = next }
     }
