@@ -23,7 +23,10 @@ struct PeggedView: View {
         VStack(spacing: -12) {
             Clothespin()
                 .zIndex(1)
-            card
+            VStack(spacing: 0) {
+                card
+                tag
+            }
         }
         .rotationEffect(.degrees(swing + item.tilt), anchor: .top)
         .offset(y: arrived ? 0 : -46)
@@ -104,19 +107,6 @@ struct PeggedView: View {
                     .allowsHitTesting(false)
             }
             .overlay(GrabArea(item: item, line: line))
-            .overlay(alignment: .bottomTrailing) {
-                if let source = item.source, showsTag {
-                    SourceTag(source: source, style: line.tagStyle,
-                              expanded: hovering && !dragging, copied: copied,
-                              id: item.id, falling: item.falling) { inside in
-                        hoveringTag = inside
-                        updateHovered()
-                    }
-                        .alignmentGuide(.bottom) { $0[.top] }
-                        .padding(.trailing, 16)
-                        .opacity(dragging ? 0.45 : 1)
-                }
-            }
             .overlay(alignment: .bottom) {
                 // With a tag, the tag itself says Copied.
                 if copied && !showsTag {
@@ -142,6 +132,31 @@ struct PeggedView: View {
                                            value: item.falling ? [:] : [item.id: g.frame(in: .global)])
                 }
             )
+    }
+
+    /// Where the tag's thread is tied along the bottom of the card: a little
+    /// right of the middle, whatever the photo's shape.
+    static let tagAnchor: CGFloat = 0.62
+
+    /// The tag hangs on its thread from a fixed point under the card, centred
+    /// on that thread, so wide and narrow photos wear it alike.
+    @ViewBuilder private var tag: some View {
+        if let source = item.source, showsTag {
+            let width = Self.cardSize(for: item.thumb.size).width
+            ZStack(alignment: .topLeading) {
+                Color.clear.frame(width: width, height: 1)
+                SourceTag(source: source, style: line.tagStyle,
+                          expanded: hovering && !dragging, copied: copied,
+                          id: item.id, falling: item.falling) { inside in
+                    hoveringTag = inside
+                    updateHovered()
+                }
+                .alignmentGuide(.leading) { $0[HorizontalAlignment.center] - width * Self.tagAnchor }
+                .opacity(dragging ? 0.45 : 1)
+            }
+            .frame(width: width, height: 1, alignment: .topLeading)
+            .zIndex(-1)
+        }
     }
 
     private func updateHovered() {
