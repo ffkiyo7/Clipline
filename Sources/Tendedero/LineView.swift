@@ -86,8 +86,8 @@ struct LineView: View {
             // Tucked away, the whole line waits above the top edge and slides
             // out from under the menu bar, the way an auto-hiding Dock does.
             .offset(y: line.revealed ? 0 : -(Layout.panelHeight + 12))
-            .animation(line.revealed ? .spring(response: 0.42, dampingFraction: 0.82)
-                                     : .easeIn(duration: 0.22), value: line.revealed)
+            .animation(line.revealed ? .spring(response: 0.28, dampingFraction: 0.85)
+                                     : .easeIn(duration: 0.14), value: line.revealed)
         }
         .onPreferenceChange(HitRectsKey.self) { rects in
             line.hitRects = rects

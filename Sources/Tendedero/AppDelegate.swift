@@ -456,7 +456,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     /// How long the cursor rests against the top edge before the line comes
     /// down. Short enough to feel instant, long enough that a quick trip to
     /// the menu bar does not trigger it.
-    private static let revealDelay: TimeInterval = 0.25
+    private static let revealDelay: TimeInterval = 0.12
 
     /// The menu bar strip at the top of a screen. With an auto-hiding menu
     /// bar the visible frame reaches the top, so the system thickness is used.
@@ -464,6 +464,28 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         var h = screen.frame.maxY - screen.visibleFrame.maxY
         if h < 1 { h = max(NSStatusBar.system.thickness, screen.safeAreaInsets.top) }
         return NSRect(x: screen.frame.minX, y: screen.frame.maxY - h, width: screen.frame.width, height: h)
+    }
+
+    /// Only the middle of the menu bar brings the line down, so reaching for
+    /// a menu or an icon never does. On by default.
+    static var opensFromMiddleOnly: Bool {
+        get { !UserDefaults.standard.bool(forKey: "menuBarWholeWidth") }
+        set { UserDefaults.standard.set(!newValue, forKey: "menuBarWholeWidth") }
+    }
+
+    /// The part of the menu bar that brings the line down. With a notch it is
+    /// the notch and a little either side, where there are never menus or
+    /// icons; otherwise the middle 30% of the bar.
+    static func revealZone(of screen: NSScreen) -> NSRect {
+        let band = menuBarBand(of: screen)
+        guard opensFromMiddleOnly else { return band }
+        if let left = screen.auxiliaryTopLeftArea, let right = screen.auxiliaryTopRightArea,
+           right.minX > left.maxX {
+            let minX = screen.frame.minX + left.maxX - 40, maxX = screen.frame.minX + right.minX + 40
+            return NSRect(x: minX, y: band.minY, width: maxX - minX, height: band.height)
+        }
+        let width = max(240, band.width * 0.3)
+        return NSRect(x: band.midX - width / 2, y: band.minY, width: width, height: band.height)
     }
 
     /// A click anywhere in the top bar of any screen, a menu or an icon, puts the line away.
@@ -489,7 +511,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
     }
     /// How long the cursor is away before the line tucks back up.
-    private static let retractDelay: TimeInterval = 0.5
+    private static let retractDelay: TimeInterval = 0.15
 
     private func tick() {
         let mouse = NSEvent.mouseLocation
@@ -504,6 +526,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             // Pushing against the top edge is part of it, and it also works
             // when another display sits above and the pointer never stops.
             if Self.opensFromMenuBar, let screen = screenUnderPointer, inMenuBar, !menuBarSuppressed,
+               NSMouseInRect(mouse, Self.revealZone(of: screen), false),
                !FullScreen.blocksLine(on: screen) {
                 let since = hotZoneSince ?? now
                 hotZoneSince = since
@@ -697,11 +720,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
         let bringDown = NSMenuItem(title: L("Bring the line down"), action: nil, keyEquivalent: "")
         let options = NSMenu()
+        options.autoenablesItems = false
         let hover = ClosureMenuItem(L("When the pointer rests in the menu bar")) {
             AppDelegate.opensFromMenuBar.toggle()
         }
         hover.state = Self.opensFromMenuBar ? .on : .off
         options.addItem(hover)
+        let middle = ClosureMenuItem(L("Only in the middle of the menu bar")) {
+            AppDelegate.opensFromMiddleOnly.toggle()
+        }
+        middle.state = Self.opensFromMiddleOnly ? .on : .off
+        middle.isEnabled = Self.opensFromMenuBar
+        middle.indentationLevel = 1
+        options.addItem(middle)
         let peek = ClosureMenuItem(L("When something new hangs")) {
             AppDelegate.peeksAtNew.toggle()
         }
