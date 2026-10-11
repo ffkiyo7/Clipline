@@ -47,12 +47,12 @@ struct GrabArea: NSViewRepresentable {
             let menu = NSMenu()
             // Items say themselves whether they can be used.
             menu.autoenablesItems = false
-            menu.addItem(ClosureMenuItem(L("Copy")) { line.copy(id) })
-            menu.addItem(ClosureMenuItem(L("Open")) { line.open(id) })
+            menu.addItem(ClosureMenuItem(L("Copy"), hint: L("Click")) { line.copy(id) })
+            menu.addItem(ClosureMenuItem(L("Open"), hint: L("Double-click")) { line.open(id) })
             menu.addItem(ClosureMenuItem(L("Quick Look")) { line.quickLook(id) })
             if !isRecording {
                 menu.addItem(ClosureMenuItem(L("Pin to Screen")) { line.pin(id) })
-                menu.addItem(ClosureMenuItem(L("Markup")) { line.markup(id) })
+                menu.addItem(ClosureMenuItem(L("Markup"), hint: L("Press and hold")) { line.markup(id) })
             }
             menu.addItem(ClosureMenuItem(L("Show in Finder")) { line.reveal(id) })
             let inInbox = line.isInInbox(id)
@@ -228,6 +228,20 @@ final class GrabView: NSView, NSDraggingSource {
 
 final class ClosureMenuItem: NSMenuItem {
     private let handler: () -> Void
+
+    /// An item with a gesture shown on the right, where a key equivalent
+    /// would be, in the same gray: "Click", "Press and hold".
+    convenience init(_ title: String, hint: String, handler: @escaping () -> Void) {
+        self.init(title, handler: handler)
+        let style = NSMutableParagraphStyle()
+        style.tabStops = [NSTextTab(textAlignment: .right, location: 230)]
+        let text = NSMutableAttributedString(string: title, attributes: [.font: NSFont.menuFont(ofSize: 0)])
+        text.append(NSAttributedString(string: "\t" + hint, attributes: [
+            .font: NSFont.menuFont(ofSize: 0), .foregroundColor: NSColor.secondaryLabelColor,
+        ]))
+        text.addAttribute(.paragraphStyle, value: style, range: NSRange(location: 0, length: text.length))
+        attributedTitle = text
+    }
 
     init(_ title: String, key: String = "", handler: @escaping () -> Void) {
         self.handler = handler

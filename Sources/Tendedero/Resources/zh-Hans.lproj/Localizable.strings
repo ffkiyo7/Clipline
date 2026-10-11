@@ -55,6 +55,11 @@
 "Opacity" = "不透明度";
 "Close" = "关闭";
 "Close All Pins" = "关闭所有贴图";
+"Click" = "单击";
+"Double-click" = "双击";
+"Press and hold" = "长按";
+"Option-scroll" = "⌥ + 滚轮";
+"Double-click or Esc" = "双击或 Esc";
 
 /* GrabArea */
 "Copy" = "复制";

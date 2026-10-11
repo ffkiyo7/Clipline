@@ -152,11 +152,13 @@ final class Pin: NSPanel {
     func menu() -> NSMenu {
         let menu = NSMenu()
         menu.autoenablesItems = false
-        menu.addItem(ClosureMenuItem(L("Copy")) { [weak self] in self?.copyImage() })
-        menu.addItem(ClosureMenuItem(L("Save As…")) { [weak self] in self?.saveAs() })
+        menu.addItem(ClosureMenuItem(L("Copy"), key: "c") { [weak self] in self?.copyImage() })
+        menu.addItem(ClosureMenuItem(L("Save As…"), key: "s") { [weak self] in self?.saveAs() })
         menu.addItem(.separator())
-        menu.addItem(ClosureMenuItem(L("Actual Size")) { [weak self] in self?.setZoom(1) })
-        let opacity = NSMenuItem(title: L("Opacity"), action: nil, keyEquivalent: "")
+        let actual = ClosureMenuItem(L("Actual Size"), key: "0") { [weak self] in self?.setZoom(1) }
+        actual.keyEquivalentModifierMask = []
+        menu.addItem(actual)
+        let opacity = ClosureMenuItem(L("Opacity"), hint: L("Option-scroll")) {}
         let levels = NSMenu()
         for percent in [100, 80, 60, 40] {
             let item = ClosureMenuItem("\(percent)%") { [weak self] in self?.alphaValue = CGFloat(percent) / 100 }
@@ -166,7 +168,7 @@ final class Pin: NSPanel {
         opacity.submenu = levels
         menu.addItem(opacity)
         menu.addItem(.separator())
-        menu.addItem(ClosureMenuItem(L("Close")) { [weak self] in self?.close() })
+        menu.addItem(ClosureMenuItem(L("Close"), hint: L("Double-click or Esc")) { [weak self] in self?.close() })
         if Self.open.count > 1 {
             menu.addItem(ClosureMenuItem(L("Close All Pins")) { Pin.closeAll() })
         }

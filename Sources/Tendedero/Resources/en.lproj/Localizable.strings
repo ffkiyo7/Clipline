@@ -57,6 +57,11 @@
 "Opacity" = "Opacity";
 "Close" = "Close";
 "Close All Pins" = "Close All Pins";
+"Click" = "Click";
+"Double-click" = "Double-click";
+"Press and hold" = "Press and hold";
+"Option-scroll" = "Option-scroll";
+"Double-click or Esc" = "Double-click or Esc";
 
 /* GrabArea */
 "Copy" = "Copy";
