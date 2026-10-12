@@ -202,7 +202,7 @@ final class CopiedTextTests: E2ETestCase {
         // caret is in the search field, ↓ selects the next note and Return
         // copies it again and moves it to the top.
         try expect("the older note in the list") { noteRow(older) != nil }
-        pause(0.3)
+        try expect("the caret in the search field") { app.focusedRole == kAXTextFieldRole }
         // Sent to Clipline alone: a key sent to the system goes to the app
         // in front, and once typed into the user's System Settings.
         Input.key(125, to: app.pid) // ↓

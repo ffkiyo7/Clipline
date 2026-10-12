@@ -307,6 +307,13 @@ final class TestApp {
 
     // MARK: Its windows
 
+    /// The role of what has the keyboard in Clipline, as AXTextField.
+    var focusedRole: String? {
+        guard let focused = element.attribute(kAXFocusedUIElementAttribute),
+              CFGetTypeID(focused) == AXUIElementGetTypeID() else { return nil }
+        return AX(element: focused as! AXUIElement).role
+    }
+
     /// What the app looks like now, for a failure message.
     func describeState() -> String {
         var lines = ["State of Clipline E2E (pid \(pid), running: \(isRunning)):"]

@@ -65,10 +65,13 @@ final class NotesPanel: NSPanel, NSWindowDelegate {
         state.query = ""
         state.selection = 0
         makeKeyAndOrderFront(nil)
-        // The caret goes to the search field once the panel is key. Asked
-        // before, as when another app was in front, it landed nowhere and
-        // the arrow keys and Return did nothing until a click.
-        DispatchQueue.main.async { self.state.focus += 1 }
+    }
+
+    /// The caret goes to the search field once the panel is key. Asked
+    /// before, as when another app was in front, it landed nowhere and the
+    /// arrow keys and Return did nothing until a click.
+    func windowDidBecomeKey(_ notification: Notification) {
+        state.focus += 1
     }
 
     /// Clicking anywhere else puts it away.
@@ -81,7 +84,7 @@ final class NotesPanel: NSPanel, NSWindowDelegate {
 final class NotesPanelState: ObservableObject {
     @Published var query = ""
     @Published var selection = 0
-    /// Bumped each time the panel opens, to put the caret in the search field.
+    /// Bumped each time the panel becomes key, to put the caret in the search field.
     @Published var focus = 0
     @Published var copiedID: UUID?
 }
@@ -172,8 +175,15 @@ private struct NotesList: View {
             .padding(.horizontal, 12)
             .frame(height: 28)
         }
-        .onAppear { searchFocused = true }
-        .onChange(of: state.focus) { _, _ in searchFocused = true }
+        .onAppear { focusSearch() }
+        .onChange(of: state.focus) { _, _ in focusSearch() }
+    }
+
+    /// Off and on again: reopened, the list still thinks the field has the
+    /// caret, and setting it to true once more would do nothing.
+    private func focusSearch() {
+        searchFocused = false
+        DispatchQueue.main.async { searchFocused = true }
     }
 
     private func move(_ step: Int, in results: [Note]) {
