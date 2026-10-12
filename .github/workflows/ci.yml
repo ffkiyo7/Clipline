@@ -1,0 +1,30 @@
+# Builds Clipline and runs the unit tests on every pull request and every
+# push to main. The end-to-end tests skip themselves here: they need a Mac
+# with Accessibility access and a free keyboard and mouse, so run them
+# locally before a release (see Tests/CliplineE2ETests/Harness.swift).
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Build and test
+    runs-on: macos-15
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Swift version
+        run: swift --version
+      - name: Build
+        run: swift build
+      - name: Unit tests
+        run: swift test
+      - name: Translations
+        run: swift scripts/check-strings.swift
