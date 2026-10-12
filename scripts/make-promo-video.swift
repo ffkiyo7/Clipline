@@ -3,13 +3,13 @@
 // photos, the tags, the note clip, the screenshot overlay), so it is not run
 // on its own: scripts/make-promo-video.sh glues the two together.
 //
-//   0–4    the name, and the line coming down
-//   4–8.5  the reveal: the line slides down, a tag opens, a click copies
-//   8.5–14 ⌃⌥A: windows and a button light up, a drag selects, Done hangs it
-//   14–18.5 marking up in place
-//   18.5–23.5 a photo dragged off the line into Claude Code
-//   23.5–27 the clip of copied text
-//   27–30  the name again, and how to get it
+//   0–3.5  the name, and the line coming down
+//   3.5–8  the reveal: the line slides down, a tag opens, a click copies
+//   8–13.5 ⌃⌥A: windows and a button light up, a drag selects, Done hangs it
+//   13.5–19 marking up in place, played a little slower than written
+//   19–24  a photo dragged off the line into Claude Code
+//   24–27.5 the clip of copied text
+//   27.5–30 the name again, and how to get it
 //
 // THEME=dark renders the dark one. STILLS=1.5,6.2 also saves those moments
 // as PNGs, and STILLS_ONLY=1 saves just those.
@@ -23,7 +23,7 @@ func L(_ zh: String, _ en: String) -> String { language == "en" ? en : zh }
 let theme = ProcessInfo.processInfo.environment["THEME"] == "dark" ? dark : light
 let VW: CGFloat = 1280, VH: CGFloat = 720, VScale: CGFloat = 1.5
 let fps = 60
-let shots: [(start: CGFloat, end: CGFloat)] = [(0, 4), (4, 8.5), (8.5, 14), (14, 18.5), (18.5, 23.5), (23.5, 27), (27, 30)]
+let shots: [(start: CGFloat, end: CGFloat)] = [(0, 3.5), (3.5, 8), (8, 13.5), (13.5, 19), (19, 24), (24, 27.5), (27.5, 30)]
 let duration: CGFloat = 30
 
 let captions: [(String, String)] = [
@@ -411,8 +411,7 @@ func drawChatWindow(_ ctx: CGContext, _ t: Theme, highlight: CGFloat, attached: 
     for (i, c) in [color(255, 95, 87), color(254, 188, 46), color(40, 200, 64)].enumerated() {
         c.setFill(); NSBezierPath(ovalIn: NSRect(x: r.minX + 9 + CGFloat(i) * 12, y: top - 4, width: 8, height: 8)).fill()
     }
-    for x in [CGFloat(48), 60, 72] { box(NSRect(x: r.minX + x, y: top - 3, width: 6, height: 6), 1.5, nil, text) }
-    let toggle = NSRect(x: r.minX + 84, y: top - 6, width: 32, height: 12)
+    let toggle = NSRect(x: r.minX + 48, y: top - 6, width: 32, height: 12)
     box(toggle, 4, raised.withAlphaComponent(0.5), nil)
     box(NSRect(x: toggle.midX, y: toggle.minY + 1, width: toggle.width / 2 - 1, height: toggle.height - 2), 3.5, raised, nil)
     bar(toggle.minX + 5, toggle.midY - 1.5, 6, 3, text)
@@ -737,7 +736,10 @@ func drawEnding(_ ctx: CGContext, alpha: CGFloat, rise: CGFloat) {
 
 // MARK: A frame of the film
 
-let shotBodies: [(CGContext, CGFloat) -> Void] = [heroShot, revealShot, captureShot, markupShot, dragShot, notesShot]
+/// Marking up is written in 4.5 seconds; it plays at this pace to match the rest.
+let markupPace: CGFloat = 5.5 / 4.5
+let shotBodies: [(CGContext, CGFloat) -> Void] = [heroShot, revealShot, captureShot,
+                                                  { markupShot($0, $1 / markupPace) }, dragShot, notesShot]
 
 func drawCard(_ ctx: CGContext, alpha: CGFloat, scale: CGFloat, _ body: (CGContext) -> Void) {
     withAlpha(ctx, alpha) {
