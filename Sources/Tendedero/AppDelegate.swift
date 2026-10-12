@@ -980,6 +980,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
         menu.addItem(.separator())
 
+        let elements = ClosureMenuItem(L("Find Buttons and Panels in Screenshots")) {
+            Elements.isEnabled = !Elements.isActive
+            if Elements.isEnabled && !Elements.isTrusted { Elements.askForAccess() }
+        }
+        elements.state = Elements.isActive ? .on : .off
+        menu.addItem(elements)
+
         let sound = ClosureMenuItem(L("Sounds")) { [weak self] in
             guard let self else { return }
             self.line.soundOn.toggle()

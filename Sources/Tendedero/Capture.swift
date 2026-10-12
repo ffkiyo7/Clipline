@@ -4,7 +4,8 @@ import SwiftUI
 
 /// Tendedero's own screenshot, taken the way Snipaste takes one. The screen
 /// freezes and dims, and the window under the pointer lights up: a click
-/// takes that window. A drag selects an area instead, its edges sticking to
+/// takes that window. With Accessibility allowed, the button or panel under
+/// it lights up instead, and scrolling steps out to what holds it. A drag selects an area instead, its edges sticking to
 /// the windows' edges, with a magnifier for the last pixel. The selection
 /// can then be moved, resized and marked up right where it is. Return hangs
 /// it on the line and copies it.
@@ -28,6 +29,7 @@ final class Capture: ObservableObject {
     /// A window that was on screen, in AppKit screen coordinates.
     struct Target {
         let frame: CGRect
+        let pid: pid_t
         let bundleID: String?
         let appName: String
         let title: String?
@@ -64,6 +66,14 @@ final class Capture: ObservableObject {
     /// The window under the pointer while choosing, or the whole screen.
     private(set) var hovered: CGRect?
     private(set) var hoveredTarget: Target?
+    /// The parts of that window under the pointer, innermost first, and how
+    /// many steps out from the innermost the highlight is. As many steps as
+    /// there are parts is the window itself.
+    private var parts: [Elements.Element] = []
+    private var level = 0
+    private var looking = false
+    private var lookAgain = false
+    private var scrolled: CGFloat = 0
     /// Edges the selection is sticking to, drawn as dashed lines.
     private(set) var guides: (x: CGFloat?, y: CGFloat?) = (nil, nil)
     private(set) var colorCopiedUntil = Date.distantPast
@@ -89,6 +99,7 @@ final class Capture: ObservableObject {
                 NSSound.beep()
                 return
             }
+            if Elements.isActive { Elements.wake(Set(targets.map(\.pid))) }
             let capture = Capture(shots: shots, targets: targets, previous: previous)
             current = capture
             capture.show()
@@ -465,6 +476,7 @@ final class Capture: ObservableObject {
         let size = "\(Int((rect.width * shot.scale).rounded())) × \(Int((rect.height * shot.scale).rounded()))"
         switch phase {
         case .choosing, .pressing:
+            if let part = hoveredPart { return part.kind.map { "\($0)   \(size)" } ?? size }
             guard let target = hoveredTarget else { return size }
             let name = [target.appName, target.title].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " — ")
             return name.isEmpty ? size : "\(name)   \(size)"
@@ -523,10 +535,77 @@ final class Capture: ObservableObject {
         guard let shot = shot(at: mouse) else {
             hovered = nil
             hoveredTarget = nil
+            parts = []
             return
         }
-        hoveredTarget = targets.first { $0.frame.contains(mouse) }
-        hovered = (hoveredTarget?.frame ?? shot.screen.frame).intersection(shot.screen.frame)
+        let target = targets.first { $0.frame.contains(mouse) }
+        if target?.frame != hoveredTarget?.frame || target?.pid != hoveredTarget?.pid {
+            parts = []
+            level = 0
+        }
+        hoveredTarget = target
+        applyHover(on: shot)
+        lookForParts()
+    }
+
+    /// The part lit up, or nil for the whole window.
+    private var hoveredPart: Elements.Element? {
+        guard level < parts.count, parts[0].frame.contains(mouse) else { return nil }
+        return parts[level]
+    }
+
+    private func applyHover(on shot: Shot) {
+        let frame = hoveredPart?.frame ?? hoveredTarget?.frame ?? shot.screen.frame
+        hovered = frame.intersection(shot.screen.frame)
+    }
+
+    /// Asks the app under the pointer for its parts, away from the main
+    /// thread, since a busy app can take a moment to answer. One question at
+    /// a time; meanwhile the pointer may move on, and is asked about next.
+    private func lookForParts() {
+        guard Elements.isActive, case .choosing = phase, let target = hoveredTarget,
+              let top = NSScreen.screens.first?.frame.maxY else { return }
+        if looking {
+            lookAgain = true
+            return
+        }
+        looking = true
+        let p = mouse, pid = target.pid, window = target.frame
+        Task.detached(priority: .userInitiated) {
+            let found = Elements.chain(at: p, pid: pid, window: window, top: top)
+            await MainActor.run { [weak self] in self?.found(found, pid: pid) }
+        }
+    }
+
+    private func found(_ found: [Elements.Element], pid: pid_t) {
+        looking = false
+        if case .choosing = phase, hoveredTarget?.pid == pid, let shot = shot(at: mouse) {
+            // Stepped out to a part that still holds the pointer: it stays lit.
+            let held = level > 0 ? hoveredPart : nil
+            parts = found
+            level = held.flatMap { held in found.firstIndex { $0.frame == held.frame } } ?? 0
+            applyHover(on: shot)
+            redraw()
+        }
+        if lookAgain {
+            lookAgain = false
+            lookForParts()
+        }
+    }
+
+    /// Scrolling while choosing steps out to the part around the lit one,
+    /// up to the window, and back in.
+    func scroll(by delta: CGFloat, precise: Bool) {
+        guard case .choosing = phase, !parts.isEmpty, let shot = shot(at: mouse) else { return }
+        scrolled += precise ? delta : delta * 12
+        guard abs(scrolled) >= 12 else { return }
+        let step = scrolled > 0 ? 1 : -1
+        scrolled = 0
+        let next = min(max(0, level + step), parts.count)
+        guard next != level else { return }
+        level = next
+        applyHover(on: shot)
+        redraw()
     }
 
     private func shot(at p: CGPoint) -> Shot? {
@@ -578,11 +657,13 @@ final class Capture: ObservableObject {
     private func xEdges(_ shot: Shot) -> [CGFloat] {
         let frame = shot.screen.frame
         return [frame.minX, frame.maxX] + targets.filter { $0.frame.intersects(frame) }.flatMap { [$0.frame.minX, $0.frame.maxX] }
+            + parts.flatMap { [$0.frame.minX, $0.frame.maxX] }
     }
 
     private func yEdges(_ shot: Shot) -> [CGFloat] {
         let frame = shot.screen.frame
         return [frame.minY, frame.maxY] + targets.filter { $0.frame.intersects(frame) }.flatMap { [$0.frame.minY, $0.frame.maxY] }
+            + parts.flatMap { [$0.frame.minY, $0.frame.maxY] }
     }
 
     /// Within a few points of an edge, the value becomes the edge.
@@ -656,7 +737,7 @@ final class Capture: ObservableObject {
             }
             // Window bounds are measured from the top of the main screen.
             return Target(frame: CGRect(x: rect.minX, y: main.frame.maxY - rect.maxY, width: rect.width, height: rect.height),
-                          bundleID: app?.bundleIdentifier, appName: appName, title: title)
+                          pid: pid, bundleID: app?.bundleIdentifier, appName: appName, title: title)
         }
     }
 
@@ -834,6 +915,10 @@ final class CaptureView: NSView {
 
     override func rightMouseDown(with event: NSEvent) {
         capture.rightClicked()
+    }
+
+    override func scrollWheel(with event: NSEvent) {
+        capture.scroll(by: event.scrollingDeltaY, precise: event.hasPreciseScrollingDeltas)
     }
 
     override func keyDown(with event: NSEvent) {
