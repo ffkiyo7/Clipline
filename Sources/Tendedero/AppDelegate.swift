@@ -72,8 +72,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        let host = NSHostingView(rootView: LineView(line: line))
+        let host = LineHost(rootView: LineView(line: line))
         host.sizingOptions = []
+        host.onDrop = { [weak self] urls in self?.hangDropped(urls) }
         panel = LinePanel(content: host)
         panel.placeOnScreen()
         updateCapacity()
@@ -92,6 +93,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         watchMenuBarClicks()
 
         Capture.onCaptured = { [weak self] url, source in self?.hangCapture(url, source: source) }
+        watchDrags()
         Markup.shared.onSaved = { [weak self] url in self?.line.reloadThumbnail(for: url) }
         Trim.shared.onSaved = { [weak self] url in self?.line.reloadThumbnail(for: url) }
         panel.onScroll = { [weak self] event in
@@ -345,6 +347,75 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
     }
 
+    // MARK: Dragging onto the line
+
+    /// Images dropped on the line hang in order, the newest last like any
+    /// other, and the gap that opened for them closes.
+    private func hangDropped(_ urls: [URL]) {
+        line.gap = nil
+        for url in urls { line.hang(url, quietly: url != urls.first) }
+    }
+
+    /// Notices a drag that could end on the line, from any app, so the line
+    /// can come down to take it. The drag
+    /// pasteboard changes when a drag starts; a cheap look a few times a
+    /// second is enough, since the line only needs to be there by the time
+    /// the pointer reaches the top of the screen.
+    private func watchDrags() {
+        var idleCount = NSPasteboard(name: .drag).changeCount
+        var checked = (count: idleCount, canHang: false)
+        let timer = Timer(timeInterval: 0.1, repeats: true) { [weak self] _ in
+            MainActor.assumeIsolated {
+                guard let self else { return }
+                let pb = NSPasteboard(name: .drag)
+                let down = NSEvent.pressedMouseButtons & 1 != 0
+                if !down { idleCount = pb.changeCount }
+                var carrying = false
+                if down, pb.changeCount != idleCount, !GrabView.isDragging {
+                    if checked.count != pb.changeCount {
+                        checked = (pb.changeCount, LineHost.canHang(pb))
+                    }
+                    carrying = checked.canHang
+                }
+                self.setCarrying(carrying)
+            }
+        }
+        RunLoop.main.add(timer, forMode: .common)
+    }
+
+    private func setCarrying(_ on: Bool) {
+        guard on != line.carrying else { return }
+        line.carrying = on
+        if on {
+            // An empty line waits, tucked away, for the pointer to reach the top.
+            if !wanted {
+                wanted = true
+                refresh()
+            }
+        } else {
+            hotZoneSince = nil
+            line.gap = nil
+            itemsChanged()
+        }
+    }
+
+    /// While an image is carried over the line, the photos part where it
+    /// would go: the place nearest the pointer, between two of them.
+    private func updateGap(_ mouse: NSPoint) {
+        var gap: Int?
+        if line.carrying, !line.items.isEmpty, NSMouseInRect(mouse, panel.frame, false) {
+            let x = mouse.x - panel.frame.minX
+            let count = line.slots + 1
+            gap = (0..<count).min { a, b in
+                abs(Layout.x(index: a, count: count, width: panel.frame.width,
+                             visible: line.visibleCount, scroll: line.scroll) - x)
+                    < abs(Layout.x(index: b, count: count, width: panel.frame.width,
+                                   visible: line.visibleCount, scroll: line.scroll) - x)
+            }
+        }
+        if line.gap != gap { line.gap = gap }
+    }
+
     private func fly(_ id: UUID, from: CGRect) {
         guard isPresent, isRevealed, CaptureFlight.flightsInProgress < 2, let screen = panel.screen,
               let to = cardFrame(for: id),
@@ -570,7 +641,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             // Resting in the menu bar brings the line down on that screen.
             // Pushing against the top edge is part of it, and it also works
             // when another display sits above and the pointer never stops.
-            if Self.opensFromMenuBar, let screen = screenUnderPointer, inMenuBar, !menuBarSuppressed,
+            // Carrying an image or a pin, it always does.
+            if Self.opensFromMenuBar || line.carrying, let screen = screenUnderPointer, inMenuBar,
+               !menuBarSuppressed || line.carrying,
                NSMouseInRect(mouse, Self.revealZone(of: screen), false),
                !FullScreen.blocksLine(on: screen) {
                 let since = hotZoneSince ?? now
@@ -618,6 +691,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     /// whatever is underneath.
     private func updateMousePassThrough(_ mouse: NSPoint) {
         guard !GrabView.isDragging else { return }
+        // A drag from another app only finds a window that takes the mouse.
+        if line.carrying {
+            if panel.ignoresMouseEvents { panel.ignoresMouseEvents = false }
+            updateGap(mouse)
+            return
+        }
         let local = panel.convertPoint(fromScreen: mouse)
         let flipped = CGPoint(x: local.x, y: panel.frame.height - local.y)
         var overPhoto = line.hitRects.values.contains { $0.insetBy(dx: -4, dy: -4).contains(flipped) }

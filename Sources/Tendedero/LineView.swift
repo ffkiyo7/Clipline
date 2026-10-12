@@ -64,14 +64,15 @@ struct LineView: View {
                 Rope(width: width)
 
                 if line.items.isEmpty && !line.noteClip {
-                    Hint()
+                    Hint(carrying: line.carrying)
                         .position(x: width / 2, y: Layout.ropeY(x: width / 2, width: width) + 34)
                         .transition(.opacity)
                 }
 
                 // The note clip takes the next place after the newest photo.
                 if line.noteClip {
-                    let x = Layout.x(index: line.items.count, count: line.slots, width: width,
+                    let place = line.place(line.items.count)
+                    let x = Layout.x(index: place.index, count: place.count, width: width,
                                      visible: line.visibleCount, scroll: line.scroll)
                     let ropeY = Layout.ropeY(x: x, width: width)
                     NoteClip(notes: .shared, line: line)
@@ -81,7 +82,8 @@ struct LineView: View {
                 }
 
                 ForEach(Array(line.items.enumerated()), id: \.element.id) { index, item in
-                    let x = Layout.x(index: index, count: line.slots, width: width,
+                    let place = line.place(index)
+                    let x = Layout.x(index: place.index, count: place.count, width: width,
                                      visible: line.visibleCount, scroll: line.scroll)
                     let ropeY = Layout.ropeY(x: x, width: width)
                     PeggedView(item: item, line: line)
@@ -93,6 +95,7 @@ struct LineView: View {
                 }
             }
             .animation(.spring(response: 0.55, dampingFraction: 0.78), value: line.items.map(\.id))
+            .animation(.spring(response: 0.35, dampingFraction: 0.8), value: line.gap)
             .animation(.easeInOut(duration: 0.3), value: line.items.isEmpty)
             .animation(.easeInOut(duration: 0.3), value: line.noteClip)
             // Tucked away, the whole line waits above the top edge and slides
@@ -114,8 +117,10 @@ struct LineView: View {
 }
 
 private struct Hint: View {
+    let carrying: Bool
+
     var body: some View {
-        Text(L("Take a screenshot and it will hang here"))
+        Text(carrying ? L("Drop it here to hang it") : L("Take a screenshot and it will hang here"))
             .font(.system(size: 12, weight: .medium, design: .rounded))
             .foregroundStyle(.secondary)
             .padding(.horizontal, 12)

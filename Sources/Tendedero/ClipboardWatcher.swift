@@ -125,30 +125,12 @@ final class ClipboardWatcher {
 
     private func save(_ png: Data) {
         if let last, last.png == png, FileManager.default.fileExists(atPath: last.url.path) { return }
-        let fm = FileManager.default
-        var url = Inbox.folder.appendingPathComponent("Clipboard \(Self.stamp()).png")
-        var n = 2
-        while fm.fileExists(atPath: url.path) {
-            url = Inbox.folder.appendingPathComponent("Clipboard \(Self.stamp()) \(n).png")
-            n += 1
-        }
         do {
-            try fm.createDirectory(at: Inbox.folder, withIntermediateDirectories: true)
-            try png.write(to: url, options: .atomic)
-            // What people copy can be private: only they can read it.
-            try fm.setAttributes([.posixPermissions: 0o600], ofItemAtPath: url.path)
+            let url = try Inbox.keep(png, prefix: "Clipboard")
             last = (png, url)
             onImage(url)
         } catch {
-            try? fm.removeItem(at: url)
             log.error("Could not save a copied image: \(error.localizedDescription, privacy: .public)")
         }
-    }
-
-    private static func stamp() -> String {
-        let f = DateFormatter()
-        f.locale = Locale(identifier: "en_US_POSIX")
-        f.dateFormat = "yyyy-MM-dd 'at' HH.mm.ss"
-        return f.string(from: Date())
     }
 }

@@ -104,6 +104,32 @@ enum Inbox {
         UserDefaults.standard.removeObject(forKey: savedKey)
     }
 
+    /// Saves an image that has no file of its own, like a copied picture, in
+    /// Tendedero's folder: "<prefix> 2026-10-12 at 09.41.42.png".
+    static func keep(_ png: Data, prefix: String) throws -> URL {
+        let fm = FileManager.default
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "en_US_POSIX")
+        f.dateFormat = "yyyy-MM-dd 'at' HH.mm.ss"
+        let name = "\(prefix) \(f.string(from: Date()))"
+        var url = folder.appendingPathComponent("\(name).png")
+        var n = 2
+        while fm.fileExists(atPath: url.path) {
+            url = folder.appendingPathComponent("\(name) \(n).png")
+            n += 1
+        }
+        do {
+            try fm.createDirectory(at: folder, withIntermediateDirectories: true)
+            try png.write(to: url, options: .atomic)
+            // What people copy can be private: only they can read it.
+            try fm.setAttributes([.posixPermissions: 0o600], ofItemAtPath: url.path)
+            return url
+        } catch {
+            try? fm.removeItem(at: url)
+            throw error
+        }
+    }
+
     /// Writes through cfprefsd, so the screenshot service sees it at once.
     /// A nil value removes the key and returns it to the macOS default.
     private static func set(_ key: CFString, _ value: Any?) {

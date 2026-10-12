@@ -79,6 +79,7 @@
 
 /* LineView */
 "Take a screenshot and it will hang here" = "Take a screenshot and it will hang here";
+"Drop it here to hang it" = "Drop it here to hang it";
 
 /* PeggedView */
 "Copied" = "Copied";

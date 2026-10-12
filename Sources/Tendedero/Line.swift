@@ -40,6 +40,18 @@ final class Line: ObservableObject {
     @Published var hoveredID: UUID?
     /// Whether the line has slid down into view.
     @Published var revealed = false
+    /// Something that can hang is being dragged.
+    @Published var carrying = false
+    /// The place opened for it under the pointer, as the photos make room.
+    /// Only a gesture: what is dropped still hangs last, as the newest.
+    @Published var gap: Int?
+
+    /// Where the photo or clip in this slot hangs while a gap is open, and
+    /// how many places there are then.
+    func place(_ slot: Int) -> (index: Int, count: Int) {
+        guard let gap else { return (slot, slots) }
+        return (slot >= gap ? slot + 1 : slot, slots + 1)
+    }
     /// How the source tags show, mirrored here so the cards redraw.
     @Published var tagStyle = Source.tagStyle
 
