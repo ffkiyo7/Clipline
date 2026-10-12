@@ -716,18 +716,81 @@ func drawCaption(_ ctx: CGContext, _ i: Int, alpha: CGFloat, rise: CGFloat) {
     }
 }
 
+/// The GitHub mark (Octicons mark-github, MIT), on a 16 × 16 grid with y down.
+let githubMark = "M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"
+
+/// Enough of SVG path syntax for the mark: M, C, c, A (a circular arc) and z.
+func svgPath(_ d: String) -> NSBezierPath {
+    var numbers: [CGFloat] = [], commands: [(Character, [CGFloat])] = []
+    var token = "", command: Character = " "
+    func flush() { if let v = Double(token) { numbers.append(CGFloat(v)) }; token = "" }
+    for ch in d {
+        if ch.isLetter {
+            flush(); if command != " " { commands.append((command, numbers)) }
+            command = ch; numbers = []
+        } else if ch == "-" { flush(); token = "-" }
+        else if ch == "." && token.contains(".") { flush(); token = "." }
+        else if ch == " " || ch == "," { flush() }
+        else { token.append(ch) }
+    }
+    flush(); commands.append((command, numbers))
+
+    let p = NSBezierPath()
+    var cur = NSPoint.zero
+    for (c, n) in commands {
+        switch c {
+        case "M": cur = NSPoint(x: n[0], y: n[1]); p.move(to: cur)
+        case "C", "c":
+            for i in stride(from: 0, to: n.count - 5, by: 6) {
+                let o = c == "c" ? cur : .zero
+                let c1 = NSPoint(x: o.x + n[i], y: o.y + n[i + 1]), c2 = NSPoint(x: o.x + n[i + 2], y: o.y + n[i + 3])
+                cur = NSPoint(x: o.x + n[i + 4], y: o.y + n[i + 5])
+                p.curve(to: cur, controlPoint1: c1, controlPoint2: c2)
+            }
+        case "A":
+            // Arc flags run into the end point here ("0 0016 8"): radius, rotation, then "0016" is 0, 0, 16.
+            let end = NSPoint(x: 16, y: 8), centre = NSPoint(x: 8, y: 8)
+            let a0 = atan2(cur.y - centre.y, cur.x - centre.x) * 180 / .pi, a1: CGFloat = 0
+            p.appendArc(withCenter: centre, radius: hypot(cur.x - centre.x, cur.y - centre.y),
+                        startAngle: a0, endAngle: a1, clockwise: true)
+            cur = end
+        case "z", "Z": p.close()
+        default: break
+        }
+    }
+    return p
+}
+
+/// The mark, `size` points square, with its bottom-left at `origin`.
+func drawGitHubMark(at origin: NSPoint, size: CGFloat, color: NSColor) {
+    let p = svgPath(githubMark)
+    var t = AffineTransform(translationByX: origin.x, byY: origin.y + size)
+    t.scale(x: size / 16, y: -size / 16)
+    p.transform(using: t)
+    color.setFill(); p.fill()
+}
+
 func drawEnding(_ ctx: CGContext, alpha: CGFloat, rise: CGFloat) {
     withAlpha(ctx, alpha) {
         ctx.saveGState(); ctx.translateBy(x: 0, y: -rise)
-        drawBrand(nameSize: 92, baseline: 420)
+        drawBrand(nameSize: 92, baseline: 444)
         text(T("Screenshots and snippets, all on one line."), size: language == "en" ? 30 : 28, weight: .regular,
-             color: theme.secondaryInk, tracking: language == "en" ? -0.4 : 1, centerX: VW / 2, baselineY: 352)
+             color: theme.secondaryInk, tracking: language == "en" ? -0.4 : 1, centerX: VW / 2, baselineY: 376)
         text(L("免费开源 · 不联网 · macOS 14 及以上", "Free and open source · No network · macOS 14 and later"),
-             size: 19, weight: .regular, color: theme.secondaryInk, tracking: 0.3, centerX: VW / 2, baselineY: 298)
+             size: 19, weight: .regular, color: theme.secondaryInk, tracking: 0.3, centerX: VW / 2, baselineY: 322)
+
+        // Where it lives: the GitHub mark and the repository, no address.
+        let repoFont = NSFont.systemFont(ofSize: 19, weight: .medium)
+        let repo = NSAttributedString(string: "ffkiyo7/Clipline", attributes: [.font: repoFont, .foregroundColor: theme.ink, .kern: 0.2])
+        let mark: CGFloat = 20, gap: CGFloat = 9, repoBaseline: CGFloat = 272
+        let left = (VW - (mark + gap + repo.size().width)) / 2
+        drawGitHubMark(at: NSPoint(x: left, y: repoBaseline - 3.5), size: mark, color: theme.ink)
+        repo.draw(at: NSPoint(x: left + mark + gap, y: repoBaseline + repoFont.descender))
+
         let command = NSAttributedString(string: "brew install --cask ffkiyo7/tap/clipline", attributes: [
             .font: NSFont.monospacedSystemFont(ofSize: 18, weight: .medium), .foregroundColor: theme.ink])
         let size = command.size()
-        let pill = NSRect(x: (VW - size.width - 44) / 2, y: 206, width: size.width + 44, height: 48)
+        let pill = NSRect(x: (VW - size.width - 44) / 2, y: 196, width: size.width + 44, height: 48)
         theme.tile.setFill(); NSBezierPath(roundedRect: pill, xRadius: 14, yRadius: 14).fill()
         command.draw(at: NSPoint(x: pill.minX + 22, y: pill.midY - size.height / 2))
         ctx.restoreGState()
