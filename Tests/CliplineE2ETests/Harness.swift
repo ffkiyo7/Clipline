@@ -49,11 +49,6 @@ enum E2E {
         guard AXIsProcessTrusted() else {
             throw E2EError("The app running the tests needs Accessibility access: System Settings → Privacy & Security → Accessibility.")
         }
-        let access = "com.apple.universalaccess"
-        let sticky = [Prefs.get("stickyKey", in: access), Prefs.get("feature.stickyKeys", in: access)]
-        guard !sticky.contains(where: { ($0 as? Bool) == true || ($0 as? Int) == 1 }) else {
-            throw E2EError("Sticky Keys is on, and it latches the modifier keys the tests press. Turn it off for the run: System Settings → Accessibility → Keyboard → Sticky Keys.")
-        }
         guard Input.heldModifiers.isEmpty else {
             throw E2EError("Modifier keys are held (\(Input.heldModifiers)). Press and release Control, Option, Shift and Command, then run again.")
         }
