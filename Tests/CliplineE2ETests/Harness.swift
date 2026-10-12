@@ -375,6 +375,24 @@ final class TestApp {
         }
         return found!
     }
+
+    /// Where the photo is once it stops moving: the line springs into place
+    /// after a photo arrives or leaves, and a click aimed at a frame read
+    /// mid-way lands somewhere else on the card.
+    func settledFrame(of name: String) throws -> CGRect {
+        var last = try photo(name).frame
+        var settled: CGRect?
+        try waitUntil("\(name) to stop moving on the line", timeout: 6) {
+            pause(0.3)
+            let now = element.first { $0.identifier == "clipline.photo." + name }?.frame
+            defer { last = now }
+            guard let now, let before = last,
+                  abs(now.minX - before.minX) < 0.5, abs(now.minY - before.minY) < 0.5 else { return false }
+            settled = now
+            return true
+        }
+        return settled!
+    }
 }
 
 // MARK: - Accessibility
@@ -454,6 +472,19 @@ enum Input {
     /// Presses the modifier keys one by one, the key, then lets go of them
     /// in reverse, as fingers do. Flags set on the key alone once left
     /// Control held system wide, turning every later click into a right click.
+    /// A key for one app only, delivered to its key window wherever the
+    /// keyboard focus is: Clipline's panels take the keyboard without
+    /// making it the active app, and a key sent to the system would land in
+    /// whatever app is in front instead.
+    static func key(_ code: CGKeyCode, to pid: pid_t) {
+        for down in [true, false] {
+            guard let event = CGEvent(keyboardEventSource: source, virtualKey: code, keyDown: down) else { continue }
+            event.flags = []
+            event.postToPid(pid)
+            pause(0.05)
+        }
+    }
+
     static func key(_ code: CGKeyCode, flags: CGEventFlags = []) {
         let held = modifiers.filter { flags.contains($0.flag) }
         var current: CGEventFlags = []

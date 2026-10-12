@@ -103,9 +103,10 @@ class E2ETestCase: XCTestCase {
     /// Clicks the cross in the photo's top left corner.
     func discard(_ name: String) throws {
         try app.showLine()
-        let frame = try XCTUnwrap(app.photo(name).frame)
-        Input.move(to: frame.center)
+        let before = try app.settledFrame(of: name)
+        Input.move(to: before.center)
         pause(0.3)
+        let frame = try app.settledFrame(of: name)
         Input.click(at: CGPoint(x: frame.minX + 6, y: frame.minY + 6))
     }
 
@@ -135,7 +136,7 @@ final class LineFlowTests: E2ETestCase {
 
         // A click copies the picture and its file.
         try app.showLine()
-        let firstFrame = try XCTUnwrap(app.photo(first).frame)
+        let firstFrame = try app.settledFrame(of: first)
         Input.click(at: firstFrame.center)
         try expect("the screenshot to be on the clipboard") {
             guard let item = NSPasteboard.general.pasteboardItems?.first, item.types.contains(.png),
@@ -149,7 +150,7 @@ final class LineFlowTests: E2ETestCase {
         let window = try Finder.open(kept)
         finderWindows.append(window)
         try app.showLine()
-        let secondFrame = try XCTUnwrap(app.photo(second).frame)
+        let secondFrame = try app.settledFrame(of: second)
         let windowFrame = try XCTUnwrap(window.frame)
         Input.drag(from: secondFrame.center, through: [(point: windowFrame.center, rest: 0.6)])
         try expect("the screenshot to move into the Finder folder") {
@@ -202,8 +203,10 @@ final class CopiedTextTests: E2ETestCase {
         // copies it again and moves it to the top.
         try expect("the older note in the list") { noteRow(older) != nil }
         pause(0.3)
-        Input.key(125) // ↓
-        Input.key(36) // Return
+        // Sent to Clipline alone: a key sent to the system goes to the app
+        // in front, and once typed into the user's System Settings.
+        Input.key(125, to: app.pid) // ↓
+        Input.key(36, to: app.pid) // Return
         try expect("the picked note on the clipboard") { NSPasteboard.general.string(forType: .string) == older }
         try expect("the picked note to move to the top") { app.savedNotes() == [older, newer] }
 
