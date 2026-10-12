@@ -800,6 +800,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         statusItem.button?.toolTip = description
     }
 
+    // While this menu is open, macOS holds a hot key back until it closes.
+    // Off for that time, the keys reach the menu instead, where the items
+    // carry the same shortcuts: the menu closes and the screenshot starts.
+    func menuWillOpen(_ menu: NSMenu) {
+        hotKey = nil
+        captureKey = nil
+    }
+
+    func menuDidClose(_ menu: NSMenu) {
+        registerShortcut()
+    }
+
     func menuNeedsUpdate(_ menu: NSMenu) {
         menu.removeAllItems()
 
@@ -886,7 +898,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
         middle.state = Self.opensFromMiddleOnly ? .on : .off
         middle.isEnabled = Self.opensFromMenuBar
-        middle.indentationLevel = 1
         options.addItem(middle)
         let peek = ClosureMenuItem(L("When something new hangs")) {
             AppDelegate.peeksAtNew.toggle()

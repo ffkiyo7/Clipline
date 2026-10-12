@@ -223,6 +223,7 @@ final class Line: ObservableObject {
             waiting[path] = nil
             let url = URL(fileURLWithPath: path)
             guard FileManager.default.fileExists(atPath: path) else { continue }
+            keepClipboard(without: url)
             do {
                 try FileManager.default.trashItem(at: url, resultingItemURL: nil)
                 log.notice("Trashed used \(url.lastPathComponent, privacy: .public)")
@@ -234,6 +235,22 @@ final class Line: ObservableObject {
         if let next = waiting.values.min() {
             DispatchQueue.main.asyncAfter(deadline: .now() + max(1, next - now + 1)) { sweepUsed() }
         }
+    }
+
+    /// A copy holds the image and its file. Many apps paste from the file,
+    /// so once it is in the Trash they would find nothing there. Before a
+    /// file goes, a clipboard still holding it keeps only the image.
+    static func keepClipboard(without url: URL) {
+        let pb = NSPasteboard.general
+        guard let items = pb.pasteboardItems, items.count == 1, let item = items.first,
+              let named = item.string(forType: .fileURL).flatMap(URL.init(string:)),
+              named.standardizedFileURL == url.standardizedFileURL,
+              let png = item.data(forType: .png) else { return }
+        let entry = NSPasteboardItem()
+        entry.setData(png, forType: .png)
+        pb.clearContents()
+        pb.writeObjects([entry])
+        ClipboardWatcher.ownChangeCount = pb.changeCount
     }
 
     /// Photos whose file was deleted or moved away fall off by themselves.
@@ -272,6 +289,7 @@ final class Line: ObservableObject {
     @discardableResult
     func trash(_ id: UUID, quietly: Bool = false) -> Bool {
         guard let item = items.first(where: { $0.id == id }) else { return false }
+        Self.keepClipboard(without: item.url)
         do {
             try FileManager.default.trashItem(at: item.url, resultingItemURL: nil)
             log.notice("Trashed \(item.url.lastPathComponent, privacy: .public)")
@@ -331,6 +349,7 @@ final class Line: ObservableObject {
         guard let item = items.first(where: { $0.id == id }) else { return }
         let desktop = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Desktop")
         let target = uniqueURL(in: desktop, for: item.url.lastPathComponent)
+        Self.keepClipboard(without: item.url)
         do {
             try FileManager.default.moveItem(at: item.url, to: target)
             drop(id, quietly: true)
