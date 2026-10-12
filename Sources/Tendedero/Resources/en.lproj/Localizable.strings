@@ -117,3 +117,9 @@
 "Copied text" = "Copied text";
 "Keep copied text" = "Keep copied text";
 "Text you copy goes into the clip at the end of the line" = "Text you copy goes into the clip at the end of the line";
+"Take Screenshot" = "Take Screenshot";
+"Take Screenshot: %@" = "Take Screenshot: %@";
+"Change Screenshot Shortcut…" = "Change Screenshot Shortcut…";
+"Tendedero needs Screen Recording access to take screenshots" = "Tendedero needs Screen Recording access to take screenshots";
+"Turn on Tendedero in System Settings → Privacy & Security → Screen Recording, then try again." = "Turn on Tendedero in System Settings → Privacy & Security → Screen Recording, then try again.";
+"Open System Settings" = "Open System Settings";

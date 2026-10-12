@@ -78,7 +78,7 @@ final class Editor: NSObject, NSWindowDelegate {
     /// A menu bar app has no menus, so text fields would not cut, copy or
     /// paste. An Edit menu, never shown, gives them their keys. Undo is left
     /// out: the canvas handles it.
-    private static func installEditMenu() {
+    static func installEditMenu() {
         guard NSApp.mainMenu == nil else { return }
         let edit = NSMenu(title: "Edit")
         edit.addItem(withTitle: "Cut", action: #selector(NSText.cut(_:)), keyEquivalent: "x")
@@ -193,6 +193,34 @@ private struct EditorToolbar: View {
                 }
             }
             Divider().frame(height: 22)
+            StyleControls(model: model)
+            Spacer(minLength: 8)
+            ToolButton(symbol: "arrow.uturn.backward", help: "\(L("Undo"))  ⌘Z") { model.undo() }
+                .disabled(!model.canUndo)
+            ToolButton(symbol: "arrow.uturn.forward", help: "\(L("Redo"))  ⇧⌘Z") { model.redo() }
+                .disabled(!model.canRedo)
+            Divider().frame(height: 22)
+            ToolButton(symbol: "pin", help: "\(L("Pin to Screen"))  ⌘P") { run(.pin) }
+            ToolButton(symbol: "square.and.arrow.down", help: "\(L("Save As…"))  ⌘S") { run(.save) }
+            ToolButton(symbol: "doc.on.doc", help: "\(L("Copy"))  ⌘C") { run(.copy) }
+            Button(L("Done")) { run(.done) }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.regular)
+                .help("\(L("Done"))  ↩")
+                .padding(.trailing, 12)
+        }
+        .frame(maxHeight: .infinity)
+        .background(.bar)
+    }
+}
+
+/// The colors and the three line widths, shared by the markup window and
+/// the screenshot's toolbar.
+struct StyleControls: View {
+    @ObservedObject var model: EditorModel
+
+    var body: some View {
+        HStack(spacing: 10) {
             HStack(spacing: 5) {
                 ForEach(EditorModel.colors.indices, id: \.self) { i in
                     Button { model.colorIndex = i } label: {
@@ -217,27 +245,11 @@ private struct EditorToolbar: View {
                     }
                 }
             }
-            Spacer(minLength: 8)
-            ToolButton(symbol: "arrow.uturn.backward", help: "\(L("Undo"))  ⌘Z") { model.undo() }
-                .disabled(!model.canUndo)
-            ToolButton(symbol: "arrow.uturn.forward", help: "\(L("Redo"))  ⇧⌘Z") { model.redo() }
-                .disabled(!model.canRedo)
-            Divider().frame(height: 22)
-            ToolButton(symbol: "pin", help: "\(L("Pin to Screen"))  ⌘P") { run(.pin) }
-            ToolButton(symbol: "square.and.arrow.down", help: "\(L("Save As…"))  ⌘S") { run(.save) }
-            ToolButton(symbol: "doc.on.doc", help: "\(L("Copy"))  ⌘C") { run(.copy) }
-            Button(L("Done")) { run(.done) }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.regular)
-                .help("\(L("Done"))  ↩")
-                .padding(.trailing, 12)
         }
-        .frame(maxHeight: .infinity)
-        .background(.bar)
     }
 }
 
-private struct ToolButton<Label: View>: View {
+struct ToolButton<Label: View>: View {
     var selected = false
     let help: String
     let action: () -> Void

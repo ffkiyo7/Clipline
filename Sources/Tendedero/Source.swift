@@ -41,8 +41,9 @@ struct Source: Codable, Equatable {
         if let front = NSWorkspace.shared.frontmostApplication,
            front.processIdentifier != ProcessInfo.processInfo.processIdentifier,
            !captureTools.contains(front.bundleIdentifier ?? "") {
-            return Source(bundleID: front.bundleIdentifier, appName: front.localizedName ?? "",
-                          windowTitle: title(ofFrontWindowOf: front.processIdentifier))
+            let appName = front.localizedName ?? ""
+            return Source(bundleID: front.bundleIdentifier, appName: appName,
+                          windowTitle: distinct(title(ofFrontWindowOf: front.processIdentifier), from: appName))
         }
         return window(at: NSEvent.mouseLocation)
     }
@@ -59,9 +60,9 @@ struct Source: Codable, Equatable {
                   let pid = info[kCGWindowOwnerPID as String] as? pid_t,
                   let app = NSRunningApplication(processIdentifier: pid),
                   !captureTools.contains(app.bundleIdentifier ?? "") else { continue }
-            return Source(bundleID: app.bundleIdentifier,
-                          appName: app.localizedName ?? info[kCGWindowOwnerName as String] as? String ?? "",
-                          windowTitle: nonEmpty(info[kCGWindowName as String] as? String))
+            let appName = app.localizedName ?? info[kCGWindowOwnerName as String] as? String ?? ""
+            return Source(bundleID: app.bundleIdentifier, appName: appName,
+                          windowTitle: distinct(nonEmpty(info[kCGWindowName as String] as? String), from: appName))
         }
         return nil
     }
@@ -81,6 +82,12 @@ struct Source: Codable, Equatable {
                 && $0[kCGWindowOwnerPID as String] as? pid_t != me
                 && ($0[kCGWindowAlpha as String] as? Double ?? 1) > 0
         }
+    }
+
+    /// A window named after its app adds nothing to the tag.
+    private static func distinct(_ title: String?, from appName: String) -> String? {
+        guard let title, title.caseInsensitiveCompare(appName) != .orderedSame else { return nil }
+        return title
     }
 
     private static func nonEmpty(_ s: String?) -> String? {

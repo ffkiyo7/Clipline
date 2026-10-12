@@ -21,6 +21,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var clipboardWatcher: ClipboardWatcher!
     private var signalSources: [DispatchSourceSignal] = []
     private var hotKey: HotKey?
+    private var captureKey: HotKey?
     private var cancellables = Set<AnyCancellable>()
     private var mouseTimer: Timer?
 
@@ -90,6 +91,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         setUpStatusItem()
         watchMenuBarClicks()
 
+        Capture.onCaptured = { [weak self] url, source in self?.hangCapture(url, source: source) }
         Markup.shared.onSaved = { [weak self] url in self?.line.reloadThumbnail(for: url) }
         Trim.shared.onSaved = { [weak self] url in self?.line.reloadThumbnail(for: url) }
         panel.onScroll = { [weak self] event in
@@ -314,7 +316,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     /// A new screenshot lifts off from where it was taken and flies to its
     /// place on the line. Without a known capture area it simply drops in.
-    private func hangCapture(_ url: URL) {
+    /// `known`: the window it shows, when Tendedero took the screenshot itself.
+    private func hangCapture(_ url: URL, source known: Source? = nil) {
         let from = captureRect(of: url)
         let screen = from.flatMap { from in
             NSScreen.screens.first { NSMouseInRect(CGPoint(x: from.midX, y: from.midY), $0.frame, false) }
@@ -323,7 +326,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         // was taken on. On a full line the oldest photo then falls in view as
         // the new one flies in.
         comeDown(on: screen)
-        let source = Source.detect(captureRect: from)
+        let source = known ?? Source.detect(captureRect: from)
         guard let id = line.hang(url, source: source, flying: from != nil) else {
             // Nothing hung after all, so an empty line goes away again.
             itemsChanged()
@@ -550,6 +553,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private static let retractDelay: TimeInterval = 0.15
 
     private func tick() {
+        // While taking a screenshot the line stays where it is.
+        if Capture.isActive {
+            hotZoneSince = nil
+            awaySince = nil
+            return
+        }
         let mouse = NSEvent.mouseLocation
         let now = Date()
 
@@ -629,24 +638,35 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     private func registerShortcut() {
         hotKey = nil
-        guard let shortcut = Shortcut.current else { return }
-        hotKey = HotKey(shortcut) { [weak self] in self?.toggle() }
+        captureKey = nil
+        if let shortcut = Shortcut.current {
+            hotKey = HotKey(shortcut, id: 1) { [weak self] in self?.toggle() }
+        }
+        if let shortcut = Shortcut.capture {
+            captureKey = HotKey(shortcut, id: 2) { Capture.start() }
+            if captureKey == nil {
+                log.error("The screenshot shortcut \(shortcut.display, privacy: .public) is taken by another app")
+            }
+        }
     }
 
-    private func changeShortcut() {
+    /// `capture`: the screenshot's shortcut rather than the line's.
+    private func changeShortcut(capture: Bool = false) {
         // Off while recording, so pressing the current one records it
         // instead of showing the line.
         hotKey = nil
+        captureKey = nil
         ShortcutRecorder.shared.record { [weak self] result in
             guard let self else { return }
             if let result {
-                let previous = Shortcut.current
-                Shortcut.current = result
+                let previous = capture ? Shortcut.capture : Shortcut.current
+                if capture { Shortcut.capture = result } else { Shortcut.current = result }
                 self.registerShortcut()
-                // Taken by another app: keep the one that worked.
-                if result != nil && self.hotKey == nil {
+                // Taken by another app, or by the other shortcut: keep the
+                // one that worked.
+                if result != nil && (capture ? self.captureKey : self.hotKey) == nil {
                     NSSound.beep()
-                    Shortcut.current = previous
+                    if capture { Shortcut.capture = previous } else { Shortcut.current = previous }
                 }
             }
             self.registerShortcut()
@@ -712,6 +732,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             toggleItem.keyEquivalentModifierMask = shortcut.modifiers
         }
         menu.addItem(toggleItem)
+
+        let captureItem = ClosureMenuItem(L("Take Screenshot")) {
+            // Once the menu has closed, so it is not in the picture.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { Capture.start() }
+        }
+        if let shortcut = Shortcut.capture, shortcut.key.count == 1 {
+            captureItem.keyEquivalent = shortcut.key
+            captureItem.keyEquivalentModifierMask = shortcut.modifiers
+        }
+        menu.addItem(captureItem)
 
         let clearItem = ClosureMenuItem(L("Take everything down")) { [weak self] in
             self?.line.clear()
@@ -852,6 +882,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         current.isEnabled = false
         shortcuts.addItem(current)
         shortcuts.addItem(ClosureMenuItem(L("Change Shortcut…")) { [weak self] in self?.changeShortcut() })
+        shortcuts.addItem(.separator())
+        let captureCurrent = NSMenuItem(
+            title: String(format: L("Take Screenshot: %@"), Shortcut.capture?.display ?? L("None")),
+            action: nil, keyEquivalent: "")
+        captureCurrent.isEnabled = false
+        shortcuts.addItem(captureCurrent)
+        shortcuts.addItem(ClosureMenuItem(L("Change Screenshot Shortcut…")) { [weak self] in
+            self?.changeShortcut(capture: true)
+        })
         shortcutItem.submenu = shortcuts
         menu.addItem(shortcutItem)
 

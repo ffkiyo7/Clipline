@@ -7,6 +7,12 @@ import Combine
 final class EditorCanvas: NSView {
     let model: EditorModel
     var onCommand: (Command) -> Void = { _ in }
+    /// Room around the image. None when the marks go right over a
+    /// screenshot being taken.
+    var inset: CGFloat = 12
+    /// The grey surround and the sheet under the image, for the window. Off
+    /// over a screenshot being taken, where the screen itself is around it.
+    var drawsBackdrop = true
 
     enum Command { case done, cancel, copy, save, pin }
 
@@ -42,8 +48,8 @@ final class EditorCanvas: NSView {
     /// Where the image sits in the view, kept to its proportions.
     private var imageRect: CGRect {
         let w = CGFloat(model.image.width), h = CGFloat(model.image.height)
-        let inset = bounds.insetBy(dx: 12, dy: 12)
-        let s = min(inset.width / w, inset.height / h)
+        let area = bounds.insetBy(dx: inset, dy: inset)
+        let s = min(area.width / w, area.height / h)
         let size = CGSize(width: w * s, height: h * s)
         return CGRect(x: bounds.midX - size.width / 2, y: bounds.midY - size.height / 2,
                       width: size.width, height: size.height)
@@ -73,15 +79,16 @@ final class EditorCanvas: NSView {
 
     override func draw(_ dirtyRect: NSRect) {
         guard let ctx = NSGraphicsContext.current?.cgContext else { return }
-        NSColor.windowBackgroundColor.blended(withFraction: 0.35, of: .black)?.setFill()
-        bounds.fill()
-
         let r = imageRect
-        ctx.saveGState()
-        ctx.setShadow(offset: CGSize(width: 0, height: 2), blur: 10, color: NSColor.black.withAlphaComponent(0.35).cgColor)
-        NSColor.white.setFill()
-        r.fill()
-        ctx.restoreGState()
+        if drawsBackdrop {
+            NSColor.windowBackgroundColor.blended(withFraction: 0.35, of: .black)?.setFill()
+            bounds.fill()
+            ctx.saveGState()
+            ctx.setShadow(offset: CGSize(width: 0, height: 2), blur: 10, color: NSColor.black.withAlphaComponent(0.35).cgColor)
+            NSColor.white.setFill()
+            r.fill()
+            ctx.restoreGState()
+        }
 
         ctx.saveGState()
         ctx.clip(to: r)

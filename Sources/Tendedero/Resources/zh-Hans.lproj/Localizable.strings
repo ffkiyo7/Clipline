@@ -115,3 +115,9 @@
 "Copied text" = "复制过的文字";
 "Keep copied text" = "记录复制的文字";
 "Text you copy goes into the clip at the end of the line" = "复制的文字会收进绳子末端的便签夹";
+"Take Screenshot" = "截图";
+"Take Screenshot: %@" = "截图：%@";
+"Change Screenshot Shortcut…" = "更改截图快捷键…";
+"Tendedero needs Screen Recording access to take screenshots" = "Tendedero 需要“屏幕录制”权限才能截图";
+"Turn on Tendedero in System Settings → Privacy & Security → Screen Recording, then try again." = "请在“系统设置 → 隐私与安全性 → 屏幕录制”里打开 Tendedero，然后再试一次。";
+"Open System Settings" = "打开系统设置";
