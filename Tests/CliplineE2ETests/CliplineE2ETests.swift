@@ -35,10 +35,14 @@ class E2ETestCase: XCTestCase {
         settingsBefore.restore()
         pasteboard.restore()
         Prefs.removeAll(in: E2E.bundleID)
-        let plist = FileManager.default.homeDirectoryForCurrentUser
-            .appendingPathComponent("Library/Preferences/\(E2E.bundleID).plist")
-        try? FileManager.default.removeItem(at: plist)
+        // Through cfprefsd, which would otherwise write the file back.
+        _ = try? E2E.shell("/usr/bin/defaults", "delete", E2E.bundleID)
         try? FileManager.default.removeItem(at: root)
+    }
+
+    override class func tearDown() {
+        E2E.removePreparedApp()
+        super.tearDown()
     }
 
     var originalSettings: ScreenshotSettings { settingsBefore }
@@ -90,6 +94,14 @@ class E2ETestCase: XCTestCase {
         Input.click(at: CGPoint(x: frame.minX + 6, y: frame.minY + 6))
     }
 
+    /// A note's text in the list of copied text, not on the clip.
+    func noteRow(_ text: String) -> AX? {
+        for window in app.element.windows where window.first(where: { $0.identifier == "clipline.noteCount" }) == nil {
+            if let row = window.first(where: { $0.role == kAXStaticTextRole && $0.value == text }) { return row }
+        }
+        return nil
+    }
+
     func noteCount() -> String? {
         app.element.first { $0.identifier == "clipline.noteCount" }?.value
     }
@@ -132,7 +144,9 @@ final class LineFlowTests: E2ETestCase {
 
         // Dragged from Finder onto the line, a file hangs where it is.
         let itemFrame = try XCTUnwrap(Finder.item(named: second, in: window).frame)
-        Input.drag(from: itemFrame.center,
+        // On the name itself: in list view the rest of the row starts a
+        // selection rectangle instead of a drag.
+        Input.drag(from: CGPoint(x: itemFrame.minX + 12, y: itemFrame.midY),
                    through: [(point: Screen.revealPoint, rest: 0.8), (point: Screen.lineBand, rest: 0.8)])
         try waitUntil("the file dropped on the line to hang") {
             app.hanging.contains { $0 == kept.appendingPathComponent(second).path }
@@ -168,14 +182,13 @@ final class CopiedTextTests: E2ETestCase {
         let clip = try XCTUnwrap(app.element.first { $0.identifier == "clipline.noteCount" }?.frame)
         Input.click(at: clip.center)
 
-        // Picking the older one copies it again and moves it to the top.
-        var row: AX?
-        try waitUntil("the older note in the list") {
-            row = app.element.first { $0.role == kAXStaticTextRole && $0.value == older }
-            return row?.frame != nil
-        }
-        let rowFrame = try XCTUnwrap(row?.frame)
-        Input.click(at: rowFrame.center)
+        // Picking the older one from the keyboard, as the list offers: the
+        // caret is in the search field, ↓ selects the next note and Return
+        // copies it again and moves it to the top.
+        try waitUntil("the older note in the list") { noteRow(older) != nil }
+        pause(0.3)
+        Input.key(125) // ↓
+        Input.key(36) // Return
         try waitUntil("the picked note on the clipboard") { NSPasteboard.general.string(forType: .string) == older }
         try waitUntil("the picked note to move to the top") { app.savedNotes() == [older, newer] }
 
@@ -186,6 +199,30 @@ final class CopiedTextTests: E2ETestCase {
         try app.showLine()
         try waitUntil("the note clip to count 2 after the restart") { noteCount() == "2" }
         XCTAssertEqual(app.savedNotes(), [older, newer])
+    }
+
+    /// Clicking a note in the list copies it. Kept apart from the keyboard
+    /// path above, so a failure here points at the click alone.
+    func testClickingANoteInTheListCopiesIt() throws {
+        try app.launch()
+        let older = "Clipline E2E click older \(token)", newer = "Clipline E2E click newer \(token)"
+        copyText(older)
+        pause(1)
+        copyText(newer)
+        try waitUntil("both copies to be saved") { app.savedNotes() == [newer, older] }
+        try app.showLine()
+        let clip = try XCTUnwrap(app.element.first { $0.identifier == "clipline.noteCount" }?.frame)
+        Input.click(at: clip.center)
+        var row: CGRect?
+        try waitUntil("the older note in the list") {
+            row = noteRow(older)?.frame
+            return row != nil
+        }
+        pause(0.5) // the list settles
+        let frame = try XCTUnwrap(noteRow(older)?.frame)
+        Input.click(at: CGPoint(x: frame.minX + 12, y: frame.midY))
+        try waitUntil("the clicked note on the clipboard") { NSPasteboard.general.string(forType: .string) == older }
+        try waitUntil("the clicked note to move to the top") { app.savedNotes() == [older, newer] }
     }
 
     func testAnUnreadableHistoryFileIsSetAsideNotOverwritten() throws {

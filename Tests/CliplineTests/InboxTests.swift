@@ -11,6 +11,16 @@ private final class FakeSettings: ScreenshotSettings {
     func synchronize() {}
 }
 
+/// Defaults that live only in memory: a real suite leaves a file in
+/// ~/Library/Preferences that cfprefsd writes back after it is deleted.
+private final class MemoryDefaults: UserDefaults {
+    private var store: [String: Any] = [:]
+    override func object(forKey key: String) -> Any? { store[key] }
+    override func dictionary(forKey key: String) -> [String: Any]? { store[key] as? [String: Any] }
+    override func set(_ value: Any?, forKey key: String) { store[key] = value }
+    override func removeObject(forKey key: String) { store[key] = nil }
+}
+
 final class InboxTests: XCTestCase {
     private var settings: FakeSettings!
     private var defaults: UserDefaults!
@@ -18,15 +28,7 @@ final class InboxTests: XCTestCase {
 
     override func setUp() {
         settings = FakeSettings()
-        let suite = "CliplineTests-\(UUID())"
-        defaults = UserDefaults(suiteName: suite)
-        addTeardownBlock {
-            UserDefaults().removePersistentDomain(forName: suite)
-            // Removing the domain leaves an empty file behind.
-            let plist = FileManager.default.homeDirectoryForCurrentUser
-                .appendingPathComponent("Library/Preferences/\(suite).plist")
-            try? FileManager.default.removeItem(at: plist)
-        }
+        defaults = MemoryDefaults()
     }
 
     private func apply() { Inbox.apply(to: settings, defaults: defaults) }

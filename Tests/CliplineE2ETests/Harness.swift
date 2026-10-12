@@ -72,6 +72,12 @@ enum E2E {
         return app
     }
 
+    static func removePreparedApp() {
+        guard let prepared else { return }
+        try? FileManager.default.removeItem(at: prepared.deletingLastPathComponent())
+        self.prepared = nil
+    }
+
     @discardableResult
     static func shell(_ tool: String, _ arguments: String...) throws -> String {
         let process = Process()
@@ -492,7 +498,12 @@ enum Finder {
     static func item(named name: String, in window: AX) throws -> AX {
         var found: AX?
         try waitUntil("\(name) to show in Finder") {
-            found = window.first { $0.filename == name || ($0.role == kAXTextFieldRole && $0.value == name) }
+            // Finder hides the extension unless "Show all filename
+            // extensions" is on, in list view as in icon view.
+            let shown = [name, (name as NSString).deletingPathExtension]
+            found = window.first {
+                $0.filename == name || ($0.role == kAXTextFieldRole && $0.value.map(shown.contains) == true)
+            }
             return found?.frame != nil
         }
         return found!
