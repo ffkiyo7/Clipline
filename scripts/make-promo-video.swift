@@ -55,8 +55,9 @@ let captions: [(String, String)] = [
 
 /// Every shot draws in a 960 × 460 scene, shown as a card under the caption.
 let SW: CGFloat = 960, SH: CGFloat = 460
-let cardK: CGFloat = 1.15
-let card = NSRect(x: (VW - SW * cardK) / 2, y: 30, width: SW * cardK, height: SH * cardK)
+/// Sized so the caption and the card sit as one block, with as much room above it as below.
+let cardK: CGFloat = 1.1
+let card = NSRect(x: (VW - SW * cardK) / 2, y: 62, width: SW * cardK, height: SH * cardK)
 let lineTop = SH - 26 - 20
 
 func lineY(_ x: CGFloat, reveal: CGFloat = 1) -> CGFloat {
@@ -744,15 +745,15 @@ func drawCaption(_ ctx: CGContext, _ i: Int, alpha: CGFloat, rise: CGFloat) {
     withAlpha(ctx, alpha) {
         ctx.saveGState(); ctx.translateBy(x: 0, y: -rise)
         if i == 0 {
-            drawBrand(nameSize: 62, baseline: 628)
-            text(T("Screenshots and snippets, all on one line."), size: language == "en" ? 24 : 22, weight: .regular,
-                 color: theme.secondaryInk, tracking: language == "en" ? -0.3 : 1, centerX: VW / 2, baselineY: 586)
+            drawBrand(nameSize: 48, baseline: 626)
+            text(T("Screenshots and snippets, all on one line."), size: language == "en" ? 19 : 18, weight: .regular,
+                 color: theme.secondaryInk, tracking: language == "en" ? -0.3 : 1, centerX: VW / 2, baselineY: 588)
         } else {
             let (title, sub) = captions[i]
-            text(title, size: 40, weight: .semibold, color: theme.ink, tracking: language == "en" ? -0.8 : 0.5,
-                 centerX: VW / 2, baselineY: 630)
-            text(sub, size: 20, weight: .regular, color: theme.secondaryInk, tracking: language == "en" ? -0.2 : 0.5,
-                 centerX: VW / 2, baselineY: 590)
+            text(title, size: 34, weight: .semibold, color: theme.ink, tracking: language == "en" ? -0.8 : 0.5,
+                 centerX: VW / 2, baselineY: 628)
+            text(sub, size: 18, weight: .regular, color: theme.secondaryInk, tracking: language == "en" ? -0.2 : 0.5,
+                 centerX: VW / 2, baselineY: 594)
         }
         ctx.restoreGState()
     }
