@@ -1,6 +1,6 @@
 ## What and why
 
-<!-- What changes for someone using Tendedero, and why. If it fixes an issue: Closes #123 -->
+<!-- What changes for someone using Clipline, and why. If it fixes an issue: Closes #123 -->
 
 ## How you tested it
 
@@ -9,5 +9,5 @@
 <!--
 Before opening:
 - One change per pull request. Small ones get reviewed and merged sooner.
-- New text in the app goes in Sources/Tendedero/Resources/<language>.lproj. Run `swift scripts/check-strings.swift`.
+- New text in the app goes in Sources/Clipline/Resources/<language>.lproj. Run `swift scripts/check-strings.swift`.
 -->

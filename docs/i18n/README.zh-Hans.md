@@ -1,6 +1,6 @@
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="../images/zh-Hans/hero-dark.png">
-  <img src="../images/zh-Hans/hero-light.png" alt="Tendedero。截图，挂起来晾着。三张截图装在玻璃相框里，挂在 macOS 菜单栏下方的一根细绳上，每张下面都有一个来源小标签，绳尾还夹着一叠复制的文字。">
+  <img src="../images/zh-Hans/hero-light.png" alt="Clipline。截图，挂起来晾着。三张截图装在玻璃相框里，挂在 macOS 菜单栏下方的一根细绳上，每张下面都有一个来源小标签，绳尾还夹着一叠复制的文字。">
 </picture>
 
 <h3 align="center"><a href="../../../../releases/latest">下载最新版本&nbsp;&rsaquo;</a></h3>
@@ -8,7 +8,7 @@
 <p align="center">
   免费开源。适用于 macOS 14 及以上。
   <br>
-  基于 Alejandro Buján 的 <a href="https://github.com/alejandrobujan/tendedero">Tendedero</a> 修改，加入了自己的截图工具、标注、文字夹等功能。
+  从 Alejandro Buján 的 <a href="https://github.com/alejandrobujan/tendedero">Tendedero</a> 发展而来，加入了自己的截图工具、标注、文字夹等功能。
   <br>
   <a href="#从源码构建">从源码构建&nbsp;&rsaquo;</a>
   <br><br>
@@ -47,7 +47,7 @@
 | 双击 | 用「预览」打开。 |
 | 用力点按 | 用「快速查看」看一眼。 |
 | 右键 | 贴到屏幕上、用系统「标记」打开、存到桌面等。 |
-| 拖进 App | 发送过去。照片从绳上收走；如果是 Tendedero 文件夹里的截图，几分钟后移到废纸篓。 |
+| 拖进 App | 发送过去。照片从绳上收走；如果是 Clipline 文件夹里的截图，几分钟后移到废纸篓。 |
 | 拖进文件夹 | 存在那儿。原图从绳上取下。 |
 | 拖到废纸篓，或点叉 | 松手丢弃。 |
 | 把图片拖到绳上 | 挂上去。拖着经过时，其他照片会让出位置。 |
@@ -71,7 +71,7 @@
 
 ## 桌面，终于清爽了
 
-把截图交给 Tendedero<sup>1</sup>，它们就完全跳过桌面。
+把截图交给 Clipline<sup>1</sup>，它们就完全跳过桌面。
 没有浮动缩略图。不用等五秒。拍下的瞬间即挂上绳，只有你拖出去的才会留下。
 
 屏幕录制也会挂上绳，上面带一个播放按钮。按住即可剪辑。
@@ -100,7 +100,7 @@
 ## 隐私是设计前提
 
 没有账号。不联网。无统计。
-Tendedero 完全在你的 Mac 上运行，截图不会离开这台电脑。
+Clipline 完全在你的 Mac 上运行，截图不会离开这台电脑。
 
 <br>
 
@@ -124,6 +124,8 @@ Tendedero 完全在你的 Mac 上运行，截图不会离开这台电脑。
 
 这个版本没有经过 Apple 公证。第一次打开时，按住 Control 点按 App 再选「打开」，或者在「系统设置 → 隐私与安全性」里允许它。
 
+之前用过 Tendedero？先退出它。Clipline 会带过来它的设置、绳上的照片和复制的文字。对 macOS 来说这是个新 App，所以屏幕录制和辅助功能权限要再授权一次。
+
 <br>
 
 ## 从源码构建
@@ -132,7 +134,7 @@ Tendedero 完全在你的 Mac 上运行，截图不会离开这台电脑。
 git clone https://github.com/ffkiyo7/tendedero.git
 cd tendedero
 scripts/build-app.sh
-open build/Tendedero.app
+open build/Clipline.app
 ```
 
 需要 Swift 工具链，Xcode 可选。若使用 macOS 27 的命令行工具，脚本会回退到随其一同安装的 macOS 26 SDK，因为新版 SDK 需要只有 Xcode 才带的 SwiftUI 宏插件。
@@ -170,7 +172,7 @@ open build/Tendedero.app
 `scripts/make-icon.swift` 与 `scripts/make-readme-art.swift`。
 `scripts/make-dmg.sh` 负责构建发布用的磁盘映像。
 
-翻译文件位于 `Sources/Tendedero/Resources`，每种语言一个 `.lproj` 文件夹。
+翻译文件位于 `Sources/Clipline/Resources`，每种语言一个 `.lproj` 文件夹。
 `swift scripts/check-strings.swift` 会检查是否有遗漏。
 
 </details>
@@ -180,9 +182,9 @@ open build/Tendedero.app
 ---
 
 <sub>
-1. 首次启动时，Tendedero 会询问是否接管你的截图。如果同意，它会关闭浮动缩略图，并把新截图保存到它自己的文件夹，这两项设置也可以在 Cmd+Shift+5 的「选项」中找到。你原来的设置会被保存，并在退出 Tendedero 或从菜单栏关闭该选项时恢复。当有 App 处于全屏时，Tendedero 会自动隐藏。
+1. 首次启动时，Clipline 会询问是否接管你的截图。如果同意，它会关闭浮动缩略图，并把新截图保存到它自己的文件夹，这两项设置也可以在 Cmd+Shift+5 的「选项」中找到。你原来的设置会被保存，并在退出 Clipline 或从菜单栏关闭该选项时恢复。当有 App 处于全屏时，Clipline 会自动隐藏。
 <br><br>
-2. 在菜单栏勾选「截图时识别按钮和面板」，再到「系统设置 → 隐私与安全性 → 辅助功能」里允许 Tendedero。不开的话，截图时仍然能识别整个窗口。截图本身需要屏幕录制权限。
+2. 在菜单栏勾选「截图时识别按钮和面板」，再到「系统设置 → 隐私与安全性 → 辅助功能」里允许 Clipline。不开的话，截图时仍然能识别整个窗口。截图本身需要屏幕录制权限。
 </sub>
 
 <br>
@@ -191,7 +193,7 @@ open build/Tendedero.app
 <p align="center">
   <img src="../images/icon.png" width="64" height="64" alt="">
   <br>
-  <sub>代码采用 MIT 许可。Tendedero 这一名称与图标不在许可范围内，因此 fork 需要自备名称与图标。详见 <a href="../../LICENSE">LICENSE</a>。</sub>
+  <sub>代码采用 MIT 许可。Clipline 基于 Tendedero 的代码，但不使用 Tendedero 的名称与图标。详见 <a href="../../LICENSE">LICENSE</a>。</sub>
   <br>
-  <sub>Tendedero 由 <a href="https://alejandrobujan.com">Alejandro Buján</a> 设计与开发。这个 fork 由 <a href="https://github.com/ffkiyo7">ffkiyo7</a> 维护。</sub>
+  <sub>Clipline 由 <a href="https://github.com/ffkiyo7">ffkiyo7</a> 开发，源自 <a href="https://alejandrobujan.com">Alejandro Buján</a> 的 <a href="https://github.com/alejandrobujan/tendedero">Tendedero</a>。</sub>
 </p>

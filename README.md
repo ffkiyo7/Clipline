@@ -1,6 +1,6 @@
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/images/hero-dark.png">
-  <img src="docs/images/hero-light.png" alt="Tendedero. Screenshots, hung out to dry. Three screenshots in glass frames hang from a thin line under the macOS menu bar, each with a small source tag, and a clip of copied notes at the end.">
+  <img src="docs/images/hero-light.png" alt="Clipline. Screenshots, hung out to dry. Three screenshots in glass frames hang from a thin line under the macOS menu bar, each with a small source tag, and a clip of copied notes at the end.">
 </picture>
 
 <h3 align="center"><a href="../../releases/latest">Download the latest release&nbsp;&rsaquo;</a></h3>
@@ -8,7 +8,7 @@
 <p align="center">
   Free and open source. For macOS 14 and later.
   <br>
-  A fork of <a href="https://github.com/alejandrobujan/tendedero">Tendedero</a> by Alejandro Buján, with its own screenshot tool, markup, notes and more.
+  Grown from <a href="https://github.com/alejandrobujan/tendedero">Tendedero</a> by Alejandro Buján, with its own screenshot tool, markup, notes and more.
   <br>
   <a href="#build-from-source">Build from source&nbsp;&rsaquo;</a>
   <br><br>
@@ -47,7 +47,7 @@ Rest the pointer in the middle of the menu bar and it glides down. Move away and
 | Double click | Open it in Preview. |
 | Force click | Take a quick look. |
 | Right click | Pin it to the screen, open it in the system's Markup, save it to the Desktop, and more. |
-| Drag into an app | Send it. It leaves the line; a screenshot in Tendedero's folder goes to the Trash a few minutes later. |
+| Drag into an app | Send it. It leaves the line; a screenshot in Clipline's folder goes to the Trash a few minutes later. |
 | Drag into a folder | Keep it there. It leaves the line. |
 | Drag to the Trash, or click the cross | Let it go. |
 | Drag an image onto the line | Hang it. The photos make room as you carry it. |
@@ -77,7 +77,7 @@ thinner. Return copies it and hangs it on the line.
 
 ## Your Desktop. Finally clear.
 
-Hand Tendedero your screenshots<sup>1</sup> and they skip the Desktop
+Hand Clipline your screenshots<sup>1</sup> and they skip the Desktop
 entirely. No floating thumbnail. No five-second wait. Each capture hangs
 the instant you take it, and only what you drag out is kept.
 
@@ -112,7 +112,7 @@ Anything a password manager marks as private is left alone.
 ## Private by design.
 
 No account. No network. No analytics.
-Tendedero runs entirely on your Mac, and your screenshots never leave it.
+Clipline runs entirely on your Mac, and your screenshots never leave it.
 
 <br>
 
@@ -138,6 +138,10 @@ to Applications.
 The release is not notarized by Apple. The first time, Control-click the app
 and choose Open, or allow it under System Settings → Privacy & Security.
 
+Coming from Tendedero? Quit it first. Clipline brings over its settings,
+the photos on the line and the copied text. macOS asks once more for Screen
+Recording and Accessibility, since to macOS it is a new app.
+
 <br>
 
 ## Build from source
@@ -146,7 +150,7 @@ and choose Open, or allow it under System Settings → Privacy & Security.
 git clone https://github.com/ffkiyo7/tendedero.git
 cd tendedero
 scripts/build-app.sh
-open build/Tendedero.app
+open build/Clipline.app
 ```
 
 Requires the Swift toolchain. Xcode is optional. With the Command Line Tools for macOS 27, the script falls back to the macOS 26 SDK they install alongside, because the new SDK needs a SwiftUI macro plugin only Xcode includes.
@@ -187,7 +191,7 @@ Every image here, the icon included, is drawn in code by
 `scripts/make-icon.swift` and `scripts/make-readme-art.swift`.
 `scripts/make-dmg.sh` builds the disk image for releases.
 
-Translations live in `Sources/Tendedero/Resources`, one `.lproj` folder per
+Translations live in `Sources/Clipline/Resources`, one `.lproj` folder per
 language. `swift scripts/check-strings.swift` checks that none is missing.
 
 </details>
@@ -197,9 +201,9 @@ language. `swift scripts/check-strings.swift` checks that none is missing.
 ---
 
 <sub>
-1. On first launch, Tendedero offers to handle your screenshots. If you accept, it turns off the floating thumbnail and saves new screenshots to its own folder, two settings also found under Options in Cmd+Shift+5. Your previous settings are saved and restored when Tendedero quits or the option is turned off from the menu bar. Tendedero hides automatically while an app is in full screen.
+1. On first launch, Clipline offers to handle your screenshots. If you accept, it turns off the floating thumbnail and saves new screenshots to its own folder, two settings also found under Options in Cmd+Shift+5. Your previous settings are saved and restored when Clipline quits or the option is turned off from the menu bar. Clipline hides automatically while an app is in full screen.
 <br><br>
-2. Turn on Find Buttons and Panels in Screenshots in the menu bar, then allow Tendedero under System Settings → Privacy & Security → Accessibility. Without it, screenshots still find whole windows. Taking screenshots needs Screen Recording access.
+2. Turn on Find Buttons and Panels in Screenshots in the menu bar, then allow Clipline under System Settings → Privacy & Security → Accessibility. Without it, screenshots still find whole windows. Taking screenshots needs Screen Recording access.
 </sub>
 
 <br>
@@ -208,7 +212,7 @@ language. `swift scripts/check-strings.swift` checks that none is missing.
 <p align="center">
   <img src="docs/images/icon.png" width="64" height="64" alt="">
   <br>
-  <sub>The code is MIT licensed. The Tendedero name and icon are not, so forks need their own. See <a href="LICENSE">LICENSE</a>.</sub>
+  <sub>The code is MIT licensed. Clipline started from Tendedero’s code; the Tendedero name and icon are not part of it. See <a href="LICENSE">LICENSE</a>.</sub>
   <br>
-  <sub>Tendedero is designed and built by <a href="https://alejandrobujan.com">Alejandro Buján</a>. This fork is by <a href="https://github.com/ffkiyo7">ffkiyo7</a>.</sub>
+  <sub>Clipline is made by <a href="https://github.com/ffkiyo7">ffkiyo7</a>, from <a href="https://github.com/alejandrobujan/tendedero">Tendedero</a> by <a href="https://alejandrobujan.com">Alejandro Buján</a>.</sub>
 </p>

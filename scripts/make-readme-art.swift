@@ -445,7 +445,7 @@ func hero(_ t: Theme) {
     let rep = makeBitmap(W, H, scale: s)
     draw(rep, scale: s) { ctx in
         t.page.setFill(); NSRect(x: 0, y: 0, width: W, height: H).fill()
-        text("Tendedero", size: 84, weight: .semibold, color: t.ink, tracking: -2.4, centerX: W / 2, baselineY: H - 128)
+        text("Clipline", size: 84, weight: .semibold, color: t.ink, tracking: -2.4, centerX: W / 2, baselineY: H - 128)
         text(T("Screenshots, hung out to dry."), size: 30, weight: .regular, color: t.secondaryInk,
              tracking: -0.4, centerX: W / 2, baselineY: H - 182)
         let frames = [Frame(x: 240, w: 250, h: 172, tilt: 2.5, kind: 0),

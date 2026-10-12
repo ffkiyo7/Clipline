@@ -1,5 +1,5 @@
 name: Bug report
-description: Something in Tendedero doesn't work as it should.
+description: Something in Clipline doesn't work as it should.
 labels: ["bug"]
 body:
   - type: textarea
@@ -26,7 +26,7 @@ body:
   - type: input
     id: version
     attributes:
-      label: Tendedero version
+      label: Clipline version
       description: The release you installed, or the commit if you built it from source.
       placeholder: "1.0.0"
   - type: dropdown
