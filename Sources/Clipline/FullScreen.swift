@@ -3,11 +3,12 @@ import AppKit
 // The window server knows the type of the Space each display is showing.
 // These calls are private but stable for a decade, need no permission, and
 // are what window managers like yabai rely on. A full screen Space is type 4.
-@_silgen_name("CGSMainConnectionID")
-private func CGSMainConnectionID() -> Int32
-
-@_silgen_name("CGSCopyManagedDisplaySpaces")
-private func CGSCopyManagedDisplaySpaces(_ connection: Int32) -> CFArray
+//
+// They are looked up when first needed rather than linked: should a future
+// macOS drop or rename them, Clipline still launches and the line simply
+// does not keep away from full screen apps.
+private typealias MainConnectionID = @convention(c) () -> Int32
+private typealias CopyManagedDisplaySpaces = @convention(c) (Int32) -> Unmanaged<CFArray>?
 
 enum FullScreen {
     private static let fullScreenSpaceType = 4
@@ -26,23 +27,38 @@ enum FullScreen {
     }
 
     /// True when the given screen is currently showing a full screen app,
-    /// like a video or a presentation.
+    /// like a video or a presentation. False when macOS does not say.
     static func isActive(on screen: NSScreen) -> Bool {
-        guard let displays = CGSCopyManagedDisplaySpaces(CGSMainConnectionID()) as? [[String: Any]],
-              !displays.isEmpty else { return false }
+        guard let spaces = windowServer,
+              let displays = spaces.copy(spaces.connection())?.takeRetainedValue() as? [[String: Any]]
+        else { return false }
+        return isFullScreen(displays, display: uuidString(for: screen))
+    }
 
-        // With "Displays have separate Spaces" off there is a single entry
-        // that covers every screen.
+    /// Reads the window server's answer: one entry per display, or a single
+    /// one covering every screen when "Displays have separate Spaces" is off.
+    /// Anything unexpected counts as not full screen.
+    static func isFullScreen(_ displays: [[String: Any]], display uuid: String?) -> Bool {
         let entry: [String: Any]?
         if displays.count == 1 {
             entry = displays.first
         } else {
-            let uuid = uuidString(for: screen)
             entry = displays.first { ($0["Display Identifier"] as? String) == uuid }
         }
         let current = entry?["Current Space"] as? [String: Any]
         return (current?["type"] as? Int) == fullScreenSpaceType
     }
+
+    private static let windowServer: (connection: MainConnectionID, copy: CopyManagedDisplaySpaces)? = {
+        let handle = UnsafeMutableRawPointer(bitPattern: -2) // RTLD_DEFAULT
+        guard let connection = dlsym(handle, "CGSMainConnectionID"),
+              let copy = dlsym(handle, "CGSCopyManagedDisplaySpaces") else {
+            log.notice("The window server does not say which Spaces are full screen; the line will not keep away from them")
+            return nil
+        }
+        return (unsafeBitCast(connection, to: MainConnectionID.self),
+                unsafeBitCast(copy, to: CopyManagedDisplaySpaces.self))
+    }()
 
     private static func uuidString(for screen: NSScreen) -> String? {
         guard let number = screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? CGDirectDisplayID,
