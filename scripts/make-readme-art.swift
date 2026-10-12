@@ -304,10 +304,22 @@ func drawContent(_ kind: Int, _ r: NSRect) {
     }
 }
 
+/// Draws an SF Symbol centered on a point. Asked for at four times its size
+/// and drawn back down, so it stays a crisp shape instead of a small bitmap
+/// stretched over the 2x canvas, and turned with the tag without going soft.
+func drawSymbol(_ name: String, size: CGFloat, weight: NSFont.Weight, color: NSColor, at center: NSPoint) {
+    let k: CGFloat = 4
+    let config = NSImage.SymbolConfiguration(pointSize: size * k, weight: weight).applying(.init(paletteColors: [color]))
+    guard let symbol = NSImage(systemSymbolName: name, accessibilityDescription: nil)?.withSymbolConfiguration(config) else { return }
+    let sz = NSSize(width: symbol.size.width / k, height: symbol.size.height / k)
+    symbol.draw(in: NSRect(x: center.x - sz.width / 2, y: center.y - sz.height / 2, width: sz.width, height: sz.height),
+                from: .zero, operation: .sourceOver, fraction: 1, respectFlipped: true, hints: [.interpolation: NSImageInterpolation.high.rawValue])
+}
+
 /// The app each kind of picture came from: its icon colors and glyph.
 let apps: [(colors: [NSColor], glyph: String)] = [
-    ([color(90, 170, 255), color(40, 110, 240)], "globe"),
-    ([color(255, 190, 80), color(250, 110, 120)], "photo"),
+    ([color(90, 170, 255), color(40, 110, 240)], "safari"),
+    ([color(255, 190, 80), color(250, 110, 120)], "photo.fill"),
     ([color(80, 90, 120), color(30, 34, 50)], "chart.bar.fill"),
 ]
 
@@ -315,12 +327,7 @@ func drawAppIcon(_ kind: Int, in r: NSRect) {
     let app = apps[kind % apps.count]
     let path = NSBezierPath(roundedRect: r, xRadius: r.width * 0.23, yRadius: r.width * 0.23)
     NSGradient(colors: app.colors)!.draw(in: path, angle: -90)
-    let config = NSImage.SymbolConfiguration(pointSize: r.width * 0.55, weight: .semibold)
-        .applying(.init(paletteColors: [.white]))
-    if let glyph = NSImage(systemSymbolName: app.glyph, accessibilityDescription: nil)?.withSymbolConfiguration(config) {
-        let sz = glyph.size
-        glyph.draw(in: NSRect(x: r.midX - sz.width / 2, y: r.midY - sz.height / 2, width: sz.width, height: sz.height))
-    }
+    drawSymbol(app.glyph, size: r.width * 0.5, weight: .bold, color: .white, at: NSPoint(x: r.midX, y: r.midY))
 }
 
 /// The source tag tied under the card on a thread, a little right of the
@@ -335,31 +342,27 @@ func drawTag(_ ctx: CGContext, _ t: Theme, w: CGFloat, h: CGFloat, kind: Int, op
     thread.move(to: .zero); thread.line(to: NSPoint(x: 0, y: -14))
     thread.lineWidth = 1.1; color(140, 140, 145).setStroke(); thread.stroke()
 
-    let icon: CGFloat = 21, pad: CGFloat = 4.5
+    let icon: CGFloat = 27, pad: CGFloat = 5
     let label = copied > 0.5 ? T("Copied") : T("Photos")
     let shows = open || copied > 0
     let font = NSFont.systemFont(ofSize: 15, weight: .semibold)
     let textW = shows ? NSAttributedString(string: label, attributes: [.font: font]).size().width.rounded(.up) : 0
     let pillW = pad + icon + (shows ? 7 + textW + 10 : pad), pillH = icon + pad * 2
     let pill = NSRect(x: -pillW / 2, y: -14 - pillH, width: pillW, height: pillH)
-    let path = NSBezierPath(roundedRect: pill, xRadius: 9, yRadius: 9)
+    let path = NSBezierPath(roundedRect: pill, xRadius: 11, yRadius: 11)
     ctx.saveGState(); shadow(t, 0.7, blur: 5, y: -2)
     t.glassFill.withAlphaComponent(min(1, t.glassFill.alphaComponent * 1.5)).setFill(); path.fill()
     ctx.restoreGState()
     ctx.saveGState()
-    let rim = NSBezierPath(roundedRect: pill, xRadius: 9, yRadius: 9)
-    rim.append(NSBezierPath(roundedRect: pill.insetBy(dx: 1, dy: 1), xRadius: 8, yRadius: 8))
+    let rim = NSBezierPath(roundedRect: pill, xRadius: 11, yRadius: 11)
+    rim.append(NSBezierPath(roundedRect: pill.insetBy(dx: 1, dy: 1), xRadius: 10, yRadius: 10))
     rim.windingRule = .evenOdd; rim.addClip()
     NSGradient(colors: [t.edgeTop, t.edgeBottom])!.draw(in: pill, angle: -90)
     ctx.restoreGState()
 
     let iconRect = NSRect(x: pill.minX + pad, y: pill.minY + pad, width: icon, height: icon)
     if copied > 0.5 {
-        let config = NSImage.SymbolConfiguration(pointSize: 12, weight: .bold).applying(.init(paletteColors: [t.ink]))
-        if let check = NSImage(systemSymbolName: "checkmark", accessibilityDescription: nil)?.withSymbolConfiguration(config) {
-            let sz = check.size
-            check.draw(in: NSRect(x: iconRect.midX - sz.width / 2, y: iconRect.midY - sz.height / 2, width: sz.width, height: sz.height))
-        }
+        drawSymbol("checkmark", size: 12, weight: .bold, color: t.ink, at: NSPoint(x: iconRect.midX, y: iconRect.midY))
     } else {
         drawAppIcon(kind, in: iconRect)
     }
@@ -544,11 +547,7 @@ func drawBadge(_ ctx: CGContext, _ t: Theme, symbol name: String, at origin: NSP
     rim.windingRule = .evenOdd; rim.addClip()
     NSGradient(colors: [t.edgeTop, t.edgeBottom])!.draw(in: r, angle: -90)
     ctx.restoreGState()
-    let config = NSImage.SymbolConfiguration(pointSize: 32, weight: .medium).applying(.init(paletteColors: [t.ink]))
-    if let symbol = NSImage(systemSymbolName: name, accessibilityDescription: nil)?.withSymbolConfiguration(config) {
-        let sz = symbol.size
-        symbol.draw(in: NSRect(x: r.midX - sz.width / 2, y: r.midY - sz.height / 2, width: sz.width, height: sz.height))
-    }
+    drawSymbol(name, size: 32, weight: .medium, color: t.ink, at: NSPoint(x: r.midX, y: r.midY))
 }
 
 func bento(_ t: Theme) {
