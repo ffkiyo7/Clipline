@@ -65,6 +65,11 @@ pointer lights up: click to take it. Drag instead, and the edges stick to
 windows as you go, with a magnifier for the last pixel and its color a key
 away.
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/capture-dark.gif">
+  <img src="docs/images/capture-light.gif" alt="Control-Option-A freezes the screen. Windows light up under the pointer, then a button on its own, a drag selects part of a page, and Done hangs it on the line.">
+</picture>
+
 Allow Accessibility<sup>2</sup> and it goes further: the button, sidebar or
 text field under the pointer lights up on its own. Scroll to step out to
 what holds it.
@@ -72,6 +77,11 @@ what holds it.
 Mark it up right where it is, on a glass toolbar under the selection. Color
 each word of a text as you like, and scroll to make lines thicker or
 thinner. Return copies it and hangs it on the line.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/markup-dark.gif">
+  <img src="docs/images/markup-light.gif" alt="On a selected chart, the box tool is scrolled to a thicker line and drawn around the tallest bar, an arrow points to it, and a note says Peak in red and +32% in green.">
+</picture>
 
 <br>
 
@@ -104,6 +114,11 @@ hangs on the line like any other. Turn on Hang copied images in the menu bar.
 Text you copy goes into a clip of glass notes at the end of the line,
 without bringing it down. Click the clip to find any of them again, and
 keep the ones you need at the top.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/notes-dark.gif">
+  <img src="docs/images/notes-light.gif" alt="A click on the clip at the end of the line opens the copied text. Typing brew narrows it to two commands, the down arrow picks the second, and Return copies it.">
+</picture>
 
 Anything a password manager marks as private is left alone.
 

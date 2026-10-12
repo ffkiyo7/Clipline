@@ -5,6 +5,12 @@
 //                slides down, a click copies, the pointer leaves and the
 //                line tucks away
 //   bento-*.png  six gestures as tiles, each with a glass badge
+//   capture-*.gif  the screenshot tool: windows, then a button, light up
+//                under the pointer, a drag selects, Done hangs it
+//   markup-*.gif   marking a selection: a thicker box, an arrow, and text
+//                in two colors
+//   notes-*.gif    the clip of copied text: open it, search, pick with the
+//                keyboard
 // Usage: swift scripts/make-readme-art.swift [language] [folder]
 // English goes to docs/images, any other language to docs/images/<language>.
 import AppKit
@@ -35,6 +41,23 @@ let translations: [String: [String: String]] = [
         "Windows and buttons light up.": "窗口和按钮，自动识别。",
         "Let it go.": "松手放下。",
         "The cross or the Trash. That\u{2019}s it.": "点叉或拖进废纸篓，就这么简单。",
+        "Download": "下载",
+        "button": "按钮",
+        "Charts": "图表",
+        "Peak": "峰值",
+        "Search copied text": "搜索复制过的文字",
+        "%d items": "%d 条",
+        "Clear": "清空",
+        "Terminal": "终端",
+        "Messages": "信息",
+        "Mail": "邮件",
+        "1 min. ago": "1分钟前",
+        "4 min. ago": "4分钟前",
+        "12 min. ago": "12分钟前",
+        "1 hr. ago": "1小时前",
+        "2 hr. ago": "2小时前",
+        "Meeting moved to 3:30, same room.": "会议改到 3:30，还是那间会议室。",
+        "Thanks! I\u{2019}ll send the deck tonight.": "谢谢！我今晚把演示文稿发你。",
     ],
 ]
 
@@ -157,7 +180,8 @@ struct SceneState {
     var noteClip: CGFloat? = nil       // where the note clip hangs, if it does
 }
 
-func drawScene(_ ctx: CGContext, _ t: Theme, rect: NSRect, frames: [Frame], state: SceneState, cornerRadius: CGFloat) {
+func drawScene(_ ctx: CGContext, _ t: Theme, rect: NSRect, frames: [Frame], state: SceneState, cornerRadius: CGFloat,
+               backdrop: ((CGContext) -> Void)? = nil, overlay: ((CGContext) -> Void)? = nil) {
     ctx.saveGState()
     let W = rect.width, H = rect.height
     ctx.translateBy(x: rect.minX, y: rect.minY)
@@ -168,6 +192,7 @@ func drawScene(_ ctx: CGContext, _ t: Theme, rect: NSRect, frames: [Frame], stat
     NSGradient(colors: [t.glow, t.glow.withAlphaComponent(0)])!
         .draw(fromCenter: NSPoint(x: W * 0.5, y: H * 0.45), radius: 0,
               toCenter: NSPoint(x: W * 0.5, y: H * 0.45), radius: W * 0.6, options: [])
+    backdrop?(ctx)
 
     let barH: CGFloat = 26
     // The line lives under the menu bar and slides out from beneath it.
@@ -222,6 +247,7 @@ func drawScene(_ ctx: CGContext, _ t: Theme, rect: NSRect, frames: [Frame], stat
         NSBezierPath(roundedRect: NSRect(x: W - 34 - CGFloat(i) * 30, y: H - barH / 2 - 5, width: 16, height: 10), xRadius: 3, yRadius: 3).fill()
     }
 
+    overlay?(ctx)
     if let p = state.cursor { drawCursor(ctx, t, at: NSPoint(x: p.x, y: min(p.y, H - 1))) }
     ctx.restoreGState()
 }
@@ -321,6 +347,9 @@ let apps: [(colors: [NSColor], glyph: String)] = [
     ([color(90, 170, 255), color(40, 110, 240)], "safari"),
     ([color(255, 190, 80), color(250, 110, 120)], "photo.fill"),
     ([color(80, 90, 120), color(30, 34, 50)], "chart.bar.fill"),
+    ([color(70, 72, 80), color(28, 28, 32)], "apple.terminal.fill"),
+    ([color(110, 225, 120), color(40, 190, 70)], "message.fill"),
+    ([color(100, 190, 255), color(30, 120, 250)], "envelope.fill"),
 ]
 
 func drawAppIcon(_ kind: Int, in r: NSRect) {
@@ -526,6 +555,634 @@ func demo(_ t: Theme) {
     CGImageDestinationFinalize(dest)
 }
 
+// MARK: Feature loops
+
+let accent = color(10, 132, 255)
+let captureBlue = NSColor(srgbRed: 0.22, green: 0.54, blue: 0.87, alpha: 1)
+let markColors: [NSColor] = [color(245, 59, 54), color(255, 158, 10), color(255, 214, 10), color(51, 199, 89),
+                             color(10, 133, 255), color(176, 82, 222), .black, .white]
+
+/// Renders `duration` seconds at 25 frames a second into a looping GIF.
+func loop(_ name: String, _ t: Theme, W: CGFloat, H: CGFloat, duration: CGFloat, _ body: (CGContext, CGFloat) -> Void) {
+    let fps: CGFloat = 25
+    let count = Int(fps * duration)
+    let url = URL(fileURLWithPath: "\(outDir)/\(name)-\(t.name).gif")
+    let dest = CGImageDestinationCreateWithURL(url as CFURL, UTType.gif.identifier as CFString, count, nil)!
+    CGImageDestinationSetProperties(dest, [kCGImagePropertyGIFDictionary: [kCGImagePropertyGIFLoopCount: 0]] as CFDictionary)
+    let props = [kCGImagePropertyGIFDictionary: [kCGImagePropertyGIFDelayTime: 1 / fps,
+                                                 kCGImagePropertyGIFUnclampedDelayTime: 1 / fps]] as CFDictionary
+    for i in 0..<count {
+        let rep = makeBitmap(W, H, scale: 1)
+        draw(rep, scale: 1) { ctx in
+            t.page.setFill(); NSRect(x: 0, y: 0, width: W, height: H).fill()
+            body(ctx, CGFloat(i) / fps)
+        }
+        CGImageDestinationAddImage(dest, rep.cgImage!, props)
+    }
+    CGImageDestinationFinalize(dest)
+}
+
+/// 0 before `start`, 1 after `start + length`, eased in between.
+func ramp(_ time: CGFloat, _ start: CGFloat, _ length: CGFloat) -> CGFloat { easeInOut((time - start) / length) }
+
+/// A path for the pointer through timed stops: it rests at each one, then
+/// glides to the next.
+func path(_ time: CGFloat, _ stops: [(CGFloat, NSPoint)], glide: CGFloat = 0.5) -> NSPoint {
+    var p = stops[0].1
+    for (at, q) in stops.dropFirst() where time > at - glide {
+        p = lerp(p, q, ramp(time, at - glide, glide))
+    }
+    return p
+}
+
+/// A soft ring where the pointer clicked.
+func drawClick(_ ctx: CGContext, at p: NSPoint, _ time: CGFloat, _ at: CGFloat) {
+    let x = (time - at) / 0.3
+    guard x >= 0, x < 1 else { return }
+    let r = 6 + 14 * x
+    accent.withAlphaComponent(0.45 * (1 - x)).setStroke()
+    let ring = NSBezierPath(ovalIn: NSRect(x: p.x - r, y: p.y - r, width: r * 2, height: r * 2))
+    ring.lineWidth = 2.5; ring.stroke()
+}
+
+func clicked(_ time: CGFloat, _ times: [CGFloat], at p: NSPoint, _ ctx: CGContext) {
+    for at in times { drawClick(ctx, at: p, time, at) }
+}
+
+/// Keys being pressed, as glass keycaps near the bottom.
+func drawKeys(_ ctx: CGContext, _ t: Theme, _ keys: [String], center: NSPoint, alpha: CGFloat) {
+    guard alpha > 0 else { return }
+    let w: CGFloat = 46, h: CGFloat = 42, gap: CGFloat = 8
+    let total = CGFloat(keys.count) * w + CGFloat(keys.count - 1) * gap
+    ctx.saveGState(); ctx.setAlpha(alpha); ctx.beginTransparencyLayer(auxiliaryInfo: nil)
+    for (i, key) in keys.enumerated() {
+        let r = NSRect(x: center.x - total / 2 + CGFloat(i) * (w + gap), y: center.y - h / 2, width: w, height: h)
+        let path = NSBezierPath(roundedRect: r, xRadius: 10, yRadius: 10)
+        ctx.saveGState(); shadow(t, 1, blur: 12, y: -4)
+        (t.name == "light" ? color(255, 255, 255, 0.95) : color(58, 58, 68, 0.95)).setFill(); path.fill()
+        ctx.restoreGState()
+        ctx.saveGState()
+        let rim = NSBezierPath(roundedRect: r, xRadius: 10, yRadius: 10)
+        rim.append(NSBezierPath(roundedRect: r.insetBy(dx: 1, dy: 1), xRadius: 9, yRadius: 9))
+        rim.windingRule = .evenOdd; rim.addClip()
+        NSGradient(colors: [t.edgeTop, t.edgeBottom])!.draw(in: r, angle: -90)
+        ctx.restoreGState()
+        text(key, size: 20, weight: .medium, color: t.ink, centerX: r.midX, baselineY: r.midY - 7)
+    }
+    ctx.endTransparencyLayer(); ctx.restoreGState()
+}
+
+// MARK: A desktop to take screenshots of
+
+func windowFill(_ t: Theme) -> NSColor { t.name == "light" ? color(255, 255, 255) : color(38, 38, 44) }
+func windowInk(_ t: Theme) -> NSColor { t.name == "light" ? color(206, 208, 216) : color(84, 86, 98) }
+
+/// A window with a title bar; `content` draws below it, clipped to the window.
+func drawWindow(_ ctx: CGContext, _ t: Theme, _ r: NSRect, _ content: (NSRect) -> Void) {
+    let path = NSBezierPath(roundedRect: r, xRadius: 12, yRadius: 12)
+    ctx.saveGState(); shadow(t, 1, blur: 24, y: -10); windowFill(t).setFill(); path.fill(); ctx.restoreGState()
+    ctx.saveGState(); path.addClip()
+    content(NSRect(x: r.minX, y: r.minY, width: r.width, height: r.height - 28))
+    (t.name == "light" ? color(242, 242, 245) : color(50, 50, 58)).setFill()
+    NSRect(x: r.minX, y: r.maxY - 28, width: r.width, height: 28).fill()
+    for (i, c) in [color(255, 95, 87), color(254, 188, 46), color(40, 200, 64)].enumerated() {
+        c.setFill(); NSBezierPath(ovalIn: NSRect(x: r.minX + 12 + CGFloat(i) * 17, y: r.maxY - 19.5, width: 11, height: 11)).fill()
+    }
+    ctx.restoreGState()
+}
+
+enum Desk {
+    static let web = NSRect(x: 60, y: 40, width: 520, height: 320)
+    static let chart = NSRect(x: 620, y: 120, width: 290, height: 240)
+    static let sidebar = NSRect(x: web.minX, y: web.minY, width: 130, height: web.height - 28)
+    static let button = NSRect(x: web.minX + 158, y: web.minY + 118, width: 124, height: 34)
+    static let chartContent = NSRect(x: chart.minX, y: chart.minY, width: chart.width, height: chart.height - 28)
+}
+
+func drawDesktop(_ ctx: CGContext, _ t: Theme) {
+    drawWindow(ctx, t, Desk.chart) { r in drawContent(2, r) }
+    drawWindow(ctx, t, Desk.web) { r in
+        let side = Desk.sidebar
+        (t.name == "light" ? color(244, 244, 247) : color(44, 44, 52)).setFill(); side.fill()
+        for (k, w) in [CGFloat(60), 48, 70, 40, 56, 50].enumerated() {
+            let row = NSRect(x: side.minX + 10, y: side.maxY - 36 - CGFloat(k) * 28, width: side.width - 20, height: 22)
+            if k == 1 { accent.withAlphaComponent(0.18).setFill(); NSBezierPath(roundedRect: row, xRadius: 6, yRadius: 6).fill() }
+            windowInk(t).setFill()
+            NSBezierPath(roundedRect: NSRect(x: row.minX + 8, y: row.midY - 3, width: w, height: 6), xRadius: 3, yRadius: 3).fill()
+        }
+        let x0 = side.maxX + 28, x1 = r.maxX - 28
+        t.ink.withAlphaComponent(0.75).setFill()
+        NSBezierPath(roundedRect: NSRect(x: x0, y: r.maxY - 44, width: 210, height: 14), xRadius: 7, yRadius: 7).fill()
+        windowInk(t).setFill()
+        for (k, f) in [CGFloat(0.92), 0.8, 0.96, 0.58].enumerated() {
+            NSBezierPath(roundedRect: NSRect(x: x0, y: r.maxY - 74 - CGFloat(k) * 17, width: (x1 - x0) * f, height: 7),
+                         xRadius: 3.5, yRadius: 3.5).fill()
+        }
+        let b = Desk.button
+        accent.setFill(); NSBezierPath(roundedRect: b, xRadius: 8, yRadius: 8).fill()
+        text(T("Download"), size: 14, weight: .semibold, color: .white, centerX: b.midX, baselineY: b.midY - 5)
+        windowInk(t).setFill()
+        for (k, f) in [CGFloat(0.86), 0.7, 0.9].enumerated() {
+            NSBezierPath(roundedRect: NSRect(x: x0, y: b.minY - 30 - CGFloat(k) * 17, width: (x1 - x0) * f, height: 7),
+                         xRadius: 3.5, yRadius: 3.5).fill()
+        }
+    }
+}
+
+// MARK: The screenshot overlay
+
+/// The frozen screen: dimmed, the chosen area left bright with a blue edge,
+/// and a dark label over it.
+func drawFreeze(_ ctx: CGContext, canvas: NSRect, hole: NSRect?, label: String?, handles: Bool) {
+    let dim = CGMutablePath()
+    dim.addRect(canvas)
+    if let hole { dim.addRect(hole) }
+    ctx.addPath(dim)
+    ctx.setFillColor(NSColor.black.withAlphaComponent(0.4).cgColor)
+    ctx.fillPath(using: .evenOdd)
+    guard let hole else { return }
+    let edge = NSBezierPath(rect: hole.insetBy(dx: -0.75, dy: -0.75))
+    edge.lineWidth = 1.5; captureBlue.setStroke(); edge.stroke()
+    if handles {
+        for x in [hole.minX, hole.midX, hole.maxX] {
+            for y in [hole.minY, hole.midY, hole.maxY] where !(x == hole.midX && y == hole.midY) {
+                let dot = NSBezierPath(roundedRect: NSRect(x: x - 3.5, y: y - 3.5, width: 7, height: 7), xRadius: 1.5, yRadius: 1.5)
+                NSColor.white.setFill(); dot.fill()
+                dot.lineWidth = 1.5; captureBlue.setStroke(); dot.stroke()
+            }
+        }
+    }
+    if let label {
+        let s = NSAttributedString(string: label, attributes: [.font: NSFont.systemFont(ofSize: 11, weight: .medium),
+                                                               .foregroundColor: NSColor.white])
+        let size = s.size()
+        var pill = NSRect(x: hole.minX, y: hole.maxY + 5, width: size.width + 14, height: 20)
+        if pill.maxY > canvas.maxY - 2 { pill.origin.y = hole.maxY - 25; pill.origin.x += 5 }
+        NSColor.black.withAlphaComponent(0.72).setFill()
+        NSBezierPath(roundedRect: pill, xRadius: 5, yRadius: 5).fill()
+        s.draw(at: NSPoint(x: pill.minX + 7, y: pill.midY - size.height / 2))
+    }
+}
+
+let toolSymbols = ["rectangle", "circle", "arrow.up.right", "scribble", "textformat", "1.circle", "checkerboard.rectangle"]
+
+struct Toolbar {
+    var tool: Int? = nil          // lit once marking started
+    var color = 0
+    var widthIndex = 1
+    var custom: CGFloat? = nil    // a width scrolled to
+    var marking: Bool { tool != nil }
+}
+
+/// Where everything on the glass toolbar goes, hung by its top right corner.
+func toolbarLayout(_ bar: Toolbar, topRight: NSPoint) -> (frame: NSRect, items: [(String, NSRect)]) {
+    var row1: [(String, CGFloat)] = toolSymbols.indices.map { ("tool\($0)", 28) }
+    if bar.marking { row1 += [("div", 7), ("undo", 28), ("redo", 28)] }
+    row1 += [("div", 7), ("pin", 28), ("save", 28), ("cancel", 28), ("done", 28)]
+    let w1 = row1.reduce(0) { $0 + $1.1 } + CGFloat(row1.count - 1) * 2
+
+    var row2: [(String, CGFloat)] = []
+    if bar.marking {
+        row2 = markColors.indices.map { ("color\($0)", 20) }
+        row2 += [("div2", 21)] + (0..<3).map { ("width\($0)", 28) }
+        if let c = bar.custom { row2.append(("custom", textWidth(String(format: "%g", c), size: 11, weight: .semibold) + 27)) }
+    }
+    /// Colors sit 5 apart, the widths 2; the divider brings its own room.
+    func gap(_ a: String, _ b: String) -> CGFloat {
+        if a.hasPrefix("color") && b.hasPrefix("color") { return 5 }
+        return a == "div2" || b == "div2" ? 0 : 2
+    }
+    func w2() -> CGFloat {
+        var w: CGFloat = 0
+        for (i, item) in row2.enumerated() { w += item.1 + (i > 0 ? gap(row2[i - 1].0, item.0) : 0) }
+        return w
+    }
+    let width = max(w1, bar.marking ? w2() + 8 : 0) + 10
+    let height: CGFloat = bar.marking ? 66 : 36
+    let frame = NSRect(x: topRight.x - width, y: topRight.y - height, width: width, height: height)
+
+    var items: [(String, NSRect)] = []
+    var x = frame.maxX - 5 - w1
+    for (id, w) in row1 {
+        items.append((id, NSRect(x: x, y: frame.maxY - 31, width: w, height: 26)))
+        x += w + 2
+    }
+    x = frame.maxX - 9 - w2()
+    for (i, (id, w)) in row2.enumerated() {
+        if i > 0 { x += gap(row2[i - 1].0, id) }
+        items.append((id, NSRect(x: x, y: frame.minY + 5, width: w, height: 26)))
+        x += w
+    }
+    return (frame, items)
+}
+
+func toolbarItem(_ bar: Toolbar, topRight: NSPoint, _ id: String) -> NSPoint {
+    let r = toolbarLayout(bar, topRight: topRight).items.first { $0.0 == id }!.1
+    return NSPoint(x: r.midX + 3, y: r.midY + 4)
+}
+
+func drawToolbar(_ ctx: CGContext, _ t: Theme, _ bar: Toolbar, topRight: NSPoint) {
+    let (frame, items) = toolbarLayout(bar, topRight: topRight)
+    let path = NSBezierPath(roundedRect: frame, xRadius: 11, yRadius: 11)
+    ctx.saveGState(); shadow(t, 1.2, blur: 18, y: -6)
+    (t.name == "light" ? color(250, 250, 252, 0.94) : color(46, 46, 54, 0.94)).setFill(); path.fill()
+    ctx.restoreGState()
+    ctx.saveGState()
+    let rim = NSBezierPath(roundedRect: frame, xRadius: 11, yRadius: 11)
+    rim.append(NSBezierPath(roundedRect: frame.insetBy(dx: 1, dy: 1), xRadius: 10, yRadius: 10))
+    rim.windingRule = .evenOdd; rim.addClip()
+    NSGradient(colors: [t.edgeTop, t.edgeBottom])!.draw(in: frame, angle: -90)
+    ctx.restoreGState()
+
+    let ink = t.ink.withAlphaComponent(0.85)
+    func button(_ r: NSRect, selected: Bool, _ symbol: String, dim: Bool = false) {
+        if selected { accent.setFill(); NSBezierPath(roundedRect: r, xRadius: 6, yRadius: 6).fill() }
+        drawSymbol(symbol, size: 13, weight: .medium, color: selected ? .white : (dim ? t.ink.withAlphaComponent(0.3) : ink),
+                   at: NSPoint(x: r.midX, y: r.midY))
+    }
+    for (id, r) in items {
+        switch id {
+        case let id where id.hasPrefix("tool"):
+            let i = Int(id.dropFirst(4))!
+            button(r, selected: bar.tool == i, toolSymbols[i])
+        case "div", "div2":
+            t.ink.withAlphaComponent(0.15).setFill()
+            NSRect(x: r.midX - 0.5, y: r.midY - 10, width: 1, height: 20).fill()
+        case "undo": button(r, selected: false, "arrow.uturn.backward", dim: true)
+        case "redo": button(r, selected: false, "arrow.uturn.forward", dim: true)
+        case "pin": button(r, selected: false, "pin")
+        case "save": button(r, selected: false, "square.and.arrow.down")
+        case "cancel": button(r, selected: false, "xmark")
+        case "done": button(r, selected: true, "checkmark")
+        case let id where id.hasPrefix("color"):
+            let i = Int(id.dropFirst(5))!
+            let c = NSRect(x: r.midX - 7.5, y: r.midY - 7.5, width: 15, height: 15)
+            markColors[i].setFill(); NSBezierPath(ovalIn: c).fill()
+            t.ink.withAlphaComponent(0.25).setStroke()
+            let edge = NSBezierPath(ovalIn: c); edge.lineWidth = 0.5; edge.stroke()
+            if bar.color == i {
+                let ring = NSBezierPath(ovalIn: c.insetBy(dx: -2.5, dy: -2.5)); ring.lineWidth = 2
+                accent.setStroke(); ring.stroke()
+            }
+        case let id where id.hasPrefix("width"):
+            let i = Int(id.dropFirst(5))!
+            let selected = bar.custom == nil && bar.widthIndex == i
+            if selected { accent.setFill(); NSBezierPath(roundedRect: r, xRadius: 6, yRadius: 6).fill() }
+            let d = 4 + CGFloat(i) * 3.5
+            (selected ? NSColor.white : ink).setFill()
+            NSBezierPath(ovalIn: NSRect(x: r.midX - d / 2, y: r.midY - d / 2, width: d, height: d)).fill()
+        case "custom":
+            accent.setFill(); NSBezierPath(roundedRect: r, xRadius: 6, yRadius: 6).fill()
+            let label = String(format: "%g", bar.custom ?? 0)
+            leftText(label, size: 11, weight: .semibold, color: .white, x: r.minX + 7, baselineY: r.midY - 4)
+            drawSymbol("arrow.uturn.backward", size: 9, weight: .semibold, color: .white,
+                       at: NSPoint(x: r.maxX - 12, y: r.midY))
+        default: break
+        }
+    }
+}
+
+// MARK: Marks
+
+func drawRectMark(_ r: NSRect, color: NSColor, width: CGFloat) {
+    let path = NSBezierPath(roundedRect: r, xRadius: 2, yRadius: 2)
+    path.lineWidth = width; path.lineJoinStyle = .round
+    color.setStroke(); path.stroke()
+}
+
+func drawArrowMark(from a: NSPoint, to b: NSPoint, color: NSColor, width: CGFloat) {
+    let len = hypot(b.x - a.x, b.y - a.y)
+    guard len > 1 else { return }
+    let ux = (b.x - a.x) / len, uy = (b.y - a.y) / len
+    let head = min(len, max(14, width * 3.6)), half = head * 0.55
+    let base = NSPoint(x: b.x - ux * head, y: b.y - uy * head)
+    let shaft = NSBezierPath()
+    shaft.move(to: a); shaft.line(to: NSPoint(x: base.x + ux * 2, y: base.y + uy * 2))
+    shaft.lineWidth = width; shaft.lineCapStyle = .round
+    color.setStroke(); shaft.stroke()
+    let tip = NSBezierPath()
+    tip.move(to: b)
+    tip.line(to: NSPoint(x: base.x - uy * half, y: base.y + ux * half))
+    tip.line(to: NSPoint(x: base.x + uy * half, y: base.y - ux * half))
+    tip.close()
+    tip.lineJoinStyle = .round; tip.lineWidth = 1.5
+    color.setFill(); color.setStroke(); tip.fill(); tip.stroke()
+}
+
+/// Text in colored runs, with a caret after it while typing.
+func drawTextMark(_ runs: [(String, NSColor)], at p: NSPoint, caret: Bool) {
+    let font = NSFont.systemFont(ofSize: 20, weight: .semibold)
+    let s = NSMutableAttributedString()
+    for (text, c) in runs { s.append(NSAttributedString(string: text, attributes: [.font: font, .foregroundColor: c])) }
+    s.draw(at: NSPoint(x: p.x, y: p.y + font.descender))
+    if caret {
+        NSColor.white.withAlphaComponent(0.9).setFill()
+        NSRect(x: p.x + s.size().width + 1.5, y: p.y + font.descender + 2, width: 1.5, height: font.ascender - font.descender - 2).fill()
+    }
+}
+
+// MARK: Screenshot loop
+
+func captureLoop(_ t: Theme) {
+    let W: CGFloat = 960, H: CGFloat = 440
+    let canvas = NSRect(x: 0, y: 0, width: W, height: H)
+    let selection = NSRect(x: Desk.sidebar.maxX + 14, y: Desk.web.minY + 102,
+                           width: Desk.web.maxX - 14 - Desk.sidebar.maxX - 14, height: Desk.web.maxY - 38 - Desk.web.minY - 102)
+    let bar = Toolbar()
+    let barTop = NSPoint(x: selection.maxX, y: selection.minY - 8)
+    let done = toolbarItem(bar, topRight: barTop, "done")
+    let start = NSPoint(x: selection.minX, y: selection.maxY), end = NSPoint(x: selection.maxX, y: selection.minY)
+    let frames = [Frame(x: 240, w: 190, h: 132, tilt: 2.5, kind: 1),
+                  Frame(x: 460, w: 180, h: 128, tilt: -1.5, kind: 2),
+                  Frame(x: 690, w: 220, h: 150, tilt: 2, kind: 0)]
+    let size = { (r: NSRect) in "\(Int(r.width * 2)) × \(Int(r.height * 2))" }
+
+    loop("capture", t, W: W, H: H, duration: 9) { ctx, time in
+        let cursor = path(time, [(0, NSPoint(x: 470, y: 250)),
+                                 (1.6, NSPoint(x: 780, y: 230)),
+                                 (2.5, NSPoint(x: 470, y: 290)),
+                                 (3.3, NSPoint(x: Desk.button.midX + 10, y: Desk.button.midY)),
+                                 (4.1, start)], glide: 0.6)
+        let dragging = ramp(time, 4.3, 0.9)
+        let dragged = NSPoint(x: lerp(start.x, end.x, dragging), y: lerp(start.y, end.y, dragging))
+        let pointer = time < 4.3 ? cursor : time < 5.4 ? dragged : path(time, [(5.4, end), (6.3, done)], glide: 0.6)
+
+        let frozen = time >= 1.0 && time < 6.5
+        var hole: NSRect? = nil, label: String? = nil
+        if frozen {
+            if time >= 4.3 {
+                hole = NSRect(x: start.x, y: dragged.y, width: dragged.x - start.x, height: start.y - dragged.y)
+                label = size(hole!)
+            } else if time >= 3.1 {
+                hole = Desk.button; label = "\(T("button"))   \(size(Desk.button))"
+            } else if time >= 2.2 {
+                hole = Desk.web; label = "Safari — Clipline   \(size(Desk.web))"
+            } else if time >= 1.3 {
+                hole = Desk.chart; label = "\(T("Charts")) — Q3   \(size(Desk.chart))"
+            }
+        }
+
+        // After Done, the line comes down with the new screenshot at its end.
+        var st = SceneState(reveal: 0, swing: [0, 0, 0], cursor: pointer)
+        let downAt: CGFloat = 6.7, upAt: CGFloat = 8.4
+        if time >= downAt && time < upAt {
+            let d = time - downAt
+            st.reveal = 1 - exp(-7 * d) * cos(9 * d)
+            for k in 0..<3 {
+                let dk = max(0, d - 0.05 * CGFloat(k))
+                st.swing[k] = (k == 2 ? 14 : 7) * exp(-2.6 * dk) * sin(8.5 * dk + 0.6) * (k % 2 == 0 ? 1 : -1)
+            }
+        } else if time >= upAt {
+            st.reveal = 1 - ramp(time, upAt, 0.28)
+        }
+
+        drawScene(ctx, t, rect: canvas, frames: frames, state: st, cornerRadius: 22,
+                  backdrop: { ctx in drawDesktop(ctx, t) },
+                  overlay: { ctx in
+            if frozen {
+                drawFreeze(ctx, canvas: canvas, hole: hole, label: label, handles: time >= 5.25)
+                if time >= 5.25 {
+                    ctx.saveGState(); ctx.setAlpha(ramp(time, 5.25, 0.2))
+                    drawToolbar(ctx, t, bar, topRight: barTop)
+                    ctx.restoreGState()
+                }
+            }
+            // A white flash as it is taken.
+            if time >= 6.5 && time < 6.7 {
+                NSColor.white.withAlphaComponent(0.35 * (1 - (time - 6.5) / 0.2)).setFill(); canvas.fill()
+            }
+            clicked(time, [6.45], at: done, ctx)
+            drawKeys(ctx, t, ["\u{2303}", "\u{2325}", "A"], center: NSPoint(x: W / 2, y: 60),
+                     alpha: min(ramp(time, 0.3, 0.15), 1 - ramp(time, 1.3, 0.2)))
+        })
+    }
+}
+
+// MARK: Markup loop
+
+func markupLoop(_ t: Theme) {
+    let W: CGFloat = 960, H: CGFloat = 440
+    let canvas = NSRect(x: 0, y: 0, width: W, height: H)
+    let hole = Desk.chart
+    let barTop = NSPoint(x: hole.maxX, y: hole.minY - 8)
+    // The tallest bar in the chart, as drawContent draws it.
+    let content = Desk.chartContent
+    let bw = (content.width - 36) / 7
+    let tall = NSRect(x: content.minX + 18 + 5 * bw + 3, y: content.minY + 16, width: bw - 6, height: (content.height - 42) * 0.85)
+    let box = tall.insetBy(dx: -8, dy: -8)
+    let arrowFrom = NSPoint(x: 690, y: 262), arrowTo = NSPoint(x: box.minX - 6, y: box.maxY - 30)
+    let textAt = NSPoint(x: 646, y: 276)
+    let word = T("Peak"), extra = " +32%"
+
+    loop("markup", t, W: W, H: H, duration: 9.6) { ctx, time in
+        var bar = Toolbar()
+        if time >= 1.1 { bar.tool = 0 }
+        if time >= 2.0 { bar.custom = 5 }
+        if time >= 2.25 { bar.custom = 6 }
+        if time >= 2.5 { bar.custom = 7 }
+        if time >= 4.55 { bar.tool = 2 }
+        if time >= 6.05 { bar.tool = 4 }
+        if time >= 7.4 { bar.color = 3 }
+        let width = bar.custom ?? 4
+        let item = { (id: String) in toolbarItem(bar, topRight: barTop, id) }
+
+        let drag = ramp(time, 3.0, 0.8)
+        let boxNow = NSRect(x: box.minX, y: lerp(box.maxY, box.minY, drag), width: box.width * drag,
+                            height: (box.maxY - lerp(box.maxY, box.minY, drag)))
+        let arrow = ramp(time, 4.75, 0.7)
+        let arrowNow = lerp(arrowFrom, arrowTo, arrow)
+
+        var pointer: NSPoint
+        if time < 3.0 {
+            pointer = path(time, [(0, NSPoint(x: 470, y: 250)), (1.0, item("tool0")), (1.8, NSPoint(x: box.minX, y: box.maxY))])
+        } else if time < 3.8 {
+            pointer = NSPoint(x: boxNow.maxX, y: boxNow.minY)
+        } else if time < 4.75 {
+            pointer = path(time, [(3.8, NSPoint(x: box.maxX, y: box.minY)), (4.5, item("tool2")), (4.75, arrowFrom)], glide: 0.45)
+        } else if time < 5.45 {
+            pointer = arrowNow
+        } else {
+            pointer = path(time, [(5.45, arrowTo), (6.0, item("tool4")), (6.3, NSPoint(x: textAt.x + 4, y: textAt.y + 10)), (6.75, NSPoint(x: 640, y: 214)),
+                                  (7.35, item("color3")), (8.4, item("done")), (9.4, NSPoint(x: 560, y: 250))], glide: 0.45)
+        }
+
+        // Typing: the word in red, then the rest in green.
+        let typed1 = Int(max(0, min(CGFloat(word.count), (time - 6.4) / 0.13)))
+        let typed2 = Int(max(0, min(CGFloat(extra.count), (time - 7.6) / 0.12)))
+        var runs: [(String, NSColor)] = []
+        if typed1 > 0 { runs.append((String(word.prefix(typed1)), markColors[0])) }
+        if typed2 > 0 { runs.append((String(extra.prefix(typed2)), markColors[3])) }
+
+        let frozen = time < 8.6
+        drawScene(ctx, t, rect: canvas, frames: [], state: SceneState(reveal: 0, cursor: pointer), cornerRadius: 22,
+                  backdrop: { ctx in drawDesktop(ctx, t) },
+                  overlay: { ctx in
+            guard frozen else { return }
+            drawFreeze(ctx, canvas: canvas, hole: hole, label: "\(Int(hole.width * 2)) × \(Int(hole.height * 2))", handles: true)
+            ctx.saveGState(); NSBezierPath(rect: hole).addClip()
+            if time >= 3.0 { drawRectMark(time < 3.8 ? boxNow : box, color: markColors[0], width: width) }
+            if time >= 4.75 { drawArrowMark(from: arrowFrom, to: arrowNow, color: markColors[0], width: width) }
+            if !runs.isEmpty || (time >= 6.3 && time < 8.4) {
+                drawTextMark(runs, at: textAt, caret: time < 8.4 && Int(time * 2.5) % 2 == 0)
+            }
+            ctx.restoreGState()
+            drawToolbar(ctx, t, bar, topRight: barTop)
+            // Scrolling: a dot the size of the line, and its width.
+            if time >= 1.95 && time < 3.0 {
+                ctx.saveGState(); ctx.setAlpha(min(1, (3.0 - time) / 0.2))
+                let c = NSPoint(x: pointer.x + 22, y: pointer.y - 30)
+                markColors[0].setFill()
+                NSBezierPath(ovalIn: NSRect(x: c.x - width / 2, y: c.y - width / 2, width: width, height: width)).fill()
+                let label = "\(String(format: "%g", width)) pt"
+                let lw = textWidth(label, size: 11, weight: .semibold) + 12
+                let pill = NSRect(x: c.x + 10, y: c.y - 10, width: lw, height: 20)
+                NSColor.black.withAlphaComponent(0.72).setFill()
+                NSBezierPath(roundedRect: pill, xRadius: 10, yRadius: 10).fill()
+                leftText(label, size: 11, weight: .semibold, color: .white, x: pill.minX + 6, baselineY: pill.minY + 6)
+                ctx.restoreGState()
+            }
+            clicked(time, [1.1, 4.55, 6.05, 6.35, 7.4, 8.5], at: pointer, ctx)
+        })
+    }
+}
+
+// MARK: Copied text loop
+
+struct Snippet { let text: String; let kind: Int; let app: String; let when: String }
+
+func notesLoop(_ t: Theme) {
+    let W: CGFloat = 960, H: CGFloat = 480
+    let canvas = NSRect(x: 0, y: 0, width: W, height: H)
+    let frames = [Frame(x: 215, w: 210, h: 146, tilt: 2.5, kind: 0),
+                  Frame(x: 445, w: 230, h: 158, tilt: -1.2, kind: 1),
+                  Frame(x: 670, w: 190, h: 136, tilt: 3, kind: 2)]
+    let clipX: CGFloat = 845
+    let top = H - 26 - 20
+    let f = clipX / W
+    let clipY = top - 4 * 22 * f * (1 - f) + 7
+    let clipPoint = NSPoint(x: clipX + 4, y: clipY - 60)
+    let panel = NSRect(x: W - 16 - 300, y: clipY - 105 - 8 - 300, width: 300, height: 300)
+    let snippets = [
+        Snippet(text: "brew install --cask ffkiyo7/tap/clipline", kind: 3, app: T("Terminal"), when: T("1 min. ago")),
+        Snippet(text: T("Meeting moved to 3:30, same room."), kind: 4, app: T("Messages"), when: T("4 min. ago")),
+        Snippet(text: "https://github.com/ffkiyo7/Clipline", kind: 0, app: "Safari", when: T("12 min. ago")),
+        Snippet(text: "brew upgrade --cask clipline", kind: 3, app: T("Terminal"), when: T("1 hr. ago")),
+        Snippet(text: T("Thanks! I\u{2019}ll send the deck tonight."), kind: 5, app: T("Mail"), when: T("2 hr. ago")),
+    ]
+    let query = "brew"
+    let rowH: CGFloat = 46
+    func rowRect(_ i: Int) -> NSRect {
+        NSRect(x: panel.minX + 6, y: panel.maxY - 50 - 6 - rowH - CGFloat(i) * (rowH + 2), width: panel.width - 12, height: rowH)
+    }
+
+    loop("notes", t, W: W, H: H, duration: 8.4) { ctx, time in
+        var st = SceneState(reveal: 0, noteClip: clipX)
+        let downAt: CGFloat = 1.0, upAt: CGFloat = 7.0
+        if time >= downAt && time < upAt {
+            let d = time - downAt
+            st.reveal = 1 - exp(-7 * d) * cos(9 * d)
+            for k in 0..<3 {
+                let dk = max(0, d - 0.05 * CGFloat(k))
+                st.swing[k] = 9 * exp(-2.6 * dk) * sin(8.5 * dk + 0.6) * (k % 2 == 0 ? 1 : -1)
+            }
+        } else if time >= upAt {
+            st.reveal = 1 - ramp(time, upAt, 0.28)
+        }
+        let hoverRows = [rowRect(0), rowRect(1), rowRect(2)].map { NSPoint(x: $0.midX + 40, y: $0.midY - 4) }
+        st.cursor = path(time, [(0, NSPoint(x: 600, y: 120)), (0.8, NSPoint(x: 480, y: H)),
+                                (2.0, clipPoint), (3.0, hoverRows[0]), (3.4, hoverRows[1]), (3.8, hoverRows[2]),
+                                (6.6, NSPoint(x: 600, y: 140))], glide: 0.45)
+
+        let typed = Int(max(0, min(CGFloat(query.count), (time - 4.1) / 0.15)))
+        let q = String(query.prefix(typed))
+        let results = q.isEmpty ? snippets : snippets.filter { $0.text.localizedCaseInsensitiveContains(q) }
+        var selection = 0
+        if time >= 3.0 && time < 3.4 { selection = 0 }
+        if time >= 3.4 && time < 3.8 { selection = 1 }
+        if time >= 3.8 && time < 4.1 { selection = 2 }
+        if time >= 5.1 { selection = 1 }
+        let copied = time >= 5.8 ? selection : nil
+        let open = time >= 2.1 && time < 6.15
+        let panelAlpha = time < 3 ? ramp(time, 2.1, 0.15) : 1 - ramp(time, 6.0, 0.15)
+
+        drawScene(ctx, t, rect: canvas, frames: frames, state: st, cornerRadius: 22, overlay: { ctx in
+            clicked(time, [2.05], at: clipPoint, ctx)
+            if open {
+                ctx.saveGState(); ctx.setAlpha(panelAlpha); ctx.beginTransparencyLayer(auxiliaryInfo: nil)
+                drawNotesPanel(ctx, t, panel, query: q, caret: time >= 2.1 && Int(time * 2.5) % 2 == 0,
+                               rows: results, selection: selection, copied: copied, rowRect: rowRect)
+                ctx.endTransparencyLayer(); ctx.restoreGState()
+            }
+            drawKeys(ctx, t, ["\u{2193}"], center: NSPoint(x: W / 2 - 60, y: 60),
+                     alpha: min(ramp(time, 4.95, 0.1), 1 - ramp(time, 5.4, 0.15)))
+            drawKeys(ctx, t, ["\u{21A9}"], center: NSPoint(x: W / 2 - 60, y: 60),
+                     alpha: min(ramp(time, 5.7, 0.1), 1 - ramp(time, 6.15, 0.15)))
+        })
+    }
+}
+
+func drawNotesPanel(_ ctx: CGContext, _ t: Theme, _ r: NSRect, query: String, caret: Bool,
+                    rows: [Snippet], selection: Int, copied: Int?, rowRect: (Int) -> NSRect) {
+    let light = t.name == "light"
+    let path = NSBezierPath(roundedRect: r, xRadius: 12, yRadius: 12)
+    ctx.saveGState(); shadow(t, 1.3, blur: 26, y: -10)
+    (light ? color(248, 248, 250, 0.97) : color(40, 40, 46, 0.97)).setFill(); path.fill()
+    ctx.restoreGState()
+    ctx.saveGState(); path.addClip()
+    let secondary = t.secondaryInk
+
+    // Search field.
+    let field = NSRect(x: r.minX + 10, y: r.maxY - 40, width: r.width - 20, height: 30)
+    t.ink.withAlphaComponent(0.06).setFill()
+    NSBezierPath(roundedRect: field, xRadius: 7, yRadius: 7).fill()
+    drawSymbol("magnifyingglass", size: 12, weight: .regular, color: secondary, at: NSPoint(x: field.minX + 17, y: field.midY))
+    let fieldX = field.minX + 30
+    if query.isEmpty {
+        leftText(T("Search copied text"), size: 13, weight: .regular, color: secondary.withAlphaComponent(0.7), x: fieldX, baselineY: field.midY - 4.5)
+    } else {
+        leftText(query, size: 13, weight: .regular, color: t.ink, x: fieldX, baselineY: field.midY - 4.5)
+    }
+    if caret {
+        t.ink.setFill()
+        NSRect(x: fieldX + (query.isEmpty ? 0 : textWidth(query, size: 13, weight: .regular)) + 1, y: field.midY - 8, width: 1.2, height: 16).fill()
+    }
+    t.ink.withAlphaComponent(0.1).setFill()
+    NSRect(x: r.minX, y: r.maxY - 50, width: r.width, height: 1).fill()
+
+    // Rows.
+    let para = NSMutableParagraphStyle(); para.lineBreakMode = .byTruncatingTail
+    for (i, row) in rows.enumerated() {
+        let rr = rowRect(i)
+        guard rr.maxY > r.minY + 28 else { break }
+        if i == selection {
+            accent.withAlphaComponent(light ? 0.16 : 0.3).setFill()
+            NSBezierPath(roundedRect: rr, xRadius: 7, yRadius: 7).fill()
+        }
+        drawAppIcon(row.kind, in: NSRect(x: rr.minX + 8, y: rr.maxY - 8 - 16, width: 16, height: 16))
+        let textX = rr.minX + 32
+        NSAttributedString(string: row.text, attributes: [.font: NSFont.systemFont(ofSize: 12.5), .foregroundColor: t.ink,
+                                                          .paragraphStyle: para])
+            .draw(with: NSRect(x: textX, y: rr.maxY - 24, width: rr.maxX - 8 - textX, height: 17), options: [.usesLineFragmentOrigin])
+        if copied == i {
+            drawSymbol("checkmark", size: 9, weight: .semibold, color: secondary, at: NSPoint(x: textX + 5, y: rr.minY + 13))
+            leftText(T("Copied"), size: 10.5, weight: .regular, color: secondary, x: textX + 13, baselineY: rr.minY + 9.5)
+        } else {
+            leftText("\(row.app) · \(row.when)", size: 10.5, weight: .regular, color: secondary, x: textX, baselineY: rr.minY + 9.5)
+        }
+    }
+
+    // Footer.
+    (light ? color(248, 248, 250) : color(40, 40, 46)).setFill()
+    NSRect(x: r.minX, y: r.minY, width: r.width, height: 28).fill()
+    t.ink.withAlphaComponent(0.1).setFill()
+    NSRect(x: r.minX, y: r.minY + 28, width: r.width, height: 1).fill()
+    leftText(String(format: T("%d items"), 12), size: 11, weight: .regular, color: secondary, x: r.minX + 12, baselineY: r.minY + 10)
+    let clear = T("Clear")
+    leftText(clear, size: 11, weight: .regular, color: secondary, x: r.maxX - 12 - textWidth(clear, size: 11, weight: .regular),
+             baselineY: r.minY + 10)
+    ctx.restoreGState()
+}
+
 // MARK: Bento
 
 /// A glass badge like the app's own buttons: frosted glass over a little
@@ -581,4 +1238,7 @@ for t in [light, dark] {
     hero(t)
     bento(t)
     demo(t)
+    captureLoop(t)
+    markupLoop(t)
+    notesLoop(t)
 }

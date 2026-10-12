@@ -63,9 +63,19 @@
 按 <kbd>⌃</kbd>&thinsp;<kbd>⌥</kbd>&thinsp;<kbd>A</kbd>，屏幕定格。指针下的窗口会亮起来，单击就截下它。
 也可以拖出一块区域，边缘会自动吸附到窗口边上；放大镜帮你对准最后一个像素，按一下键就能复制那里的颜色。
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="../images/zh-Hans/capture-dark.gif">
+  <img src="../images/zh-Hans/capture-light.gif" alt="按 ⌃⌥A 屏幕定格，指针下的窗口依次亮起，再到单个按钮；拖出页面的一部分，点完成就挂上了绳。">
+</picture>
+
 打开辅助功能权限<sup>2</sup>后还能更进一步：指针下的按钮、侧边栏、输入框会自己亮起来。滚动滚轮，一层层扩到包住它的区域。
 
 选好之后就在原地标注，工具栏是一块浮在选区下方的玻璃。文字里每个字都可以换颜色，滚轮可以调线条粗细。按回车复制，同时挂到绳上。
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="../images/zh-Hans/markup-dark.gif">
+  <img src="../images/zh-Hans/markup-light.gif" alt="在选好的图表上，滚轮把矩形调粗，框住最高的柱子，加一个箭头，再写上红色的「峰值」和绿色的「+32%」。">
+</picture>
 
 <br>
 
@@ -92,6 +102,11 @@
 按住 <kbd>⌃</kbd> 截图，或在「预览」中复制图片，它就会像其他截图一样挂上绳。在菜单栏中打开「挂上复制的图片」即可。
 
 复制的文字会收进绳尾的一个夹子，像一叠玻璃便签，不会把绳子叫下来。点夹子就能搜索翻找，常用的可以置顶。
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="../images/zh-Hans/notes-dark.gif">
+  <img src="../images/zh-Hans/notes-light.gif" alt="点绳尾的夹子，打开复制过的文字。输入 brew 只剩两条命令，按 ↓ 选中第二条，回车复制。">
+</picture>
 
 密码管理器标为私密的内容，一律不记录。
 
