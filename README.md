@@ -1,18 +1,18 @@
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/images/hero-dark.png">
-  <img src="docs/images/hero-light.png" alt="Tendedero. Screenshots, hung out to dry. Three screenshots in glass frames hang from a thin line under the macOS menu bar.">
+  <img src="docs/images/hero-light.png" alt="Tendedero. Screenshots, hung out to dry. Three screenshots in glass frames hang from a thin line under the macOS menu bar, each with a small source tag, and a clip of copied notes at the end.">
 </picture>
 
-<h3 align="center"><a href="https://tendedero.app/?lang=en">Try it in your browser at tendedero.app&nbsp;&rsaquo;</a></h3>
+<h3 align="center"><a href="../../releases/latest">Download the latest release&nbsp;&rsaquo;</a></h3>
 
 <p align="center">
   Free and open source. For macOS 14 and later.
   <br>
-  <a href="../../releases/latest">Download&nbsp;&rsaquo;</a>
-  &nbsp;&nbsp;
+  A fork of <a href="https://github.com/alejandrobujan/tendedero">Tendedero</a> by Alejandro Buján, with its own screenshot tool, markup, notes and more.
+  <br>
   <a href="#build-from-source">Build from source&nbsp;&rsaquo;</a>
   <br><br>
-  English&nbsp;·&nbsp;<a href="docs/i18n/README.es.md">Español</a>&nbsp;·&nbsp;<a href="docs/i18n/README.fr.md">Français</a>&nbsp;·&nbsp;<a href="docs/i18n/README.pt-BR.md">Português (Brasil)</a>&nbsp;·&nbsp;<a href="docs/i18n/README.ja.md">日本語</a>&nbsp;·&nbsp;<a href="docs/i18n/README.ko.md">한국어</a>&nbsp;·&nbsp;<a href="docs/i18n/README.zh-Hans.md">简体中文</a>
+  English&nbsp;·&nbsp;<a href="docs/i18n/README.zh-Hans.md">简体中文</a>
 </p>
 
 <br>
@@ -20,11 +20,11 @@
 ## Out of sight. Within reach.
 
 Every screenshot you take hangs on a line just above your screen.
-Rest the pointer in the menu bar and it glides down. Move away and it's gone.
+Rest the pointer in the middle of the menu bar and it glides down. Move away and it's gone.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/images/demo-dark.gif">
-  <img src="docs/images/demo-light.gif" alt="The pointer rests against the top edge, the line slides down with three screenshots swinging gently, a click copies one, and the line tucks away when the pointer leaves.">
+  <img src="docs/images/demo-light.gif" alt="The pointer rests in the middle of the menu bar, the line slides down with three screenshots swinging gently, a click copies one and its tag says Copied, and the line tucks away when the pointer leaves.">
 </picture>
 
 <br>
@@ -34,7 +34,7 @@ Rest the pointer in the menu bar and it glides down. Move away and it's gone.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/images/bento-dark.png">
-  <img src="docs/images/bento-light.png" alt="Click to copy. Hold to mark up. Drag to share. Let it go.">
+  <img src="docs/images/bento-light.png" alt="Click to copy. Hold to mark up. Drag to share. Drop to hang. Control-Option-A to capture. Let it go.">
 </picture>
 
 <br>
@@ -43,15 +43,35 @@ Rest the pointer in the menu bar and it glides down. Move away and it's gone.
 | | |
 |:--|:--|
 | Click | Copy the image. |
-| Press and hold | Open it in Markup. |
+| Press and hold | Mark it up: arrows, shapes, text, numbers, mosaic. |
 | Double click | Open it in Preview. |
 | Force click | Take a quick look. |
-| Drag into an app | Send a copy. It stays on the line. |
+| Right click | Pin it to the screen, open it in the system's Markup, save it to the Desktop, and more. |
+| Drag into an app | Send it. It leaves the line; a screenshot in Tendedero's folder goes to the Trash a few minutes later. |
 | Drag into a folder | Keep it there. It leaves the line. |
 | Drag to the Trash, or click the cross | Let it go. |
-| Rest the pointer in the menu bar | Bring the line down on that screen. |
+| Drag an image onto the line | Hang it. The photos make room as you carry it. |
+| Rest the pointer in the middle of the menu bar | Bring the line down on that screen. |
 | Click anything in the menu bar | Put it away. |
-| <kbd>⌃</kbd>&thinsp;<kbd>⌥</kbd>&thinsp;<kbd>T</kbd> | Show or hide the line. Change it under Shortcut in the menu bar. |
+| <kbd>⌃</kbd>&thinsp;<kbd>⌥</kbd>&thinsp;<kbd>T</kbd> | Show or hide the line. |
+| <kbd>⌃</kbd>&thinsp;<kbd>⌥</kbd>&thinsp;<kbd>A</kbd> | Take a screenshot. Both shortcuts change under Shortcut in the menu bar. |
+
+<br>
+
+## A screenshot tool of its own.
+
+Press <kbd>⌃</kbd>&thinsp;<kbd>⌥</kbd>&thinsp;<kbd>A</kbd> and the screen freezes. The window under the
+pointer lights up: click to take it. Drag instead, and the edges stick to
+windows as you go, with a magnifier for the last pixel and its color a key
+away.
+
+Allow Accessibility<sup>2</sup> and it goes further: the button, sidebar or
+text field under the pointer lights up on its own. Scroll to step out to
+what holds it.
+
+Mark it up right where it is, on a glass toolbar under the selection. Color
+each word of a text as you like, and scroll to make lines thicker or
+thinner. Return copies it and hangs it on the line.
 
 <br>
 
@@ -68,13 +88,24 @@ Same shortcuts. Same muscle memory. Just less mess.
 
 <br>
 
-## Copied images too.
+## Where it came from.
+
+A small tag hangs under each photo with the icon of the app it was taken
+in. Point at it to read the app and the window. Show the name, only the
+icon, or nothing, under Source tags in the menu bar.
+
+<br>
+
+## Copied images, and copied text.
 
 Take a screenshot with <kbd>⌃</kbd> held, or copy an image in Preview, and it
-hangs on the line like any other. Turn on Hang copied images in the menu bar
-and the shirt fills in while it is on. Only images: anything copied along
-with text or a file, and anything a password manager marks as private, is
-left alone.
+hangs on the line like any other. Turn on Hang copied images in the menu bar.
+
+Text you copy goes into a clip of glass notes at the end of the line,
+without bringing it down. Click the clip to find any of them again, and
+keep the ones you need at the top.
+
+Anything a password manager marks as private is left alone.
 
 <br>
 
@@ -90,8 +121,8 @@ Tendedero runs entirely on your Mac, and your screenshots never leave it.
 | | |
 |:--|:--|
 | **Compatibility** | macOS 14 Sonoma or later, on Apple silicon and Intel. Designed for macOS 27. |
-| **Size** | 1.7 MB |
-| **Languages** | English, Spanish, French, Portuguese (Brazil), Japanese, Korean, Chinese (Simplified), Turkish, Azerbaijani |
+| **Size** | About 5 MB |
+| **Languages** | English and Simplified Chinese. Spanish, French, Portuguese (Brazil), Japanese, Korean, Turkish and Azerbaijani for what came from Tendedero. |
 | **Built with** | Swift, AppKit and SwiftUI |
 | **Network access** | None |
 | **Price** | Free |
@@ -101,29 +132,29 @@ Tendedero runs entirely on your Mac, and your screenshots never leave it.
 
 ## Install
 
-Download the disk image from the [latest release](../../releases/latest),
-open it and drag Tendedero to Applications. Or install it with Homebrew:
+Download the app from the [latest release](../../releases/latest) and drag it
+to Applications.
 
-```sh
-brew install --cask alejandrobujan/tap/tendedero
-```
-
-Tendedero is signed with a Developer ID and notarized by Apple, so it opens
-like any other app.
+The release is not notarized by Apple. The first time, Control-click the app
+and choose Open, or allow it under System Settings → Privacy & Security.
 
 <br>
 
 ## Build from source
 
 ```sh
-git clone git@github.com:alejandrobujan/tendedero.git
+git clone https://github.com/ffkiyo7/tendedero.git
 cd tendedero
 scripts/build-app.sh
 open build/Tendedero.app
 ```
 
-Requires the Swift toolchain. Xcode is optional. With the Command Line Tools for macOS 27, the script falls back to the macOS 26 SDK they install alongside, because the new SDK needs a SwiftUI macro plugin only Xcode includes. Local builds are signed ad hoc,
-so macOS asks again for access to the Desktop after each rebuild.
+Requires the Swift toolchain. Xcode is optional. With the Command Line Tools for macOS 27, the script falls back to the macOS 26 SDK they install alongside, because the new SDK needs a SwiftUI macro plugin only Xcode includes.
+
+Local builds are signed with your Apple Development certificate when you
+have one, the one Xcode makes for any Apple ID, so macOS remembers the
+Screen Recording and Accessibility access across rebuilds. Without one
+they are signed ad hoc, and macOS asks again after each rebuild.
 
 <details>
 <summary>Inside the app</summary>
@@ -131,18 +162,26 @@ so macOS asks again for access to the Desktop after each rebuild.
 
 | File | Role |
 |:--|:--|
-| `AppDelegate.swift` | Menu bar, shortcut, revealing and tucking away the line |
+| `AppDelegate.swift` | Menu bar, shortcuts, revealing and tucking away the line |
 | `LinePanel.swift` | The transparent strip along the top of the screen |
 | `LineView.swift` | The line and where each photo hangs |
-| `PeggedView.swift` | One photo: glass frame, clip, swing and breeze |
+| `LineDrop.swift` | Images dropped on the line |
+| `PeggedView.swift` | One photo: glass frame, clip, source tag, swing and breeze |
 | `GrabArea.swift` | Click, long press, drag and drop |
+| `Line.swift` | What is hanging, and what you can do with it |
+| `Capture.swift` | The screenshot tool: selection, magnifier, toolbar |
+| `Elements.swift` | Buttons and panels under the pointer, through Accessibility |
+| `Editor.swift`, `EditorCanvas.swift`, `EditorMarks.swift` | Markup: tools, marks and how they are drawn |
+| `Pin.swift` | Photos pinned to the screen |
+| `Source.swift` | Which app and window a screenshot came from |
+| `Notes.swift`, `NoteClip.swift`, `NotesPanel.swift` | Copied text and the clip that holds it |
 | `ScreenshotWatcher.swift` | Notices new screenshots |
-| `ClipboardWatcher.swift` | Notices images copied to the clipboard |
+| `ClipboardWatcher.swift` | Notices images and text copied to the clipboard |
 | `Inbox.swift` | Takes over screenshot settings and puts them back |
+| `HotKey.swift` | The keyboard shortcuts |
 | `Markup.swift` | Opens the system Markup editor and saves the result |
 | `Trim.swift` | Trims a screen recording and saves the result |
 | `FullScreen.swift` | Knows when to stay hidden |
-| `Line.swift` | What is hanging, and what you can do with it |
 
 Every image here, the icon included, is drawn in code by
 `scripts/make-icon.swift` and `scripts/make-readme-art.swift`.
@@ -159,6 +198,8 @@ language. `swift scripts/check-strings.swift` checks that none is missing.
 
 <sub>
 1. On first launch, Tendedero offers to handle your screenshots. If you accept, it turns off the floating thumbnail and saves new screenshots to its own folder, two settings also found under Options in Cmd+Shift+5. Your previous settings are saved and restored when Tendedero quits or the option is turned off from the menu bar. Tendedero hides automatically while an app is in full screen.
+<br><br>
+2. Turn on Find Buttons and Panels in Screenshots in the menu bar, then allow Tendedero under System Settings → Privacy & Security → Accessibility. Without it, screenshots still find whole windows. Taking screenshots needs Screen Recording access.
 </sub>
 
 <br>
@@ -169,5 +210,5 @@ language. `swift scripts/check-strings.swift` checks that none is missing.
   <br>
   <sub>The code is MIT licensed. The Tendedero name and icon are not, so forks need their own. See <a href="LICENSE">LICENSE</a>.</sub>
   <br>
-  <sub>Designed and built by <a href="https://alejandrobujan.com">Alejandro Buján</a>.</sub>
+  <sub>Tendedero is designed and built by <a href="https://alejandrobujan.com">Alejandro Buján</a>. This fork is by <a href="https://github.com/ffkiyo7">ffkiyo7</a>.</sub>
 </p>

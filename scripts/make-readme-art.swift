@@ -1,8 +1,10 @@
 // Renders every image in the README, in light and dark:
-//   hero-*.png   headline and the line hanging under the menu bar
-//   demo-*.gif   the reveal: pointer to the top edge, line slides down, a
-//                click copies, the pointer leaves and the line tucks away
-//   bento-*.png  four gestures as tiles with SF Symbols
+//   hero-*.png   headline and the line hanging under the menu bar, each
+//                photo with its source tag, and the note clip at the end
+//   demo-*.gif   the reveal: pointer to the middle of the menu bar, line
+//                slides down, a click copies, the pointer leaves and the
+//                line tucks away
+//   bento-*.png  six gestures as tiles, each with a glass badge
 // Usage: swift scripts/make-readme-art.swift [language] [folder]
 // English goes to docs/images, any other language to docs/images/<language>.
 import AppKit
@@ -17,75 +19,20 @@ try! FileManager.default.createDirectory(atPath: outDir, withIntermediateDirecto
 
 // The words drawn into the images, keyed by the English text.
 let translations: [String: [String: String]] = [
-    "es": [
-        "Screenshots, hung out to dry.": "Tus capturas, tendidas.",
-        "Copied": "Copiado",
-        "Click to copy.": "Clic para copiar.",
-        "Paste it anywhere, instantly.": "Pégala donde quieras, al momento.",
-        "Hold to mark up.": "Mantén para anotar.",
-        "Annotate, crop or sign in place.": "Anota, recorta o firma ahí mismo.",
-        "Drag to share.": "Arrastra para compartir.",
-        "Apps get a copy. Folders keep it.": "Las apps reciben una copia. Las carpetas, el original.",
-        "Let it go.": "Y olvídate.",
-        "The cross or the Trash. That\u{2019}s it.": "La cruz o la Papelera. Nada más.",
-    ],
-    "fr": [
-        "Screenshots, hung out to dry.": "Vos captures, mises à sécher.",
-        "Copied": "Copié",
-        "Click to copy.": "Cliquez pour copier.",
-        "Paste it anywhere, instantly.": "Collez-la où vous voulez, aussitôt.",
-        "Hold to mark up.": "Maintenez pour annoter.",
-        "Annotate, crop or sign in place.": "Annotez, recadrez ou signez sur place.",
-        "Drag to share.": "Glissez pour partager.",
-        "Apps get a copy. Folders keep it.": "Les apps reçoivent une copie. Les dossiers la gardent.",
-        "Let it go.": "Laissez filer.",
-        "The cross or the Trash. That\u{2019}s it.": "La croix ou la corbeille. C\u{2019}est tout.",
-    ],
-    "pt-BR": [
-        "Screenshots, hung out to dry.": "Suas capturas, secando no varal.",
-        "Copied": "Copiado",
-        "Click to copy.": "Clique para copiar.",
-        "Paste it anywhere, instantly.": "Cole onde quiser, na hora.",
-        "Hold to mark up.": "Segure para marcar.",
-        "Annotate, crop or sign in place.": "Anote, recorte ou assine ali mesmo.",
-        "Drag to share.": "Arraste para compartilhar.",
-        "Apps get a copy. Folders keep it.": "Apps recebem uma cópia. Pastas a guardam.",
-        "Let it go.": "Desapegue.",
-        "The cross or the Trash. That\u{2019}s it.": "O X ou o Lixo. Só isso.",
-    ],
-    "ja": [
-        "Screenshots, hung out to dry.": "スクリーンショットを、物干しに。",
-        "Copied": "コピーしました",
-        "Click to copy.": "クリックでコピー。",
-        "Paste it anywhere, instantly.": "どこにでも、すぐにペースト。",
-        "Hold to mark up.": "長押しでマークアップ。",
-        "Annotate, crop or sign in place.": "その場で書き込み、トリミング、署名。",
-        "Drag to share.": "ドラッグで共有。",
-        "Apps get a copy. Folders keep it.": "アプリへはコピー、フォルダへは保存。",
-        "Let it go.": "手放すだけ。",
-        "The cross or the Trash. That\u{2019}s it.": "×かゴミ箱へ。それだけ。",
-    ],
-    "ko": [
-        "Screenshots, hung out to dry.": "빨랫줄에 널어 둔 스크린샷.",
-        "Copied": "복사됨",
-        "Click to copy.": "클릭해서 복사.",
-        "Paste it anywhere, instantly.": "어디든 바로 붙여넣기.",
-        "Hold to mark up.": "길게 눌러 마크업.",
-        "Annotate, crop or sign in place.": "그 자리에서 주석, 자르기, 서명까지.",
-        "Drag to share.": "드래그해서 공유.",
-        "Apps get a copy. Folders keep it.": "앱에는 사본을, 폴더에는 원본을.",
-        "Let it go.": "미련 없이 버리기.",
-        "The cross or the Trash. That\u{2019}s it.": "X 버튼이나 휴지통이면 끝.",
-    ],
     "zh-Hans": [
         "Screenshots, hung out to dry.": "截图，挂起来晾着。",
         "Copied": "已复制",
+        "Photos": "照片",
         "Click to copy.": "单击复制。",
         "Paste it anywhere, instantly.": "随处粘贴，即刻可用。",
-        "Hold to mark up.": "长按标记。",
-        "Annotate, crop or sign in place.": "直接标注、裁剪或签名。",
-        "Drag to share.": "拖拽分享。",
-        "Apps get a copy. Folders keep it.": "拖进 App 是副本，拖进文件夹就存下来。",
+        "Hold to mark up.": "长按标注。",
+        "Arrows, text, mosaic. In place.": "箭头、文字、马赛克，原地完成。",
+        "Drag to share.": "拖出分享。",
+        "In an app, it leaves the line.": "拖进 App，绳上随即收走。",
+        "Drop to hang.": "拖入悬挂。",
+        "Any image can join the line.": "任何图片，拖上绳就挂好。",
+        "\u{2303}\u{2325}A to capture.": "\u{2303}\u{2325}A 截图。",
+        "Windows and buttons light up.": "窗口和按钮，自动识别。",
         "Let it go.": "松手放下。",
         "The cross or the Trash. That\u{2019}s it.": "点叉或拖进废纸篓，就这么简单。",
     ],
@@ -197,6 +144,7 @@ func textWidth(_ string: String, size: CGFloat, weight: NSFont.Weight) -> CGFloa
 
 // MARK: The scene
 
+/// `kind` picks the picture, and the app it came from for its source tag.
 struct Frame { let x: CGFloat; let w: CGFloat; let h: CGFloat; let tilt: CGFloat; let kind: Int }
 
 struct SceneState {
@@ -205,7 +153,8 @@ struct SceneState {
     var cursor: NSPoint? = nil
     var hover: Int? = nil
     var pressed: CGFloat = 0
-    var copied: CGFloat = 0            // 0...1 opacity of the Copied label
+    var copied: CGFloat = 0            // 0...1, the hovered tag saying Copied
+    var noteClip: CGFloat? = nil       // where the note clip hangs, if it does
 }
 
 func drawScene(_ ctx: CGContext, _ t: Theme, rect: NSRect, frames: [Frame], state: SceneState, cornerRadius: CGFloat) {
@@ -247,10 +196,15 @@ func drawScene(_ ctx: CGContext, _ t: Theme, rect: NSRect, frames: [Frame], stat
         ctx.translateBy(x: f.x, y: lineY(f.x) + 7)
         ctx.rotate(by: (f.tilt + state.swing[i]) * .pi / 180)
         ctx.scaleBy(x: scale, y: scale)
+        drawTag(ctx, t, w: f.w, h: f.h, kind: f.kind, open: hover, copied: hover ? state.copied : 0)
         drawGlassPhoto(ctx, t, w: f.w, h: f.h, kind: f.kind, lift: hover)
-        if hover && state.copied > 0 {
-            drawCopied(ctx, t, y: -f.h - 18, alpha: state.copied)
-        }
+        ctx.restoreGState()
+    }
+    if let x = state.noteClip {
+        ctx.saveGState()
+        ctx.translateBy(x: x, y: lineY(x) + 7)
+        ctx.rotate(by: 2 * .pi / 180 + (state.swing.last ?? 0) * .pi / 360)
+        drawNoteClip(ctx, t)
         ctx.restoreGState()
     }
     ctx.restoreGState()
@@ -350,18 +304,121 @@ func drawContent(_ kind: Int, _ r: NSRect) {
     }
 }
 
-func drawCopied(_ ctx: CGContext, _ t: Theme, y: CGFloat, alpha: CGFloat) {
-    let label = "\u{2713}  " + T("Copied")
-    // Wide enough for the English label; longer words widen the pill.
-    let w = max(84, (textWidth(label, size: 11.5, weight: .semibold) + 26).rounded(.up)), h: CGFloat = 24
-    let r = NSRect(x: -w / 2, y: y - h / 2 + (1 - alpha) * 4, width: w, height: h)
-    let p = NSBezierPath(roundedRect: r, xRadius: h / 2, yRadius: h / 2)
+/// The app each kind of picture came from: its icon colors and glyph.
+let apps: [(colors: [NSColor], glyph: String)] = [
+    ([color(90, 170, 255), color(40, 110, 240)], "globe"),
+    ([color(255, 190, 80), color(250, 110, 120)], "photo"),
+    ([color(80, 90, 120), color(30, 34, 50)], "chart.bar.fill"),
+]
+
+func drawAppIcon(_ kind: Int, in r: NSRect) {
+    let app = apps[kind % apps.count]
+    let path = NSBezierPath(roundedRect: r, xRadius: r.width * 0.23, yRadius: r.width * 0.23)
+    NSGradient(colors: app.colors)!.draw(in: path, angle: -90)
+    let config = NSImage.SymbolConfiguration(pointSize: r.width * 0.55, weight: .semibold)
+        .applying(.init(paletteColors: [.white]))
+    if let glyph = NSImage(systemSymbolName: app.glyph, accessibilityDescription: nil)?.withSymbolConfiguration(config) {
+        let sz = glyph.size
+        glyph.draw(in: NSRect(x: r.midX - sz.width / 2, y: r.midY - sz.height / 2, width: sz.width, height: sz.height))
+    }
+}
+
+/// The source tag tied under the card on a thread, a little right of the
+/// middle, hanging slightly crooked. Resting it shows the app's icon; under
+/// the pointer its name, and once copied a check and Copied.
+func drawTag(_ ctx: CGContext, _ t: Theme, w: CGFloat, h: CGFloat, kind: Int, open: Bool, copied: CGFloat) {
+    let anchor = NSPoint(x: -w / 2 + w * 0.62, y: -h)
     ctx.saveGState()
-    ctx.setAlpha(alpha)
-    ctx.saveGState(); shadow(t, 0.8, blur: 10, y: -4)
-    (t.name == "light" ? color(255, 255, 255, 0.92) : color(50, 50, 60, 0.92)).setFill(); p.fill()
+    ctx.translateBy(x: anchor.x, y: anchor.y)
+    ctx.rotate(by: 4 * .pi / 180)
+    let thread = NSBezierPath()
+    thread.move(to: .zero); thread.line(to: NSPoint(x: 0, y: -14))
+    thread.lineWidth = 1.1; color(140, 140, 145).setStroke(); thread.stroke()
+
+    let icon: CGFloat = 21, pad: CGFloat = 4.5
+    let label = copied > 0.5 ? T("Copied") : T("Photos")
+    let shows = open || copied > 0
+    let font = NSFont.systemFont(ofSize: 15, weight: .semibold)
+    let textW = shows ? NSAttributedString(string: label, attributes: [.font: font]).size().width.rounded(.up) : 0
+    let pillW = pad + icon + (shows ? 7 + textW + 10 : pad), pillH = icon + pad * 2
+    let pill = NSRect(x: -pillW / 2, y: -14 - pillH, width: pillW, height: pillH)
+    let path = NSBezierPath(roundedRect: pill, xRadius: 9, yRadius: 9)
+    ctx.saveGState(); shadow(t, 0.7, blur: 5, y: -2)
+    t.glassFill.withAlphaComponent(min(1, t.glassFill.alphaComponent * 1.5)).setFill(); path.fill()
     ctx.restoreGState()
-    text(label, size: 11.5, weight: .semibold, color: t.ink, centerX: 0, baselineY: r.midY - 4)
+    ctx.saveGState()
+    let rim = NSBezierPath(roundedRect: pill, xRadius: 9, yRadius: 9)
+    rim.append(NSBezierPath(roundedRect: pill.insetBy(dx: 1, dy: 1), xRadius: 8, yRadius: 8))
+    rim.windingRule = .evenOdd; rim.addClip()
+    NSGradient(colors: [t.edgeTop, t.edgeBottom])!.draw(in: pill, angle: -90)
+    ctx.restoreGState()
+
+    let iconRect = NSRect(x: pill.minX + pad, y: pill.minY + pad, width: icon, height: icon)
+    if copied > 0.5 {
+        let config = NSImage.SymbolConfiguration(pointSize: 12, weight: .bold).applying(.init(paletteColors: [t.ink]))
+        if let check = NSImage(systemSymbolName: "checkmark", accessibilityDescription: nil)?.withSymbolConfiguration(config) {
+            let sz = check.size
+            check.draw(in: NSRect(x: iconRect.midX - sz.width / 2, y: iconRect.midY - sz.height / 2, width: sz.width, height: sz.height))
+        }
+    } else {
+        drawAppIcon(kind, in: iconRect)
+    }
+    if shows {
+        NSAttributedString(string: label, attributes: [.font: font, .foregroundColor: t.ink])
+            .draw(at: NSPoint(x: iconRect.maxX + 7, y: pill.midY - (font.ascender - font.descender) / 2))
+    }
+    ctx.restoreGState()
+}
+
+/// The clip at the end of the line: a paperclip holding a little stack of
+/// glass notes, the text you copied, with how many there are.
+func drawNoteClip(_ ctx: CGContext, _ t: Theme) {
+    let paper = NSSize(width: 104, height: 84), top: CGFloat = -21
+    let anchor = NSPoint(x: paper.width * 0.3, y: 0)
+    for (i, angle) in [CGFloat(-6), 4, 0].enumerated() {
+        ctx.saveGState()
+        ctx.translateBy(x: anchor.x, y: anchor.y)
+        ctx.rotate(by: angle * .pi / 180)
+        ctx.translateBy(x: -anchor.x, y: -anchor.y)
+        let r = NSRect(x: -paper.width / 2, y: top - paper.height, width: paper.width, height: paper.height)
+        let path = NSBezierPath(roundedRect: r, xRadius: 15, yRadius: 15)
+        ctx.saveGState(); shadow(t, 0.7, blur: 10, y: -5)
+        t.glassFill.withAlphaComponent(min(1, t.glassFill.alphaComponent * 1.3)).setFill(); path.fill()
+        ctx.restoreGState()
+        ctx.saveGState()
+        let rim = NSBezierPath(roundedRect: r, xRadius: 15, yRadius: 15)
+        rim.append(NSBezierPath(roundedRect: r.insetBy(dx: 1, dy: 1), xRadius: 14, yRadius: 14))
+        rim.windingRule = .evenOdd; rim.addClip()
+        NSGradient(colors: [t.edgeTop, t.edgeBottom])!.draw(in: r, angle: -90)
+        ctx.restoreGState()
+        if i == 2 {
+            t.secondaryInk.withAlphaComponent(0.55).setFill()
+            for (k, f) in [CGFloat(0.66), 0.5, 0.58].enumerated() {
+                NSBezierPath(roundedRect: NSRect(x: r.minX + 11, y: r.maxY - 17 - CGFloat(k) * 12, width: (r.width - 36) * f / 0.66, height: 5),
+                             xRadius: 2.5, yRadius: 2.5).fill()
+            }
+            let count = NSAttributedString(string: "12", attributes: [
+                .font: NSFont.monospacedDigitSystemFont(ofSize: 13, weight: .semibold), .foregroundColor: t.secondaryInk])
+            count.draw(at: NSPoint(x: r.maxX - 8 - count.size().width, y: r.minY + 6))
+        }
+        ctx.restoreGState()
+    }
+    // The paperclip: its top loop over the line, its legs over the notes.
+    let clip = NSBezierPath()
+    let x0 = anchor.x - 7.5
+    func px(_ x: CGFloat) -> CGFloat { x0 + x * 1.35 }
+    func py(_ y: CGFloat) -> CGFloat { 2 - y * 1.35 }
+    clip.move(to: NSPoint(x: px(3.9), y: py(13)))
+    clip.line(to: NSPoint(x: px(3.9), y: py(26)))
+    clip.curve(to: NSPoint(x: px(7.1), y: py(26)), controlPoint1: NSPoint(x: px(3.9), y: py(28.2)), controlPoint2: NSPoint(x: px(7.1), y: py(28.2)))
+    clip.line(to: NSPoint(x: px(7.1), y: py(4.6)))
+    clip.curve(to: NSPoint(x: px(1.2), y: py(4.6)), controlPoint1: NSPoint(x: px(7.1), y: py(0.6)), controlPoint2: NSPoint(x: px(1.2), y: py(0.6)))
+    clip.line(to: NSPoint(x: px(1.2), y: py(27.5)))
+    clip.curve(to: NSPoint(x: px(9.8), y: py(27.5)), controlPoint1: NSPoint(x: px(1.2), y: py(33)), controlPoint2: NSPoint(x: px(9.8), y: py(33)))
+    clip.line(to: NSPoint(x: px(9.8), y: py(9)))
+    clip.lineWidth = 1.9; clip.lineCapStyle = .round; clip.lineJoinStyle = .round
+    ctx.saveGState(); shadow(t, 1, blur: 2, y: -1.2)
+    color(205, 206, 212).setStroke(); clip.stroke()
     ctx.restoreGState()
 }
 
@@ -391,16 +448,16 @@ func hero(_ t: Theme) {
         text("Tendedero", size: 84, weight: .semibold, color: t.ink, tracking: -2.4, centerX: W / 2, baselineY: H - 128)
         text(T("Screenshots, hung out to dry."), size: 30, weight: .regular, color: t.secondaryInk,
              tracking: -0.4, centerX: W / 2, baselineY: H - 182)
-        let frames = [Frame(x: 290, w: 250, h: 172, tilt: 2.5, kind: 0),
-                      Frame(x: 560, w: 270, h: 186, tilt: -1.2, kind: 1),
-                      Frame(x: 830, w: 220, h: 160, tilt: 3, kind: 2)]
+        let frames = [Frame(x: 240, w: 250, h: 172, tilt: 2.5, kind: 0),
+                      Frame(x: 510, w: 270, h: 186, tilt: -1.2, kind: 1),
+                      Frame(x: 780, w: 220, h: 160, tilt: 3, kind: 2)]
         let scene = NSRect(x: 60, y: 40, width: W - 120, height: 330)
         ctx.saveGState(); shadow(t, 0.6, blur: 40, y: -18)
         t.page.setFill(); NSBezierPath(roundedRect: scene, xRadius: 26, yRadius: 26).fill()
         ctx.restoreGState()
         drawScene(ctx, t, rect: scene,
                   frames: frames.map { Frame(x: $0.x - 60 + 60, w: $0.w, h: $0.h, tilt: $0.tilt, kind: $0.kind) },
-                  state: SceneState(cursor: NSPoint(x: 690, y: 330)), cornerRadius: 26)
+                  state: SceneState(cursor: NSPoint(x: 560, y: 330), noteClip: 985), cornerRadius: 26)
     }
     savePNG(rep, "\(outDir)/hero-\(t.name).png")
 }
@@ -414,10 +471,10 @@ func lerp(_ a: NSPoint, _ b: NSPoint, _ x: CGFloat) -> NSPoint { NSPoint(x: lerp
 func demo(_ t: Theme) {
     let W: CGFloat = 960, H: CGFloat = 340, s: CGFloat = 1
     let fps: CGFloat = 25, duration: CGFloat = 5.2
-    let frames = [Frame(x: 250, w: 210, h: 146, tilt: 2.5, kind: 0),
-                  Frame(x: 480, w: 230, h: 158, tilt: -1.2, kind: 1),
-                  Frame(x: 705, w: 190, h: 136, tilt: 3, kind: 2)]
-    let rest = NSPoint(x: 620, y: 90), edge = NSPoint(x: 560, y: H), onPhoto = NSPoint(x: 492, y: 175)
+    let frames = [Frame(x: 215, w: 210, h: 146, tilt: 2.5, kind: 0),
+                  Frame(x: 445, w: 230, h: 158, tilt: -1.2, kind: 1),
+                  Frame(x: 670, w: 190, h: 136, tilt: 3, kind: 2)]
+    let rest = NSPoint(x: 620, y: 90), edge = NSPoint(x: 480, y: H), onPhoto = NSPoint(x: 457, y: 205)
     let away = NSPoint(x: 760, y: 70)
 
     let url = URL(fileURLWithPath: "\(outDir)/demo-\(t.name).gif")
@@ -429,7 +486,7 @@ func demo(_ t: Theme) {
 
     for i in 0..<count {
         let time = CGFloat(i) / fps
-        var st = SceneState(reveal: 0)
+        var st = SceneState(reveal: 0, noteClip: 845)
 
         // Pointer travels to the top edge and rests there.
         if time < 1.0 { st.cursor = lerp(rest, edge, easeInOut((time - 0.2) / 0.8)) }
@@ -468,32 +525,54 @@ func demo(_ t: Theme) {
 
 // MARK: Bento
 
+/// A glass badge like the app's own buttons: frosted glass over a little
+/// of the line's wallpaper, its edge lit from above, the symbol on top.
+func drawBadge(_ ctx: CGContext, _ t: Theme, symbol name: String, at origin: NSPoint) {
+    let size: CGFloat = 76
+    let r = NSRect(x: origin.x, y: origin.y, width: size, height: size)
+    ctx.saveGState()
+    let blob = NSBezierPath(ovalIn: r.offsetBy(dx: 14, dy: -10).insetBy(dx: 4, dy: 4))
+    NSGradient(colors: t.wallpaper.map { $0.withAlphaComponent(t.name == "light" ? 1 : 0.9) })!.draw(in: blob, angle: -35)
+    ctx.restoreGState()
+    let path = NSBezierPath(roundedRect: r, xRadius: 22, yRadius: 22)
+    ctx.saveGState(); shadow(t, 0.8, blur: 18, y: -8)
+    (t.name == "light" ? color(255, 255, 255, 0.62) : color(255, 255, 255, 0.10)).setFill(); path.fill()
+    ctx.restoreGState()
+    ctx.saveGState()
+    let rim = NSBezierPath(roundedRect: r, xRadius: 22, yRadius: 22)
+    rim.append(NSBezierPath(roundedRect: r.insetBy(dx: 1.2, dy: 1.2), xRadius: 20.8, yRadius: 20.8))
+    rim.windingRule = .evenOdd; rim.addClip()
+    NSGradient(colors: [t.edgeTop, t.edgeBottom])!.draw(in: r, angle: -90)
+    ctx.restoreGState()
+    let config = NSImage.SymbolConfiguration(pointSize: 32, weight: .medium).applying(.init(paletteColors: [t.ink]))
+    if let symbol = NSImage(systemSymbolName: name, accessibilityDescription: nil)?.withSymbolConfiguration(config) {
+        let sz = symbol.size
+        symbol.draw(in: NSRect(x: r.midX - sz.width / 2, y: r.midY - sz.height / 2, width: sz.width, height: sz.height))
+    }
+}
+
 func bento(_ t: Theme) {
     let W: CGFloat = 1200, H: CGFloat = 700, s: CGFloat = 2, gap: CGFloat = 20
     let tiles: [(String, String, String)] = [
         ("doc.on.doc", T("Click to copy."), T("Paste it anywhere, instantly.")),
-        ("pencil.tip.crop.circle", T("Hold to mark up."), T("Annotate, crop or sign in place.")),
-        ("arrow.up.forward.app", T("Drag to share."), T("Apps get a copy. Folders keep it.")),
+        ("pencil.and.scribble", T("Hold to mark up."), T("Arrows, text, mosaic. In place.")),
+        ("arrow.up.forward.app", T("Drag to share."), T("In an app, it leaves the line.")),
+        ("square.and.arrow.down", T("Drop to hang."), T("Any image can join the line.")),
+        ("viewfinder", T("\u{2303}\u{2325}A to capture."), T("Windows and buttons light up.")),
         ("xmark.circle", T("Let it go."), T("The cross or the Trash. That\u{2019}s it.")),
     ]
     let rep = makeBitmap(W, H, scale: s)
     draw(rep, scale: s) { ctx in
         t.page.setFill(); NSRect(x: 0, y: 0, width: W, height: H).fill()
-        let tw = (W - gap * 3) / 2, th = (H - gap * 3) / 2
+        let tw = (W - gap * 4) / 3, th = (H - gap * 3) / 2
         for (i, tile) in tiles.enumerated() {
-            let col = CGFloat(i % 2), row = CGFloat(1 - i / 2)
+            let col = CGFloat(i % 3), row = CGFloat(1 - i / 3)
             let r = NSRect(x: gap + col * (tw + gap), y: gap + row * (th + gap), width: tw, height: th)
             t.tile.setFill()
             NSBezierPath(roundedRect: r, xRadius: 28, yRadius: 28).fill()
-
-            let config = NSImage.SymbolConfiguration(pointSize: 46, weight: .regular)
-                .applying(.init(paletteColors: [color(98, 120, 255)]))
-            if let symbol = NSImage(systemSymbolName: tile.0, accessibilityDescription: nil)?.withSymbolConfiguration(config) {
-                let sz = symbol.size
-                symbol.draw(in: NSRect(x: r.minX + 44, y: r.maxY - 52 - sz.height, width: sz.width, height: sz.height))
-            }
-            leftText(tile.1, size: 36, weight: .semibold, color: t.tileInk, tracking: -0.8, x: r.minX + 44, baselineY: r.minY + 92, maxWidth: r.width - 88)
-            leftText(tile.2, size: 21, weight: .regular, color: t.secondaryInk, tracking: -0.2, x: r.minX + 44, baselineY: r.minY + 52, maxWidth: r.width - 88)
+            drawBadge(ctx, t, symbol: tile.0, at: NSPoint(x: r.minX + 34, y: r.maxY - 38 - 76))
+            leftText(tile.1, size: 29, weight: .semibold, color: t.tileInk, tracking: -0.6, x: r.minX + 34, baselineY: r.minY + 74, maxWidth: r.width - 60)
+            leftText(tile.2, size: 17, weight: .regular, color: t.secondaryInk, tracking: -0.1, x: r.minX + 34, baselineY: r.minY + 40, maxWidth: r.width - 60)
         }
     }
     savePNG(rep, "\(outDir)/bento-\(t.name).png")
