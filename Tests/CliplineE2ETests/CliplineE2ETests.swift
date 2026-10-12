@@ -30,6 +30,10 @@ class E2ETestCase: XCTestCase {
     override func tearDownWithError() throws {
         guard let app else { return }
         Input.releaseModifiers()
+        pause(0.2)
+        // A test must never leave a key held: that turns your clicks into
+        // right clicks long after the run.
+        XCTAssertTrue(Input.heldModifiers.isEmpty, "modifier keys still held after the test: \(Input.heldModifiers)")
         try? app.terminate()
         if app.isRunning { try? app.crash() }
         finderWindows.forEach(Finder.close)
