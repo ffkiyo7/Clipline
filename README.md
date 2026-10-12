@@ -1,40 +1,40 @@
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/images/hero-dark.png">
-  <img src="docs/images/hero-light.png" alt="Clipline. Screenshots and snippets, all on one line. Three screenshots in glass frames hang from a thin line under the macOS menu bar, each with a small source tag, and a clip of copied notes at the end.">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/zh-Hans/hero-dark.png">
+  <img src="docs/images/zh-Hans/hero-light.png" alt="Clipline。截图和文字，一根绳上全挂着。三张截图装在玻璃相框里，挂在 macOS 菜单栏下方的一根细绳上，每张下面都有一个来源小标签，绳尾还夹着一叠复制的文字。">
 </picture>
 
-<h3 align="center"><a href="../../releases/latest">Download the latest release&nbsp;&rsaquo;</a></h3>
+<h3 align="center"><a href="../../releases/latest">下载最新版本&nbsp;&rsaquo;</a></h3>
 
 <p align="center">
-  Free and open source. For macOS 14 and later.
+  免费开源。适用于 macOS 14 及以上。
   <br>
-  Grown from <a href="https://github.com/alejandrobujan/tendedero">Tendedero</a> by Alejandro Buján, with its own screenshot tool, markup, notes and more.
+  从 Alejandro Buján 的 <a href="https://github.com/alejandrobujan/tendedero">Tendedero</a> 发展而来，加入了自己的截图工具、标注、文字夹等功能。
   <br>
-  <a href="#build-from-source">Build from source&nbsp;&rsaquo;</a>
+  <a href="#从源码构建">从源码构建&nbsp;&rsaquo;</a>
   <br><br>
-  English&nbsp;·&nbsp;<a href="docs/i18n/README.zh-Hans.md">简体中文</a>
+  <a href="docs/i18n/README.en.md">English</a>&nbsp;·&nbsp;简体中文
 </p>
 
 <br>
 
-## Out of sight. Within reach.
+## 看不见，却够得着
 
-Every screenshot you take hangs on a line just above your screen.
-Rest the pointer in the middle of the menu bar and it glides down. Move away and it's gone.
+你每截一张图，它都会挂到屏幕顶上的一根绳上。
+把指针停在菜单栏中间，绳子就滑下来；移开，它就收起。
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/images/demo-dark.gif">
-  <img src="docs/images/demo-light.gif" alt="The pointer rests in the middle of the menu bar, the line slides down with three screenshots swinging gently, a click copies one and its tag says Copied, and the line tucks away when the pointer leaves.">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/zh-Hans/demo-dark.gif">
+  <img src="docs/images/zh-Hans/demo-light.gif" alt="指针停在菜单栏中间，绳子带着三张截图轻轻摇晃着滑下来，单击复制其中一张，它的标签显示「已复制」，指针离开后绳子收起。">
 </picture>
 
 <br>
 <br>
 
-## A gesture for everything.
+## 每个动作都有手势
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/images/bento-dark.png">
-  <img src="docs/images/bento-light.png" alt="Click to copy. Hold to mark up. Drag to share. Drop to hang. Control-Option-A to capture. Let it go.">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/zh-Hans/bento-dark.png">
+  <img src="docs/images/zh-Hans/bento-light.png" alt="单击复制。长按标注。拖出分享。拖入悬挂。⌃⌥A 截图。松手放下。">
 </picture>
 
 <br>
@@ -42,138 +42,120 @@ Rest the pointer in the middle of the menu bar and it glides down. Move away and
 
 | | |
 |:--|:--|
-| Click | Copy the image. |
-| Press and hold | Mark it up: arrows, shapes, text, numbers, mosaic. |
-| Double click | Open it in Preview. |
-| Force click | Take a quick look. |
-| Right click | Pin it to the screen, open it in the system's Markup, save it to the Desktop, and more. |
-| Drag into an app | Send it. It leaves the line; a screenshot in Clipline's folder goes to the Trash a few minutes later. |
-| Drag into a folder | Keep it there. It leaves the line. |
-| Drag to the Trash, or click the cross | Let it go. |
-| Drag an image onto the line | Hang it. The photos make room as you carry it. |
-| Rest the pointer in the middle of the menu bar | Bring the line down on that screen. |
-| Click anything in the menu bar | Put it away. |
-| <kbd>⌃</kbd>&thinsp;<kbd>⌥</kbd>&thinsp;<kbd>T</kbd> | Show or hide the line. |
-| <kbd>⌃</kbd>&thinsp;<kbd>⌥</kbd>&thinsp;<kbd>A</kbd> | Take a screenshot. Both shortcuts change under Shortcut in the menu bar. |
+| 单击 | 复制这张图。 |
+| 长按 | 标注：箭头、形状、文字、序号、马赛克。 |
+| 双击 | 用「预览」打开。 |
+| 用力点按 | 用「快速查看」看一眼。 |
+| 右键 | 贴到屏幕上、用系统「标记」打开、存到桌面等。 |
+| 拖进 App | 发送过去。照片从绳上收走；如果是 Clipline 文件夹里的截图，几分钟后移到废纸篓。 |
+| 拖进文件夹 | 存在那儿。原图从绳上取下。 |
+| 拖到废纸篓，或点叉 | 松手丢弃。 |
+| 把图片拖到绳上 | 挂上去。拖着经过时，其他照片会让出位置。 |
+| 指针停在菜单栏中间 | 在那一块屏幕上放下绳子。 |
+| 点击菜单栏任意处 | 把绳子收起来。 |
+| <kbd>⌃</kbd>&thinsp;<kbd>⌥</kbd>&thinsp;<kbd>T</kbd> | 显示或隐藏绳子。 |
+| <kbd>⌃</kbd>&thinsp;<kbd>⌥</kbd>&thinsp;<kbd>A</kbd> | 截图。两个快捷键都可以在菜单栏的「快捷键」中更改。 |
 
 <br>
 
-## A screenshot tool of its own.
+## 自带截图工具
 
-Press <kbd>⌃</kbd>&thinsp;<kbd>⌥</kbd>&thinsp;<kbd>A</kbd> and the screen freezes. The window under the
-pointer lights up: click to take it. Drag instead, and the edges stick to
-windows as you go, with a magnifier for the last pixel and its color a key
-away.
+按 <kbd>⌃</kbd>&thinsp;<kbd>⌥</kbd>&thinsp;<kbd>A</kbd>，屏幕定格。指针下的窗口会亮起来，单击就截下它。
+也可以拖出一块区域，边缘会自动吸附到窗口边上；放大镜帮你对准最后一个像素，按一下键就能复制那里的颜色。
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/images/capture-dark.gif">
-  <img src="docs/images/capture-light.gif" alt="Control-Option-A freezes the screen. Windows light up under the pointer, then a button on its own, a drag selects part of a page, and Done hangs it on the line.">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/zh-Hans/capture-dark.gif">
+  <img src="docs/images/zh-Hans/capture-light.gif" alt="按 ⌃⌥A 屏幕定格，指针下的窗口依次亮起，再到单个按钮；拖出页面的一部分，点完成就挂上了绳。">
 </picture>
 
-Allow Accessibility<sup>2</sup> and it goes further: the button, sidebar or
-text field under the pointer lights up on its own. Scroll to step out to
-what holds it.
+打开辅助功能权限<sup>2</sup>后还能更进一步：指针下的按钮、侧边栏、输入框会自己亮起来。滚动滚轮，一层层扩到包住它的区域。
 
-Mark it up right where it is, on a glass toolbar under the selection. Color
-each word of a text as you like, and scroll to make lines thicker or
-thinner. Return copies it and hangs it on the line.
+选好之后就在原地标注，工具栏是一块浮在选区下方的玻璃。文字里每个字都可以换颜色，滚轮可以调线条粗细。按回车复制，同时挂到绳上。
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/images/markup-dark.gif">
-  <img src="docs/images/markup-light.gif" alt="On a selected chart, the box tool is scrolled to a thicker line and drawn around the tallest bar, an arrow points to it, and a note says Peak in red and +32% in green.">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/zh-Hans/markup-dark.gif">
+  <img src="docs/images/zh-Hans/markup-light.gif" alt="在选好的图表上，滚轮把矩形调粗，框住最高的柱子，加一个箭头，再写上红色的「峰值」和绿色的「+32%」。">
 </picture>
 
 <br>
 
-## Your Desktop. Finally clear.
+## 桌面，终于清爽了
 
-Hand Clipline your screenshots<sup>1</sup> and they skip the Desktop
-entirely. No floating thumbnail. No five-second wait. Each capture hangs
-the instant you take it, and only what you drag out is kept.
+把截图交给 Clipline<sup>1</sup>，它们就完全跳过桌面。
+没有浮动缩略图。不用等五秒。拍下的瞬间即挂上绳，只有你拖出去的才会留下。
 
-Screen recordings hang there too, with a play button over them.
-Press and hold one to trim it.
+屏幕录制也会挂上绳，上面带一个播放按钮。按住即可剪辑。
 
-Same shortcuts. Same muscle memory. Just less mess.
+同样的快捷键。同样的肌肉记忆。只是少了乱。
 
 <br>
 
-## Where it came from.
+## 从哪儿来的，一眼就知道
 
-A small tag hangs under each photo with the icon of the app it was taken
-in. Point at it to read the app and the window. Show the name, only the
-icon, or nothing, under Source tags in the menu bar.
+每张照片下面挂着一个小标签，显示截图时所在 App 的图标。指针移上去，能看到 App 名和窗口标题。
+在菜单栏的「来源吊牌」里，可以选显示名称、只显示图标，或者不显示。
 
 <br>
 
-## Copied images, and copied text.
+## 复制的图片和文字
 
-Take a screenshot with <kbd>⌃</kbd> held, or copy an image in Preview, and it
-hangs on the line like any other. Turn on Hang copied images in the menu bar.
+按住 <kbd>⌃</kbd> 截图，或在「预览」中复制图片，它就会像其他截图一样挂上绳。在菜单栏中打开「挂上复制的图片」即可。
 
-Text you copy goes into a clip of glass notes at the end of the line,
-without bringing it down. Click the clip to find any of them again, and
-keep the ones you need at the top.
+复制的文字会收进绳尾的一个夹子，像一叠玻璃便签，不会把绳子叫下来。点夹子就能搜索翻找，常用的可以置顶。
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/images/notes-dark.gif">
-  <img src="docs/images/notes-light.gif" alt="A click on the clip at the end of the line opens the copied text. Typing brew narrows it to two commands, the down arrow picks the second, and Return copies it.">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/zh-Hans/notes-dark.gif">
+  <img src="docs/images/zh-Hans/notes-light.gif" alt="点绳尾的夹子，打开复制过的文字。输入 brew 只剩两条命令，按 ↓ 选中第二条，回车复制。">
 </picture>
 
-Anything a password manager marks as private is left alone.
+密码管理器标为私密的内容，一律不记录。
 
 <br>
 
-## Private by design.
+## 隐私是设计前提
 
-No account. No network. No analytics.
-Clipline runs entirely on your Mac, and your screenshots never leave it.
+没有账号。不联网。无统计。
+Clipline 完全在你的 Mac 上运行，截图不会离开这台电脑。
 
 <br>
 
-## Tech Specs
+## 技术规格
 
 | | |
 |:--|:--|
-| **Compatibility** | macOS 14 Sonoma or later, on Apple silicon and Intel. Designed for macOS 27. |
-| **Size** | About 5 MB |
-| **Languages** | English and Simplified Chinese. Spanish, French, Portuguese (Brazil), Japanese, Korean, Turkish and Azerbaijani for what came from Tendedero. |
-| **Built with** | Swift, AppKit and SwiftUI |
-| **Network access** | None |
-| **Price** | Free |
-| **License** | MIT for the code. The name and icon are not included. |
+| **兼容性** | macOS 14 Sonoma 及以上，Apple 芯片与 Intel 均支持。已针对 macOS 27 设计。 |
+| **体积** | 约 5 MB |
+| **语言** | 英语、简体中文。原版 Tendedero 已有的部分另有西班牙语、法语、巴西葡萄牙语、日语、韩语、土耳其语、阿塞拜疆语。 |
+| **技术栈** | Swift、AppKit 与 SwiftUI |
+| **网络访问** | 无 |
+| **价格** | 免费 |
+| **许可** | 代码为 MIT。名称与图标不在授权范围内。 |
 
 <br>
 
-## Install
+## 安装
 
-With [Homebrew](https://brew.sh):
+用 [Homebrew](https://brew.sh) 安装：
 
 ```sh
 brew install --cask ffkiyo7/tap/clipline
 ```
 
-Or download the app from the [latest release](../../releases/latest) and
-drag it to Applications.
+也可以从[最新版本](../../releases/latest)下载 App，拖进「应用程序」。
 
-The release is not notarized by Apple, so macOS stops it the first time.
-Run this once, then open it as usual:
+这个版本没有经过 Apple 公证，第一次打开会被 macOS 拦住。先运行一次下面的命令，之后就能正常打开：
 
 ```sh
 xattr -dr com.apple.quarantine /Applications/Clipline.app
 ```
 
-Or open it, then choose Open Anyway under System Settings → Privacy &
-Security. Homebrew upgrades with `brew upgrade --cask clipline` open right
-away.
+或者先打开一次，再到「系统设置 → 隐私与安全性」里点「仍要打开」。之后用 `brew upgrade --cask clipline` 升级，不会再被拦。
 
-Coming from Tendedero? Quit it first. Clipline brings over its settings,
-the photos on the line and the copied text. macOS asks once more for Screen
-Recording and Accessibility, since to macOS it is a new app.
+之前用过 Tendedero？先退出它。Clipline 会带过来它的设置、绳上的照片和复制的文字。对 macOS 来说这是个新 App，所以屏幕录制和辅助功能权限要再授权一次。
 
 <br>
 
-## Build from source
+## 从源码构建
 
 ```sh
 git clone https://github.com/ffkiyo7/Clipline.git
@@ -182,46 +164,43 @@ scripts/build-app.sh
 open build/Clipline.app
 ```
 
-Requires the Swift toolchain. Xcode is optional. With the Command Line Tools for macOS 27, the script falls back to the macOS 26 SDK they install alongside, because the new SDK needs a SwiftUI macro plugin only Xcode includes.
+需要 Swift 工具链，Xcode 可选。若使用 macOS 27 的命令行工具，脚本会回退到随其一同安装的 macOS 26 SDK，因为新版 SDK 需要只有 Xcode 才带的 SwiftUI 宏插件。
 
-Local builds are signed with your Apple Development certificate when you
-have one, the one Xcode makes for any Apple ID, so macOS remembers the
-Screen Recording and Accessibility access across rebuilds. Without one
-they are signed ad hoc, and macOS asks again after each rebuild.
+如果你有 Apple Development 证书（任何 Apple ID 在 Xcode 里都能生成），本地构建会用它签名，重新构建后 macOS 仍然记得屏幕录制和辅助功能权限。没有的话采用 ad-hoc 签名，每次重新构建都要重新授权。
 
 <details>
-<summary>Inside the app</summary>
+<summary>应用内部</summary>
 <br>
 
-| File | Role |
+| 文件 | 作用 |
 |:--|:--|
-| `AppDelegate.swift` | Menu bar, shortcuts, revealing and tucking away the line |
-| `LinePanel.swift` | The transparent strip along the top of the screen |
-| `LineView.swift` | The line and where each photo hangs |
-| `LineDrop.swift` | Images dropped on the line |
-| `PeggedView.swift` | One photo: glass frame, clip, source tag, swing and breeze |
-| `GrabArea.swift` | Click, long press, drag and drop |
-| `Line.swift` | What is hanging, and what you can do with it |
-| `Capture.swift` | The screenshot tool: selection, magnifier, toolbar |
-| `Elements.swift` | Buttons and panels under the pointer, through Accessibility |
-| `Editor.swift`, `EditorCanvas.swift`, `EditorMarks.swift` | Markup: tools, marks and how they are drawn |
-| `Pin.swift` | Photos pinned to the screen |
-| `Source.swift` | Which app and window a screenshot came from |
-| `Notes.swift`, `NoteClip.swift`, `NotesPanel.swift` | Copied text and the clip that holds it |
-| `ScreenshotWatcher.swift` | Notices new screenshots |
-| `ClipboardWatcher.swift` | Notices images and text copied to the clipboard |
-| `Inbox.swift` | Takes over screenshot settings and puts them back |
-| `HotKey.swift` | The keyboard shortcuts |
-| `Markup.swift` | Opens the system Markup editor and saves the result |
-| `Trim.swift` | Trims a screen recording and saves the result |
-| `FullScreen.swift` | Knows when to stay hidden |
+| `AppDelegate.swift` | 菜单栏、快捷键、放下与收起绳子 |
+| `LinePanel.swift` | 屏幕顶部那条透明的窄条 |
+| `LineView.swift` | 绳子本身，以及每张照片挂在哪里 |
+| `LineDrop.swift` | 拖到绳上的图片 |
+| `PeggedView.swift` | 一张照片：玻璃相框、夹子、来源标签、摇摆与微风 |
+| `GrabArea.swift` | 单击、长按、拖放 |
+| `Line.swift` | 绳上挂着什么，以及你能对它做什么 |
+| `Capture.swift` | 截图工具：选区、放大镜、工具栏 |
+| `Elements.swift` | 通过辅助功能找到指针下的按钮和面板 |
+| `Editor.swift`、`EditorCanvas.swift`、`EditorMarks.swift` | 标注：工具、标记以及它们的画法 |
+| `Pin.swift` | 贴在屏幕上的照片 |
+| `Source.swift` | 截图来自哪个 App、哪个窗口 |
+| `Notes.swift`、`NoteClip.swift`、`NotesPanel.swift` | 复制的文字，以及装它们的夹子 |
+| `ScreenshotWatcher.swift` | 发现新的截图 |
+| `ClipboardWatcher.swift` | 发现复制到剪贴板的图片和文字 |
+| `Inbox.swift` | 接管截图设置，之后再把它们放回去 |
+| `HotKey.swift` | 键盘快捷键 |
+| `Markup.swift` | 打开系统「标记」编辑器并保存结果 |
+| `Trim.swift` | 剪辑屏幕录制并保存结果 |
+| `FullScreen.swift` | 判断何时该保持隐藏 |
 
-Every image here, the icon included, is drawn in code by
-`scripts/make-icon.swift` and `scripts/make-readme-art.swift`.
-`scripts/make-dmg.sh` builds the disk image for releases.
+这里出现的每一张图——包括图标——都是由代码绘制的：
+`scripts/make-icon.swift` 与 `scripts/make-readme-art.swift`。
+`scripts/make-dmg.sh` 负责构建发布用的磁盘映像。
 
-Translations live in `Sources/Clipline/Resources`, one `.lproj` folder per
-language. `swift scripts/check-strings.swift` checks that none is missing.
+翻译文件位于 `Sources/Clipline/Resources`，每种语言一个 `.lproj` 文件夹。
+`swift scripts/check-strings.swift` 会检查是否有遗漏。
 
 </details>
 
@@ -230,9 +209,9 @@ language. `swift scripts/check-strings.swift` checks that none is missing.
 ---
 
 <sub>
-1. On first launch, Clipline offers to handle your screenshots. If you accept, it turns off the floating thumbnail and saves new screenshots to its own folder, two settings also found under Options in Cmd+Shift+5. Your previous settings are saved and restored when Clipline quits or the option is turned off from the menu bar. Clipline hides automatically while an app is in full screen.
+1. 首次启动时，Clipline 会询问是否接管你的截图。如果同意，它会关闭浮动缩略图，并把新截图保存到它自己的文件夹，这两项设置也可以在 Cmd+Shift+5 的「选项」中找到。你原来的设置会被保存，并在退出 Clipline 或从菜单栏关闭该选项时恢复。当有 App 处于全屏时，Clipline 会自动隐藏。
 <br><br>
-2. Turn on Find Buttons and Panels in Screenshots in the menu bar, then allow Clipline under System Settings → Privacy & Security → Accessibility. Without it, screenshots still find whole windows. Taking screenshots needs Screen Recording access.
+2. 在菜单栏勾选「截图时识别按钮和面板」，再到「系统设置 → 隐私与安全性 → 辅助功能」里允许 Clipline。不开的话，截图时仍然能识别整个窗口。截图本身需要屏幕录制权限。
 </sub>
 
 <br>
@@ -241,7 +220,7 @@ language. `swift scripts/check-strings.swift` checks that none is missing.
 <p align="center">
   <img src="docs/images/icon.png" width="64" height="64" alt="">
   <br>
-  <sub>The code is MIT licensed. Clipline started from Tendedero’s code; the Tendedero name and icon are not part of it. See <a href="LICENSE">LICENSE</a>.</sub>
+  <sub>代码采用 MIT 许可。Clipline 基于 Tendedero 的代码，但不使用 Tendedero 的名称与图标。详见 <a href="LICENSE">LICENSE</a>。</sub>
   <br>
-  <sub>Clipline is made by <a href="https://github.com/ffkiyo7">ffkiyo7</a>, from <a href="https://github.com/alejandrobujan/tendedero">Tendedero</a> by <a href="https://alejandrobujan.com">Alejandro Buján</a>.</sub>
+  <sub>Clipline 由 <a href="https://github.com/ffkiyo7">ffkiyo7</a> 开发，源自 <a href="https://alejandrobujan.com">Alejandro Buján</a> 的 <a href="https://github.com/alejandrobujan/tendedero">Tendedero</a>。</sub>
 </p>

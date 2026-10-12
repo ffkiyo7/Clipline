@@ -477,9 +477,21 @@ func hero(_ t: Theme) {
     let rep = makeBitmap(W, H, scale: s)
     draw(rep, scale: s) { ctx in
         t.page.setFill(); NSRect(x: 0, y: 0, width: W, height: H).fill()
-        text("Clipline", size: 84, weight: .semibold, color: t.ink, tracking: -2.4, centerX: W / 2, baselineY: H - 128)
-        text(T("Screenshots and snippets, all on one line."), size: 30, weight: .regular, color: t.secondaryInk,
-             tracking: -0.4, centerX: W / 2, baselineY: H - 182)
+        // The icon beside the name, the pair centered. The icon's artwork
+        // keeps a tenth of its size as margin on every side.
+        let icon = NSImage(contentsOfFile: "docs/images/icon.png")!
+        let iconSize: CGFloat = 118, gap: CGFloat = 16
+        let nameW = NSAttributedString(string: "Clipline", attributes: [.font: NSFont.systemFont(ofSize: 84, weight: .semibold),
+                                                                       .kern: -2.4]).size().width
+        let left = (W - (iconSize * 0.8 + gap + nameW)) / 2
+        icon.draw(in: NSRect(x: left - iconSize * 0.1, y: H - 128 - 22, width: iconSize, height: iconSize),
+                  from: .zero, operation: .sourceOver, fraction: 1, respectFlipped: true,
+                  hints: [.interpolation: NSImageInterpolation.high.rawValue])
+        text("Clipline", size: 84, weight: .semibold, color: t.ink, tracking: -2.4,
+             centerX: left + iconSize * 0.8 + gap + nameW / 2, baselineY: H - 128)
+        // Chinese fills its square, so it reads larger than Latin at the same size.
+        text(T("Screenshots and snippets, all on one line."), size: language == "en" ? 30 : 26, weight: .regular,
+             color: t.secondaryInk, tracking: language == "en" ? -0.4 : 1, centerX: W / 2, baselineY: H - 182)
         let frames = [Frame(x: 240, w: 250, h: 172, tilt: 2.5, kind: 0),
                       Frame(x: 510, w: 270, h: 186, tilt: -1.2, kind: 1),
                       Frame(x: 780, w: 220, h: 160, tilt: 3, kind: 2)]
