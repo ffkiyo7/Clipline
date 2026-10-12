@@ -72,6 +72,15 @@ enum E2E {
         return app
     }
 
+    /// The test app's settings, file and all. Only through cfprefsd: a file
+    /// removed behind its back is written again.
+    static func removeSettings() {
+        _ = try? shell("/usr/bin/defaults", "delete", bundleID)
+        let plist = FileManager.default.homeDirectoryForCurrentUser
+            .appendingPathComponent("Library/Preferences/\(bundleID).plist")
+        try? FileManager.default.removeItem(at: plist)
+    }
+
     static func removePreparedApp() {
         guard let prepared else { return }
         try? FileManager.default.removeItem(at: prepared.deletingLastPathComponent())
@@ -294,6 +303,39 @@ final class TestApp {
     }
 
     // MARK: Its windows
+
+    /// What the app looks like now, for a failure message.
+    func describeState() -> String {
+        var lines = ["State of Clipline E2E (pid \(pid), running: \(isRunning)):"]
+        lines.append("  frontmost app: \(NSWorkspace.shared.frontmostApplication?.bundleIdentifier ?? "none")")
+        if let focused = element.attribute(kAXFocusedWindowAttribute), CFGetTypeID(focused) == AXUIElementGetTypeID() {
+            let window = AX(element: focused as! AXUIElement)
+            lines.append("  focused window: \(window.role ?? "?") \(window.frame.map { "\($0)" } ?? "")")
+        } else {
+            lines.append("  focused window: none")
+        }
+        if let focused = element.attribute(kAXFocusedUIElementAttribute), CFGetTypeID(focused) == AXUIElementGetTypeID() {
+            let control = AX(element: focused as! AXUIElement)
+            lines.append("  focused element: \(control.role ?? "?") \(control.value ?? "")")
+        }
+        for window in element.windows {
+            let main = window.attribute(kAXMainAttribute) as? Bool
+            let focused = window.attribute(kAXFocusedAttribute) as? Bool
+            lines.append("  AX window: \(window.role ?? "?")/\(window.attribute(kAXSubroleAttribute) as? String ?? "?") "
+                + "\(window.frame.map { "\($0)" } ?? "") main: \(main.map { "\($0)" } ?? "?") focused: \(focused.map { "\($0)" } ?? "?")")
+        }
+        let windows = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID)
+            as? [[String: Any]] ?? []
+        for info in windows where (info[kCGWindowOwnerPID as String] as? pid_t) == pid {
+            lines.append("  on screen: layer \(info[kCGWindowLayer as String] ?? "?") \(info[kCGWindowBounds as String] ?? "")")
+        }
+        lines.append("  line is down: \(lineIsDown)")
+        lines.append("  hanging: \(hanging.map { URL(fileURLWithPath: $0).lastPathComponent })")
+        lines.append("  hanging paths: \(hanging)")
+        lines.append("  saved notes: \(savedNotes())")
+        lines.append("  clipboard types: \(NSPasteboard.general.types?.map(\.rawValue) ?? []), text: \(NSPasteboard.general.string(forType: .string)?.prefix(80) ?? "none")")
+        return lines.joined(separator: "\n")
+    }
 
     var element: AX { AX.application(pid) }
 
