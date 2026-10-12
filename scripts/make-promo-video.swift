@@ -242,8 +242,9 @@ func captureShot(_ ctx: CGContext, _ l: CGFloat) {
     let start = NSPoint(x: selection.minX, y: selection.maxY), end = NSPoint(x: selection.maxX, y: selection.minY)
     let size = { (r: NSRect) in "\(Int(r.width * 2)) \u{00D7} \(Int(r.height * 2))" }
 
-    let cursor = path(l, [(0, NSPoint(x: 470, y: 250)), (0.85, NSPoint(x: 780, y: 230)), (1.4, NSPoint(x: 470, y: 290)),
-                          (1.9, NSPoint(x: Desk.button.midX + 10, y: Desk.button.midY)), (2.35, start)], glide: 0.4)
+    let cursor = path(l, [(0, NSPoint(x: 470, y: 250)), (0.85, NSPoint(x: 780, y: 230)), (1.3, NSPoint(x: Desk.button.maxX + 40, y: Desk.button.minY - 36)),
+                          (1.75, NSPoint(x: Desk.button.maxX - 18, y: Desk.button.minY + 8)),
+                          (2.05, NSPoint(x: Desk.button.maxX - 18, y: Desk.button.minY + 8)), (2.35, start)], glide: 0.4)
     let dragging = ramp(l, 2.4, 0.6)
     let dragged = NSPoint(x: lerp(start.x, end.x, dragging), y: lerp(start.y, end.y, dragging))
     let pointer = l < 2.4 ? cursor : l < 3.0 ? dragged : path(l, [(3.0, end), (3.45, done), (4.6, NSPoint(x: 760, y: 120))], glide: 0.35)
@@ -439,7 +440,12 @@ func drawChatWindow(_ ctx: CGContext, _ t: Theme, highlight: CGFloat, attached: 
             let tr = NSRect(x: th.minX, y: th.maxY - th.height * s, width: th.width * s, height: th.height * s)
             ctx.saveGState()
             NSBezierPath(roundedRect: tr, xRadius: 7, yRadius: 7).addClip()
-            drawContent(2, tr)
+            // Drawn at the photo's own size and scaled down, so the whole chart shows.
+            let full = homeFrames[2]
+            let k = max(tr.width / full.w, tr.height / full.h)
+            ctx.translateBy(x: tr.midX - full.w * k / 2, y: tr.midY - full.h * k / 2)
+            ctx.scaleBy(x: k, y: k)
+            drawContent(2, NSRect(x: 0, y: 0, width: full.w, height: full.h))
             ctx.restoreGState()
             let edge = NSBezierPath(roundedRect: tr, xRadius: 7, yRadius: 7)
             edge.lineWidth = 1; faint.setStroke(); edge.stroke()
@@ -495,7 +501,7 @@ func dragShot(_ ctx: CGContext, _ l: CGFloat) {
         pointer = lerp(NSPoint(x: grab.x + 6, y: grab.y + 4), drop, carry)
         pointer.x += 40 * sin(.pi * carry)
     } else {
-        pointer = path(l, [(2.6, drop), (2.95, typeAt), (4.7, NSPoint(x: 770, y: 150))], glide: 0.3)
+        pointer = path(l, [(2.6, drop), (2.95, typeAt), (3.35, NSPoint(x: Chat.composer.maxX - 150, y: Chat.composer.maxY + 26)), (4.7, NSPoint(x: 770, y: 150))], glide: 0.3)
     }
     let over = l >= 2.15 && l < 2.75 ? min(ramp(l, 2.15, 0.15), 1 - ramp(l, 2.6, 0.15)) : 0
     let landed = ramp(l, 2.62, 0.22)
