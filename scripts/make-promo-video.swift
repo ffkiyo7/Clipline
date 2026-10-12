@@ -20,14 +20,16 @@ import CoreVideo
 
 func L(_ zh: String, _ en: String) -> String { language == "en" ? en : zh }
 
+/// The README's theme, with the light glass given more of an edge: on a
+/// pale wallpaper its rims faded to nothing, so the film's glass gets a cool
+/// hairline at the bottom of each rim and a little more see-through fill.
 let theme: Theme = {
-    let t = ProcessInfo.processInfo.environment["THEME"] == "dark" ? dark : light
-    // PAGE=r,g,b swaps the colour behind the card and the ending, to try others.
-    guard let v = ProcessInfo.processInfo.environment["PAGE"]?.split(separator: ",").compactMap({ Double($0) }), v.count == 3 else { return t }
-    return Theme(name: t.name, page: color(CGFloat(v[0]), CGFloat(v[1]), CGFloat(v[2])), ink: t.ink, secondaryInk: t.secondaryInk,
+    guard ProcessInfo.processInfo.environment["THEME"] != "dark" else { return dark }
+    let t = light
+    return Theme(name: t.name, page: t.page, ink: t.ink, secondaryInk: t.secondaryInk,
                  wallpaper: t.wallpaper, glow: t.glow, menuBar: t.menuBar, menuInk: t.menuInk, line: t.line,
-                 glassFill: t.glassFill, edgeTop: t.edgeTop, edgeBottom: t.edgeBottom, shadow: t.shadow,
-                 tile: t.tile, tileInk: t.tileInk)
+                 glassFill: color(255, 255, 255, 0.42), edgeTop: color(255, 255, 255, 1),
+                 edgeBottom: color(150, 156, 196, 0.5), shadow: t.shadow, tile: t.tile, tileInk: t.tileInk)
 }()
 let VW: CGFloat = 1280, VH: CGFloat = 720, VScale: CGFloat = 1.5
 let fps = 60
@@ -237,6 +239,37 @@ func revealShot(_ ctx: CGContext, _ l: CGFloat) {
     })
 }
 
+/// A pane of glass around an app window, like the photos' frames. Only for
+/// looks; it sits outside the window, so selections still meet its edges.
+func drawGlassFrame(_ ctx: CGContext, _ t: Theme, around r: NSRect, radius: CGFloat, band: CGFloat = 7) {
+    let lightUI = t.name == "light"
+    let outer = r.insetBy(dx: -band, dy: -band)
+    let pane = NSBezierPath(roundedRect: outer, xRadius: radius + band, yRadius: radius + band)
+    ctx.saveGState(); shadow(t, 1, blur: 28, y: -12)
+    t.glassFill.withAlphaComponent(lightUI ? 0.5 : 0.14).setFill(); pane.fill()
+    ctx.restoreGState()
+    ctx.saveGState(); pane.addClip()
+    NSGradient(colors: [NSColor.white.withAlphaComponent(lightUI ? 0.45 : 0.1), NSColor.white.withAlphaComponent(0)])!
+        .draw(in: outer, angle: -90)
+    ctx.restoreGState()
+    ctx.saveGState()
+    let rim = NSBezierPath(roundedRect: outer, xRadius: radius + band, yRadius: radius + band)
+    rim.append(NSBezierPath(roundedRect: outer.insetBy(dx: 1, dy: 1), xRadius: radius + band - 1, yRadius: radius + band - 1))
+    rim.windingRule = .evenOdd; rim.addClip()
+    NSGradient(colors: [t.edgeTop, t.edgeBottom])!.draw(in: outer, angle: -90)
+    ctx.restoreGState()
+    let seam = NSBezierPath(roundedRect: r.insetBy(dx: -0.5, dy: -0.5), xRadius: radius + 0.5, yRadius: radius + 0.5)
+    seam.lineWidth = 1
+    (lightUI ? NSColor.black.withAlphaComponent(0.07) : NSColor.white.withAlphaComponent(0.1)).setStroke(); seam.stroke()
+}
+
+/// The README's desktop, its two windows set in glass.
+func drawFilmDesktop(_ ctx: CGContext, _ t: Theme) {
+    drawGlassFrame(ctx, t, around: Desk.chart, radius: 12)
+    drawGlassFrame(ctx, t, around: Desk.web, radius: 12)
+    drawDesktop(ctx, t)
+}
+
 // MARK: Shot 2, the screenshot tool
 
 func captureShot(_ ctx: CGContext, _ l: CGFloat) {
@@ -282,7 +315,7 @@ func captureShot(_ ctx: CGContext, _ l: CGFloat) {
     if l >= 5.1 { s.reveal = 1 - ramp(l, 5.1, 0.28) }
 
     vScene(ctx, t, photos: photos, reveal: s.reveal, swing: s.swing, noteClip: nil, cursor: pointer,
-           backdrop: { ctx in drawDesktop(ctx, t) },
+           backdrop: { ctx in drawFilmDesktop(ctx, t) },
            overlay: { ctx in
         if frozen {
             drawFreeze(ctx, canvas: canvas, hole: hole, label: label, handles: l >= 3.0)
@@ -350,7 +383,7 @@ func markupShot(_ ctx: CGContext, _ l: CGFloat) {
 
     let frozen = l < 3.95
     vScene(ctx, t, photos: [], reveal: 0, swing: [0, 0, 0], noteClip: nil, cursor: pointer,
-           backdrop: { ctx in drawDesktop(ctx, t) },
+           backdrop: { ctx in drawFilmDesktop(ctx, t) },
            overlay: { ctx in
         if frozen {
             drawFreeze(ctx, canvas: canvas, hole: hole, label: "\(Int(hole.width * 2)) \u{00D7} \(Int(hole.height * 2))", handles: true)
@@ -408,6 +441,7 @@ func drawChatWindow(_ ctx: CGContext, _ t: Theme, highlight: CGFloat, attached: 
         if let s = stroke { p.lineWidth = 0.8; s.setStroke(); p.stroke() }
     }
 
+    drawGlassFrame(ctx, t, around: r, radius: 11)
     let frame = NSBezierPath(roundedRect: r, xRadius: 11, yRadius: 11)
     ctx.saveGState(); shadow(t, 1, blur: 26, y: -10); bg.setFill(); frame.fill(); ctx.restoreGState()
     ctx.saveGState(); frame.addClip()
