@@ -1,4 +1,5 @@
 import AppKit
+import Combine
 import ScreenCaptureKit
 import SwiftUI
 
@@ -58,6 +59,7 @@ final class Capture: ObservableObject {
     private var overlays: [CaptureWindow] = []
     private var toolbar: NSHostingView<CaptureToolbar>?
     private var canvas: EditorCanvas?
+    private var widthChange: AnyCancellable?
 
     private(set) var phase: Phase = .choosing
     /// In screen coordinates, always within one screen.
@@ -437,6 +439,10 @@ final class Capture: ObservableObject {
         window.makeFirstResponder(canvas)
         self.canvas = canvas
         editor = model
+        // The width scrolled to shows in the toolbar, which grows to fit it.
+        widthChange = model.$customWidth.dropFirst().removeDuplicates()
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in DispatchQueue.main.async { self?.layoutToolbar() } }
         phase = .marking
         layoutToolbar()
         // The toolbar grows a row for colors once SwiftUI has caught up.

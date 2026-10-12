@@ -18,7 +18,14 @@ struct Mark: Identifiable, Equatable {
     var end: CGPoint
     var points: [CGPoint] = []
     var text = ""
+    /// Parts of the text in a color of their own, over `color`.
+    var runs: [Run] = []
     var number = 0
+
+    struct Run: Equatable {
+        var range: NSRange
+        var color: NSColor
+    }
 
     var rect: CGRect {
         CGRect(x: min(start.x, end.x), y: min(start.y, end.y),
@@ -53,8 +60,7 @@ struct Mark: Identifiable, Equatable {
             guard let x0 = xs.min(), let x1 = xs.max(), let y0 = ys.min(), let y1 = ys.max() else { return .null }
             return CGRect(x: x0, y: y0, width: x1 - x0, height: y1 - y0).insetBy(dx: -width, dy: -width)
         case .text:
-            let size = (text as NSString).size(withAttributes: textAttributes)
-            return CGRect(origin: start, size: size)
+            return CGRect(origin: start, size: attributedText.size())
         case .number:
             let r = numberRadius
             return CGRect(x: start.x - r, y: start.y - r, width: r * 2, height: r * 2)
@@ -84,7 +90,8 @@ struct Mark: Identifiable, Equatable {
     /// The two handles that reshape it: its start and end points.
     var hasHandles: Bool { [.rectangle, .ellipse, .arrow, .mosaic].contains(kind) }
 
-    var textAttributes: [NSAttributedString.Key: Any] {
+    func textAttributes(_ color: NSColor) -> [NSAttributedString.Key: Any] {
+        // Light text gets a soft dark halo, so it reads on a light screenshot.
         let shadow = NSShadow()
         shadow.shadowColor = NSColor.black.withAlphaComponent(color.isLight ? 0.55 : 0)
         shadow.shadowBlurRadius = width
@@ -93,6 +100,31 @@ struct Mark: Identifiable, Equatable {
             .foregroundColor: color,
             .shadow: shadow,
         ]
+    }
+
+    var attributedText: NSAttributedString {
+        let result = NSMutableAttributedString(string: text, attributes: textAttributes(color))
+        let length = result.length
+        for run in runs where run.range.location < length {
+            let range = NSRange(location: run.range.location, length: min(run.range.length, length - run.range.location))
+            result.addAttributes(textAttributes(run.color), range: range)
+        }
+        return result
+    }
+
+    /// The colors of typed text, as runs over the color most of it has.
+    mutating func takeColors(from typed: NSAttributedString) {
+        var found: [Run] = []
+        typed.enumerateAttribute(.foregroundColor, in: NSRange(location: 0, length: typed.length)) { value, range, _ in
+            let c = value as? NSColor ?? color
+            if let last = found.last, last.color == c, NSMaxRange(last.range) == range.location {
+                found[found.count - 1].range.length += range.length
+            } else {
+                found.append(Run(range: range, color: c))
+            }
+        }
+        if let main = found.max(by: { $0.range.length < $1.range.length })?.color { color = main }
+        runs = found.filter { $0.color != color }
     }
 }
 
@@ -165,7 +197,7 @@ enum MarkRenderer {
                 label.draw(at: CGPoint(x: mark.start.x - size.width / 2, y: mark.start.y - size.height / 2))
             }
         case .text:
-            let text = NSAttributedString(string: mark.text, attributes: mark.textAttributes)
+            let text = mark.attributedText
             withAppKit(ctx) { text.draw(at: mark.start) }
         }
     }
@@ -301,15 +333,22 @@ final class EditorModel: ObservableObject {
     @Published var colorIndex = UserDefaults.standard.integer(forKey: "editorColor") {
         didSet {
             UserDefaults.standard.set(colorIndex, forKey: "editorColor")
-            restyleSelection { $0.color = self.color }
+            restyleSelection { $0.color = self.color; $0.runs = [] }
         }
     }
     @Published var widthIndex = UserDefaults.standard.object(forKey: "editorWidth") as? Int ?? 1 {
         didSet {
             UserDefaults.standard.set(widthIndex, forKey: "editorWidth")
+            // Picking a width, even the one already picked, ends a scrolled one.
+            customWidth = nil
             restyleSelection { $0.width = self.width }
         }
     }
+    /// A width set by scrolling, in points, between the presets and beyond.
+    /// Only for this markup: the next one starts from the preset again.
+    @Published var customWidth: CGFloat?
+    /// Text is being typed: its colors and size are the text box's business.
+    var isTyping = false
     @Published private(set) var marks: [Mark] = []
     @Published var selection: UUID?
     @Published private(set) var canUndo = false
@@ -324,7 +363,23 @@ final class EditorModel: ObservableObject {
     private var redoStack: [[Mark]] = []
 
     var color: NSColor { Self.colors[min(max(colorIndex, 0), Self.colors.count - 1)] }
-    var width: CGFloat { Self.widths[min(max(widthIndex, 0), Self.widths.count - 1)] * scale }
+    var width: CGFloat { widthPoints * scale }
+    var presetWidth: CGFloat { Self.widths[min(max(widthIndex, 0), Self.widths.count - 1)] }
+    var widthPoints: CGFloat { customWidth ?? presetWidth }
+
+    static let widthRange: ClosedRange<CGFloat> = 1...24
+    private var lastScroll = Date.distantPast
+
+    /// Scrolling makes lines thicker or thinner, half a point a step, and
+    /// the selected mark with them. A whole scroll is one undo.
+    func adjustWidth(by steps: Int) {
+        let next = min(max(widthPoints + CGFloat(steps) * 0.5, Self.widthRange.lowerBound), Self.widthRange.upperBound)
+        guard next != widthPoints else { return }
+        let continuing = Date().timeIntervalSince(lastScroll) < 0.8
+        lastScroll = Date()
+        customWidth = next == presetWidth ? nil : next
+        restyleSelection(checkpoint: !continuing) { $0.width = self.width }
+    }
     var hasChanges: Bool { !marks.isEmpty || !undoStack.isEmpty }
     var nextNumber: Int { (marks.filter { $0.kind == .number }.map(\.number).max() ?? 0) + 1 }
 
@@ -399,9 +454,9 @@ final class EditorModel: ObservableObject {
     }
 
     /// Choosing a color or width while a mark is selected changes that mark.
-    private func restyleSelection(_ change: (inout Mark) -> Void) {
-        guard let id = selection, let mark = marks.first(where: { $0.id == id }), mark.kind != .mosaic else { return }
-        checkpoint()
+    private func restyleSelection(checkpoint: Bool = true, _ change: (inout Mark) -> Void) {
+        guard !isTyping, let id = selection, let mark = marks.first(where: { $0.id == id }), mark.kind != .mosaic else { return }
+        if checkpoint { self.checkpoint() }
         update(id, change)
     }
 

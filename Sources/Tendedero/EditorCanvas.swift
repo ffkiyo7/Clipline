@@ -35,6 +35,16 @@ final class EditorCanvas: NSView {
             .receive(on: RunLoop.main)
             .sink { [weak self] in self?.needsDisplay = true }
             .store(in: &cancellables)
+        // While typing, a color or width picked goes to the text being typed.
+        model.$colorIndex.dropFirst()
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in self?.recolorTyping() }
+            .store(in: &cancellables)
+        model.$widthIndex.dropFirst().map { _ in () }
+            .merge(with: model.$customWidth.dropFirst().map { _ in () })
+            .receive(on: RunLoop.main)
+            .sink { [weak self] in self?.resizeTyping() }
+            .store(in: &cancellables)
     }
 
     required init?(coder: NSCoder) { fatalError() }
@@ -104,6 +114,7 @@ final class EditorCanvas: NSView {
         if let id = model.selection, let mark = model.marks.first(where: { $0.id == id }) {
             drawSelection(mark)
         }
+        drawWidthPreview()
     }
 
     private func drawSelection(_ mark: Mark) {
@@ -268,6 +279,59 @@ final class EditorCanvas: NSView {
         addCursorRect(imageRect, cursor: model.tool == .select ? .arrow : .crosshair)
     }
 
+    // MARK: Width by scrolling
+
+    private var scrolled: CGFloat = 0
+    /// A ring the size of the new width under the pointer, for a moment.
+    private var widthPreview: (point: CGPoint, until: Date)?
+
+    /// Scrolling up makes lines thicker, down thinner, on whichever way the
+    /// device scrolls. A click on a width in the toolbar goes back to it.
+    override func scrollWheel(with event: NSEvent) {
+        guard model.tool != .mosaic else { return }
+        let delta = event.scrollingDeltaY * (event.isDirectionInvertedFromDevice ? -1 : 1)
+        guard delta != 0 else { return }
+        // One step per event at most: a wheel's notch is one step however far
+        // acceleration or a remote desktop says it went. A trackpad needs a
+        // short swipe for each.
+        if event.hasPreciseScrollingDeltas {
+            if (scrolled > 0) != (delta > 0) { scrolled = 0 }
+            scrolled += delta
+            guard abs(scrolled) >= 8 else { return }
+            scrolled = 0
+        }
+        model.adjustWidth(by: delta > 0 ? 1 : -1)
+        let until = Date().addingTimeInterval(0.7)
+        widthPreview = (convert(event.locationInWindow, from: nil), until)
+        needsDisplay = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.75) { [weak self] in
+            guard let self, let preview = self.widthPreview, preview.until <= Date() else { return }
+            self.widthPreview = nil
+            self.needsDisplay = true
+        }
+    }
+
+    private func drawWidthPreview() {
+        guard let preview = widthPreview else { return }
+        let d = max(3, model.width * zoom)
+        let dot = NSBezierPath(ovalIn: CGRect(x: preview.point.x - d / 2, y: preview.point.y - d / 2, width: d, height: d))
+        model.color.withAlphaComponent(0.85).setFill()
+        dot.fill()
+        NSColor.white.withAlphaComponent(0.9).setStroke()
+        dot.lineWidth = 1
+        dot.stroke()
+        let label = NSAttributedString(string: String(format: "%g pt", model.widthPoints), attributes: [
+            .font: NSFont.monospacedDigitSystemFont(ofSize: 11, weight: .semibold),
+            .foregroundColor: NSColor.white,
+        ])
+        let size = label.size()
+        let box = CGRect(x: preview.point.x + d / 2 + 8, y: preview.point.y - size.height / 2 - 3,
+                         width: size.width + 12, height: size.height + 6)
+        NSColor.black.withAlphaComponent(0.65).setFill()
+        NSBezierPath(roundedRect: box, xRadius: box.height / 2, yRadius: box.height / 2).fill()
+        label.draw(at: CGPoint(x: box.minX + 6, y: box.minY + 3))
+    }
+
     // MARK: Cursor
 
     private var tracking: NSTrackingArea?
@@ -306,10 +370,12 @@ final class EditorCanvas: NSView {
 
     private func beginText(at p: CGPoint, editing existing: Mark?) {
         let template = existing ?? Mark(kind: .text, color: model.color, width: model.width, start: p, end: p)
-        let font = NSFont.systemFont(ofSize: template.fontSize * zoom, weight: .semibold)
-        let field = NSTextField(string: existing?.text ?? "")
-        field.font = font
+        let field = NSTextField(string: "")
+        field.font = fieldFont(for: template)
         field.textColor = template.color
+        // Each part of the text can have its own color.
+        field.allowsEditingTextAttributes = true
+        field.attributedStringValue = fieldText(for: template)
         field.isBordered = false
         field.drawsBackground = true
         field.backgroundColor = NSColor.black.withAlphaComponent(template.color.isLight ? 0.35 : 0.06)
@@ -334,7 +400,66 @@ final class EditorCanvas: NSView {
         textBox = box
         editingTextID = existing?.id
         pendingText = template
+        model.isTyping = true
         needsDisplay = true
+    }
+
+    /// The text as it shows while typed: the size it will have on the
+    /// image, its colors, and no halo, which the box's backdrop replaces.
+    private func fieldFont(for mark: Mark) -> NSFont {
+        .systemFont(ofSize: mark.fontSize * zoom, weight: .semibold)
+    }
+
+    private func fieldText(for mark: Mark) -> NSAttributedString {
+        let text = NSMutableAttributedString(string: mark.text, attributes: [
+            .font: fieldFont(for: mark), .foregroundColor: mark.color,
+        ])
+        for run in mark.runs where NSMaxRange(run.range) <= text.length {
+            text.addAttribute(.foregroundColor, value: run.color, range: run.range)
+        }
+        return text
+    }
+
+    private var typingEditor: NSTextView? { textBox?.field.currentEditor() as? NSTextView }
+
+    /// A color picked while typing colors the selected words, or else
+    /// what is typed next.
+    private func recolorTyping() {
+        guard let box = textBox else { return }
+        let color = model.color
+        guard let editor = typingEditor else {
+            box.field.textColor = color
+            return
+        }
+        let selected = editor.selectedRange()
+        if selected.length > 0, editor.shouldChangeText(in: selected, replacementString: nil) {
+            editor.textStorage?.addAttribute(.foregroundColor, value: color, range: selected)
+            editor.didChangeText()
+        }
+        editor.typingAttributes[.foregroundColor] = color
+        if editor.string.isEmpty { box.field.textColor = color }
+    }
+
+    /// A width picked or scrolled while typing resizes the text.
+    private func resizeTyping() {
+        guard let box = textBox, var mark = pendingText else { return }
+        mark.width = model.width
+        pendingText = mark
+        let font = fieldFont(for: mark)
+        box.field.font = font
+        if let editor = typingEditor, let storage = editor.textStorage {
+            storage.addAttribute(.font, value: font, range: NSRange(location: 0, length: storage.length))
+            editor.typingAttributes[.font] = font
+        }
+        fitTextBox(box)
+    }
+
+    /// What was typed, with its colors.
+    private func typedText(in box: TextBox) -> NSAttributedString {
+        if let storage = (box.field.currentEditor() as? NSTextView)?.textStorage {
+            return NSAttributedString(attributedString: storage)
+        }
+        return box.field.attributedStringValue
     }
 
     private var pendingText: Mark?
@@ -362,6 +487,7 @@ final class EditorCanvas: NSView {
         guard let box = textBox else { return }
         textBox = nil
         pendingText = nil
+        model.isTyping = false
         box.removeFromSuperview()
         if let id = editingTextID {
             editingTextID = nil
@@ -375,20 +501,28 @@ final class EditorCanvas: NSView {
     /// the box was dragged to is where the text goes.
     func commitText() {
         guard let box = textBox, var mark = pendingText else { return }
+        let typed = typedText(in: box)
         textBox = nil
         pendingText = nil
+        model.isTyping = false
         let fieldOrigin = CGPoint(x: box.frame.minX + TextBox.fieldInset.x, y: box.frame.minY + TextBox.fieldInset.y)
         box.removeFromSuperview()
-        mark.text = box.field.stringValue
+        mark.text = typed.string
+        mark.takeColors(from: typed)
         mark.start = toImage(CGPoint(x: fieldOrigin.x + 2, y: fieldOrigin.y))
         mark.end = mark.start
         if let id = editingTextID {
             editingTextID = nil
             if mark.isEmpty {
                 model.remove(id)
-            } else if let old = model.marks.first(where: { $0.id == id }), old.text != mark.text || old.start != mark.start {
+            } else if let old = model.marks.first(where: { $0.id == id }),
+                      old.text != mark.text || old.start != mark.start || old.width != mark.width
+                        || old.color != mark.color || old.runs != mark.runs {
                 model.checkpoint()
-                model.update(id) { $0.text = mark.text; $0.start = mark.start; $0.end = mark.start }
+                model.update(id) {
+                    $0.text = mark.text; $0.start = mark.start; $0.end = mark.start
+                    $0.width = mark.width; $0.color = mark.color; $0.runs = mark.runs
+                }
             }
         } else if !mark.isEmpty {
             model.add(mark)

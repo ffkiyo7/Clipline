@@ -238,11 +238,28 @@ struct StyleControls: View {
             Divider().frame(height: 22)
             HStack(spacing: 2) {
                 ForEach(EditorModel.widths.indices, id: \.self) { i in
-                    ToolButton(selected: model.widthIndex == i, help: [L("Thin"), L("Medium"), L("Thick")][i]) {
+                    ToolButton(selected: model.customWidth == nil && model.widthIndex == i,
+                               help: [L("Thin"), L("Medium"), L("Thick")][i]) {
                         model.widthIndex = i
                     } label: {
                         Circle().frame(width: 4 + CGFloat(i) * 3.5, height: 4 + CGFloat(i) * 3.5)
                     }
+                }
+                // A width scrolled to; clicking it goes back to the preset.
+                if let custom = model.customWidth {
+                    Button { model.widthIndex = model.widthIndex } label: {
+                        HStack(spacing: 3) {
+                            Text(String(format: "%g", custom)).monospacedDigit()
+                            Image(systemName: "arrow.uturn.backward").font(.system(size: 9, weight: .semibold))
+                        }
+                        .font(.system(size: 11, weight: .semibold))
+                        .padding(.horizontal, 7)
+                        .frame(height: 26)
+                        .foregroundStyle(.white)
+                        .background(Color.accentColor, in: RoundedRectangle(cornerRadius: 6))
+                    }
+                    .buttonStyle(.plain)
+                    .help(L("Back to the width before scrolling"))
                 }
             }
         }
