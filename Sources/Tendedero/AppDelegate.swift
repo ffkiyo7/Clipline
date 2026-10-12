@@ -513,9 +513,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         band.size.height = (band.height * 0.45).rounded()
         band.origin.y = screen.frame.maxY - band.height
         guard opensFromMiddleOnly else { return band }
+        // Only the widths of the areas beside the notch are used, so it does
+        // not matter whether their origins are local to the screen or global.
         if let left = screen.auxiliaryTopLeftArea, let right = screen.auxiliaryTopRightArea,
-           right.minX > left.maxX {
-            let minX = screen.frame.minX + left.maxX - 40, maxX = screen.frame.minX + right.minX + 40
+           left.width + right.width < screen.frame.width {
+            let minX = screen.frame.minX + left.width - 40, maxX = screen.frame.maxX - right.width + 40
             return NSRect(x: minX, y: band.minY, width: maxX - minX, height: band.height)
         }
         let width = max(240, band.width * 0.3)
