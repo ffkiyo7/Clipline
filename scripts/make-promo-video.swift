@@ -20,7 +20,15 @@ import CoreVideo
 
 func L(_ zh: String, _ en: String) -> String { language == "en" ? en : zh }
 
-let theme = ProcessInfo.processInfo.environment["THEME"] == "dark" ? dark : light
+let theme: Theme = {
+    let t = ProcessInfo.processInfo.environment["THEME"] == "dark" ? dark : light
+    // PAGE=r,g,b swaps the colour behind the card and the ending, to try others.
+    guard let v = ProcessInfo.processInfo.environment["PAGE"]?.split(separator: ",").compactMap({ Double($0) }), v.count == 3 else { return t }
+    return Theme(name: t.name, page: color(CGFloat(v[0]), CGFloat(v[1]), CGFloat(v[2])), ink: t.ink, secondaryInk: t.secondaryInk,
+                 wallpaper: t.wallpaper, glow: t.glow, menuBar: t.menuBar, menuInk: t.menuInk, line: t.line,
+                 glassFill: t.glassFill, edgeTop: t.edgeTop, edgeBottom: t.edgeBottom, shadow: t.shadow,
+                 tile: t.tile, tileInk: t.tileInk)
+}()
 let VW: CGFloat = 1280, VH: CGFloat = 720, VScale: CGFloat = 1.5
 let fps = 60
 let shots: [(start: CGFloat, end: CGFloat)] = [(0, 3.5), (3.5, 8), (8, 13.5), (13.5, 19), (19, 24), (24, 27.5), (27.5, 30)]
