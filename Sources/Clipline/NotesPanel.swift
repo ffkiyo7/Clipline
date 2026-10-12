@@ -64,8 +64,11 @@ final class NotesPanel: NSPanel, NSWindowDelegate {
         setFrameOrigin(origin)
         state.query = ""
         state.selection = 0
-        state.focus += 1
         makeKeyAndOrderFront(nil)
+        // The caret goes to the search field once the panel is key. Asked
+        // before, as when another app was in front, it landed nowhere and
+        // the arrow keys and Return did nothing until a click.
+        DispatchQueue.main.async { self.state.focus += 1 }
     }
 
     /// Clicking anywhere else puts it away.
