@@ -131,8 +131,8 @@ Clipline 完全在你的 Mac 上运行，截图不会离开这台电脑。
 ## 从源码构建
 
 ```sh
-git clone https://github.com/ffkiyo7/tendedero.git
-cd tendedero
+git clone https://github.com/ffkiyo7/Clipline.git
+cd Clipline
 scripts/build-app.sh
 open build/Clipline.app
 ```

@@ -147,8 +147,8 @@ Recording and Accessibility, since to macOS it is a new app.
 ## Build from source
 
 ```sh
-git clone https://github.com/ffkiyo7/tendedero.git
-cd tendedero
+git clone https://github.com/ffkiyo7/Clipline.git
+cd Clipline
 scripts/build-app.sh
 open build/Clipline.app
 ```

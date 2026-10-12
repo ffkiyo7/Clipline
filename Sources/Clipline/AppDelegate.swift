@@ -1014,7 +1014,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     /// The latest release of this fork on GitHub.
-    private static let updatesURL = URL(string: "https://github.com/ffkiyo7/tendedero/releases/latest")!
+    private static let updatesURL = URL(string: "https://github.com/ffkiyo7/Clipline/releases/latest")!
 
     private static func toggleLaunchAtLogin() {
         do {
