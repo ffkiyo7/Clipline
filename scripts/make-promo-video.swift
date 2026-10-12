@@ -7,7 +7,7 @@
 //   4–8.5  the reveal: the line slides down, a tag opens, a click copies
 //   8.5–14 ⌃⌥A: windows and a button light up, a drag selects, Done hangs it
 //   14–18.5 marking up in place
-//   18.5–23.5 a photo dragged off the line into a chat
+//   18.5–23.5 a photo dragged off the line into Claude Code
 //   23.5–27 the clip of copied text
 //   27–30  the name again, and how to get it
 //
@@ -30,7 +30,7 @@ let captions: [(String, String)] = [
     ("", ""),
     (L("看不见，却够得着。", "Out of sight, within reach."),
      L("指针停在菜单栏中间，绳子就滑下来。单击即复制。", "Rest the pointer mid menu bar and the line slides down. Click to copy.")),
-    (L("\u{2303}\u{2325}A，指哪截哪。", "\u{2303}\u{2325}A to capture."),
+    (L("截图，指哪截哪。", "Capture exactly what you point at."),
      L("窗口和按钮自动亮起，单击或拖选都行。", "Windows and buttons light up. Click one, or drag.")),
     (L("截完，原地标注。", "Mark it up in place."),
      L("箭头、形状、文字、马赛克，完成就挂上绳。", "Arrows, shapes, text, mosaic. Done hangs it on the line.")),
@@ -362,136 +362,237 @@ func markupShot(_ ctx: CGContext, _ l: CGFloat) {
     })
 }
 
-// MARK: Shot 4, dragging a photo into a chat
+// MARK: Shot 4, dragging a photo into Claude Code
 
-let chatOrange = color(217, 119, 87)
-
-/// A many-pointed spark, the chat app's mark.
-func drawSpark(at c: NSPoint, radius r: CGFloat, color: NSColor) {
-    let rays = 10
-    let lengths: [CGFloat] = [1, 0.8, 0.95, 0.75, 1, 0.85, 0.92, 0.78, 1, 0.82]
-    let p = NSBezierPath()
-    for i in 0..<rays {
-        let a = CGFloat(i) / CGFloat(rays) * 2 * .pi + 0.2
-        p.move(to: NSPoint(x: c.x + cos(a) * r * 0.12, y: c.y + sin(a) * r * 0.12))
-        p.line(to: NSPoint(x: c.x + cos(a) * r * lengths[i], y: c.y + sin(a) * r * lengths[i]))
-    }
-    p.lineWidth = r * 0.2; p.lineCapStyle = .round
-    color.setStroke(); p.stroke()
-}
-
+/// The Claude desktop app on its Code view, laid out after a real window:
+/// the sidebar (search, places, pinned projects, sessions), the session
+/// title, a transcript in a centred column, and the prompt box with the
+/// model row under it. Every word is a bar.
 enum Chat {
-    static let window = NSRect(x: 150, y: 22, width: 660, height: 318)
-    static let main = NSRect(x: window.minX + 150, y: window.minY, width: window.width - 150, height: window.height - 28)
-    static let composer = NSRect(x: main.minX + 40, y: main.minY + 18, width: main.width - 80, height: 96)
-    static let thumb = NSRect(x: composer.minX + 12, y: composer.maxY - 12 - 42, width: 60, height: 42)
+    static let window = NSRect(x: 120, y: 12, width: 720, height: 404)
+    static let sideW: CGFloat = 124
+    static let main = NSRect(x: window.minX + sideW, y: window.minY, width: window.width - sideW, height: window.height)
+    static let column = NSRect(x: main.minX + main.width * 0.15, y: main.minY, width: main.width * 0.7, height: main.height)
+    /// The prompt box with a photo in it; it is `closedH` tall without one.
+    static let composer = NSRect(x: column.minX - 4, y: main.minY + 26, width: column.width + 8, height: 74)
+    static let closedH: CGFloat = 30
+    static let thumb = NSRect(x: composer.minX + 9, y: composer.maxY - 9 - 34, width: 50, height: 34)
 }
 
 func drawChatWindow(_ ctx: CGContext, _ t: Theme, highlight: CGFloat, attached: CGFloat, typed: String, caret: Bool) {
     let lightUI = t.name == "light"
     let r = Chat.window
-    let bg = lightUI ? color(250, 249, 245) : color(38, 38, 36)
-    let side = lightUI ? color(243, 241, 235) : color(31, 30, 29)
-    let ink = lightUI ? color(40, 38, 34) : color(240, 238, 232)
-    let faint = lightUI ? color(216, 212, 202) : color(78, 76, 72)
-    let path = NSBezierPath(roundedRect: r, xRadius: 12, yRadius: 12)
-    ctx.saveGState(); shadow(t, 1, blur: 24, y: -10); bg.setFill(); path.fill(); ctx.restoreGState()
-    ctx.saveGState(); path.addClip()
+    let bg = lightUI ? color(250, 249, 247) : color(31, 31, 31)
+    let side = lightUI ? color(244, 243, 240) : color(27, 27, 27)
+    let raised = lightUI ? color(236, 234, 229) : color(47, 47, 47)
+    let field = lightUI ? NSColor.white : color(38, 38, 38)
+    let ink = lightUI ? color(40, 38, 34) : color(232, 232, 230)
+    let text = lightUI ? color(160, 157, 150) : color(150, 150, 148)
+    let faint = lightUI ? color(205, 202, 196) : color(92, 92, 90)
+    let hair = lightUI ? color(226, 223, 216) : color(58, 58, 58)
+    let code = lightUI ? color(200, 90, 80) : color(226, 112, 104)
+    let bar = { (x: CGFloat, y: CGFloat, w: CGFloat, h: CGFloat, c: NSColor) in
+        c.setFill(); NSBezierPath(roundedRect: NSRect(x: x, y: y, width: w, height: h), xRadius: h / 2, yRadius: h / 2).fill()
+    }
+    let box = { (rect: NSRect, radius: CGFloat, fill: NSColor?, stroke: NSColor?) in
+        let p = NSBezierPath(roundedRect: rect, xRadius: radius, yRadius: radius)
+        if let f = fill { f.setFill(); p.fill() }
+        if let s = stroke { p.lineWidth = 0.8; s.setStroke(); p.stroke() }
+    }
 
-    side.setFill(); NSRect(x: r.minX, y: r.minY, width: 150, height: r.height).fill()
+    let frame = NSBezierPath(roundedRect: r, xRadius: 11, yRadius: 11)
+    ctx.saveGState(); shadow(t, 1, blur: 26, y: -10); bg.setFill(); frame.fill(); ctx.restoreGState()
+    ctx.saveGState(); frame.addClip()
+
+    // The sidebar.
+    side.setFill(); NSRect(x: r.minX, y: r.minY, width: Chat.sideW, height: r.height).fill()
+    hair.setFill(); NSRect(x: r.minX + Chat.sideW, y: r.minY, width: 0.8, height: r.height).fill()
+    let top = r.maxY - 12
     for (i, c) in [color(255, 95, 87), color(254, 188, 46), color(40, 200, 64)].enumerated() {
-        c.setFill(); NSBezierPath(ovalIn: NSRect(x: r.minX + 12 + CGFloat(i) * 17, y: r.maxY - 19.5, width: 11, height: 11)).fill()
+        c.setFill(); NSBezierPath(ovalIn: NSRect(x: r.minX + 9 + CGFloat(i) * 12, y: top - 4, width: 8, height: 8)).fill()
     }
-    // The sidebar: a new chat, then recent ones.
-    let newChat = NSRect(x: r.minX + 10, y: r.maxY - 62, width: 130, height: 24)
-    chatOrange.setFill(); NSBezierPath(ovalIn: NSRect(x: newChat.minX + 6, y: newChat.midY - 8, width: 16, height: 16)).fill()
-    drawSymbol("plus", size: 9, weight: .bold, color: .white, at: NSPoint(x: newChat.minX + 14, y: newChat.midY))
-    faint.setFill()
-    NSBezierPath(roundedRect: NSRect(x: newChat.minX + 30, y: newChat.midY - 3, width: 56, height: 6), xRadius: 3, yRadius: 3).fill()
-    for (k, w) in [CGFloat(84), 66, 92, 58, 76, 70].enumerated() {
-        NSBezierPath(roundedRect: NSRect(x: r.minX + 18, y: r.maxY - 100 - CGFloat(k) * 26, width: w, height: 6), xRadius: 3, yRadius: 3).fill()
+    for x in [CGFloat(48), 60, 72] { box(NSRect(x: r.minX + x, y: top - 3, width: 6, height: 6), 1.5, nil, text) }
+    let toggle = NSRect(x: r.minX + 84, y: top - 6, width: 32, height: 12)
+    box(toggle, 4, raised.withAlphaComponent(0.5), nil)
+    box(NSRect(x: toggle.midX, y: toggle.minY + 1, width: toggle.width / 2 - 1, height: toggle.height - 2), 3.5, raised, nil)
+    bar(toggle.minX + 5, toggle.midY - 1.5, 6, 3, text)
+    bar(toggle.midX + 5, toggle.midY - 1.5, 6, 3, ink)
+
+    let search = NSRect(x: r.minX + 6, y: r.maxY - 40, width: Chat.sideW - 12, height: 13)
+    box(search, 4, field, hair)
+    bar(search.minX + 5, search.midY - 2, 4, 4, text)
+    bar(search.minX + 13, search.midY - 1.75, 22, 3.5, text)
+
+    var y = r.maxY - 55
+    for w in [CGFloat(16), 30, 30, 34, 20] {
+        box(NSRect(x: r.minX + 9, y: y - 2.5, width: 5, height: 5), 1.2, nil, text)
+        bar(r.minX + 20, y - 1.75, w, 3.5, ink.withAlphaComponent(0.8))
+        y -= 13
     }
-
-    // The greeting.
-    let m = Chat.main
-    var font = NSFont.systemFont(ofSize: 21, weight: .regular)
-    if let d = font.fontDescriptor.withDesign(.serif) { font = NSFont(descriptor: d, size: 21) ?? font }
-    let hello = NSAttributedString(string: L("有什么可以帮你的？", "How can I help you today?"),
-                                   attributes: [.font: font, .foregroundColor: ink])
-    let total = 26 + 10 + hello.size().width
-    let x0 = m.midX - total / 2, baseline = m.minY + 150
-    drawSpark(at: NSPoint(x: x0 + 13, y: baseline + 7), radius: 13, color: chatOrange)
-    hello.draw(at: NSPoint(x: x0 + 36, y: baseline + font.descender))
-
-    // The composer, lit while a photo is over it.
-    let c = Chat.composer
-    let box = NSBezierPath(roundedRect: c, xRadius: 14, yRadius: 14)
-    ctx.saveGState(); shadow(t, 0.35, blur: 10, y: -3)
-    (lightUI ? NSColor.white : color(48, 48, 46)).setFill(); box.fill()
-    ctx.restoreGState()
-    if highlight > 0 { chatOrange.withAlphaComponent(0.07 * highlight).setFill(); box.fill() }
-    box.lineWidth = 1 + highlight
-    (highlight > 0 ? chatOrange.withAlphaComponent(0.25 + 0.65 * highlight) : faint).setStroke(); box.stroke()
-
-    if attached > 0 {
-        withAlpha(ctx, attached) {
-            let th = Chat.thumb
-            let s = 0.8 + 0.2 * attached
-            let tr = NSRect(x: th.minX, y: th.maxY - th.height * s, width: th.width * s, height: th.height * s)
-            ctx.saveGState()
-            NSBezierPath(roundedRect: tr, xRadius: 7, yRadius: 7).addClip()
-            // Drawn at the photo's own size and scaled down, so the whole chart shows.
-            let full = homeFrames[2]
-            let k = max(tr.width / full.w, tr.height / full.h)
-            ctx.translateBy(x: tr.midX - full.w * k / 2, y: tr.midY - full.h * k / 2)
-            ctx.scaleBy(x: k, y: k)
-            drawContent(2, NSRect(x: 0, y: 0, width: full.w, height: full.h))
-            ctx.restoreGState()
-            let edge = NSBezierPath(roundedRect: tr, xRadius: 7, yRadius: 7)
-            edge.lineWidth = 1; faint.setStroke(); edge.stroke()
+    y -= 8
+    bar(r.minX + 9, y - 1.5, 20, 3, text)
+    y -= 13
+    for (w, c) in [(CGFloat(26), color(240, 140, 60)), (30, color(232, 72, 104)), (32, color(236, 150, 50))] {
+        box(NSRect(x: r.minX + 9, y: y - 3, width: 6, height: 6), 1.5, c.withAlphaComponent(0.35), c)
+        bar(r.minX + 20, y - 1.75, w, 3.5, ink.withAlphaComponent(0.8))
+        y -= 13.5
+    }
+    for (header, rows, selected) in [(CGFloat(32), 0, -1), (24, 2, 1)] {
+        y -= 8
+        bar(r.minX + 9, y - 1.5, header, 3, text)
+        bar(r.minX + Chat.sideW - 14, y - 2, 4, 4, text)
+        y -= 13
+        for k in 0..<rows {
+            if k == selected { box(NSRect(x: r.minX + 4, y: y - 6, width: Chat.sideW - 8, height: 12), 4, raised, nil) }
+            bar(r.minX + 11, y - 1, 2, 2, text)
+            bar(r.minX + 20, y - 1.75, [CGFloat(54), 62][k], 3.5, ink.withAlphaComponent(k == selected ? 0.95 : 0.75))
+            y -= 13.5
         }
     }
-    let textFont = NSFont.systemFont(ofSize: 13.5, weight: .regular)
-    let textAt = NSPoint(x: c.minX + 14, y: c.minY + 18)
+    y -= 8
+    bar(r.minX + 9, y - 1.5, 22, 3, text)
+    bar(r.minX + 9, r.minY + 10, 8, 8, faint)
+    bar(r.minX + 21, r.minY + 12.25, 26, 3.5, ink.withAlphaComponent(0.8))
+    bar(r.minX + Chat.sideW - 15, r.minY + 11, 6, 6, text)
+
+    // The session title, its folder, and the window's own buttons.
+    let m = Chat.main
+    box(NSRect(x: m.minX + 9, y: top - 4, width: 8, height: 8), 1.5, nil, ink.withAlphaComponent(0.8))
+    bar(m.minX + 22, top - 2, 70, 4, ink)
+    bar(m.minX + 96, top - 1, 4, 2, text)
+    box(NSRect(x: m.minX + 106, y: top - 5, width: 34, height: 10), 3, raised.withAlphaComponent(0.7), nil)
+    bar(m.minX + 110, top - 1.5, 26, 3, text)
+    for k in 0..<2 { box(NSRect(x: m.maxX - 18 - CGFloat(k) * 16, y: top - 3.5, width: 7, height: 7), 1.5, nil, text) }
+
+    // The transcript, cut off above the prompt box.
+    let col = Chat.column
+    ctx.saveGState()
+    NSRect(x: m.minX, y: Chat.composer.minY + Chat.closedH + 10, width: m.width, height: r.maxY - 24 - Chat.composer.minY - Chat.closedH - 10).clip()
+    /// A line of prose: bars, with inline code chips at the given spots.
+    func prose(_ w: CGFloat, chips: [CGFloat] = [], strong: Bool = false) {
+        var x = col.minX
+        let end = col.minX + col.width * w
+        for c in chips + [1] {
+            let stop = min(end, col.minX + col.width * c)
+            if stop - x > 6 { bar(x, y - 1.75, stop - x - 4, 3.5, strong ? ink : text) }
+            x = stop
+            if c < 1 && x < end {
+                box(NSRect(x: x, y: y - 4, width: 34, height: 8), 2, raised.withAlphaComponent(0.8), hair)
+                bar(x + 3, y - 1.5, 28, 3, code)
+                x += 38
+            }
+        }
+        y -= 10
+    }
+    y = r.maxY - 34
+    prose(0.9, chips: [0.3, 0.5]); prose(0.94, chips: [0.2]); prose(0.5)
+    y -= 12
+    let ask = NSRect(x: col.maxX - col.width * 0.62, y: y - 9, width: col.width * 0.62, height: 18)
+    box(ask, 6, raised, nil)
+    bar(ask.minX + 8, ask.midY - 1.75, ask.width - 16, 3.5, ink.withAlphaComponent(0.85))
+    y = ask.minY - 18
+    prose(0.88); prose(0.12)
+    y -= 6
+    let block = NSRect(x: col.minX - 2, y: y - 9, width: col.width * 0.82, height: 18)
+    box(block, 4, field, hair)
+    bar(block.minX + 8, block.midY - 1.5, block.width - 30, 3, ink.withAlphaComponent(0.7))
+    box(NSRect(x: block.maxX - 14, y: block.midY - 3, width: 6, height: 6), 1.2, nil, text)
+    y = block.minY - 14
+    prose(0.92, chips: [0.36, 0.62]); prose(0.4)
+    y -= 6
+    prose(0.16, strong: true)
+    y -= 2
+    for w in [CGFloat(0.9), 0.62, 0.7] {
+        bar(col.minX + 8, y - 1.25, 2.5, 2.5, text)
+        bar(col.minX + 18, y - 1.75, col.width * w - 18, 3.5, text)
+        y -= 10
+    }
+    y -= 6
+    prose(0.18, strong: true)
+    y -= 2
+    for (w, chip) in [(CGFloat(0.94), true), (0.76, true), (0.6, true)] {
+        bar(col.minX + 8, y - 1.25, 2.5, 2.5, text)
+        if chip {
+            box(NSRect(x: col.minX + 18, y: y - 4, width: 40, height: 8), 2, raised.withAlphaComponent(0.8), hair)
+            bar(col.minX + 21, y - 1.5, 34, 3, code)
+        }
+        bar(col.minX + 64, y - 1.75, col.width * w - 64, 3.5, text)
+        y -= 10
+    }
+    ctx.restoreGState()
+
+    // The prompt box: one line until a photo lands, then it opens to hold it.
+    let open = easeInOut(attached)
+    let full = Chat.composer
+    let c = NSRect(x: full.minX, y: full.minY, width: full.width, height: Chat.closedH + (full.height - Chat.closedH) * open)
+    box(c, 9, field, hair)
+    let lit = lightUI ? color(70, 130, 240) : color(120, 165, 255)
+    if highlight > 0 {
+        let p = NSBezierPath(roundedRect: c, xRadius: 9, yRadius: 9)
+        lit.withAlphaComponent(0.08 * highlight).setFill(); p.fill()
+        p.lineWidth = 1.5; lit.withAlphaComponent(0.85 * highlight).setStroke(); p.stroke()
+    }
+    if attached > 0 {
+        withAlpha(ctx, attached) {
+            let th = NSRect(x: Chat.thumb.minX, y: c.maxY - 9 - Chat.thumb.height, width: Chat.thumb.width, height: Chat.thumb.height)
+            ctx.saveGState()
+            NSBezierPath(roundedRect: th, xRadius: 5, yRadius: 5).addClip()
+            // Drawn at the photo's own size and scaled down, so the whole page shows.
+            let photo = homeFrames[0]
+            let k = max(th.width / photo.w, th.height / photo.h)
+            ctx.translateBy(x: th.midX - photo.w * k / 2, y: th.midY - photo.h * k / 2)
+            ctx.scaleBy(x: k, y: k)
+            drawContent(photo.kind, NSRect(x: 0, y: 0, width: photo.w, height: photo.h))
+            ctx.restoreGState()
+            box(th, 5, nil, hair)
+        }
+    }
+    let textFont = NSFont.systemFont(ofSize: 10.5, weight: .regular)
+    let textAt = NSPoint(x: c.minX + 10, y: c.minY + 11)
     if typed.isEmpty {
-        NSAttributedString(string: L("回复 Claude…", "Reply to Claude…"),
-                           attributes: [.font: textFont, .foregroundColor: t.secondaryInk.withAlphaComponent(0.8)])
-            .draw(at: NSPoint(x: textAt.x, y: textAt.y + textFont.descender))
+        bar(textAt.x, textAt.y + 1, 70, 3.5, faint)
     } else {
         NSAttributedString(string: typed, attributes: [.font: textFont, .foregroundColor: ink])
-            .draw(at: NSPoint(x: textAt.x, y: textAt.y + textFont.descender))
+            .draw(at: NSPoint(x: textAt.x, y: textAt.y - 2 + textFont.descender))
     }
     if caret {
         let w = typed.isEmpty ? 0 : NSAttributedString(string: typed, attributes: [.font: textFont]).size().width
-        ink.setFill(); NSRect(x: textAt.x + w + 1, y: textAt.y - 3, width: 1.3, height: 16).fill()
+        ink.setFill(); NSRect(x: textAt.x + w + 1, y: textAt.y - 3, width: 1, height: 12).fill()
     }
-    let send = NSRect(x: c.maxX - 12 - 28, y: c.minY + 10, width: 28, height: 28)
-    chatOrange.withAlphaComponent(typed.isEmpty ? 0.45 : 1).setFill()
-    NSBezierPath(roundedRect: send, xRadius: 8, yRadius: 8).fill()
-    drawSymbol("arrow.up", size: 12, weight: .bold, color: .white, at: NSPoint(x: send.midX, y: send.midY))
+    drawSymbol("return", size: 8, weight: .medium, color: typed.isEmpty ? text : ink, at: NSPoint(x: c.maxX - 12, y: c.minY + 15))
+
+    // Under the box: attach, voice and mode; the model and effort on the right.
+    let row = full.minY - 12
+    drawSymbol("plus", size: 7, weight: .medium, color: text, at: NSPoint(x: full.minX + 8, y: row))
+    drawSymbol("mic", size: 7, weight: .medium, color: text, at: NSPoint(x: full.minX + 20, y: row))
+    bar(full.minX + 30, row - 1, 3, 2, text)
+    bar(full.minX + 40, row - 1.75, 16, 3.5, text)
+    bar(full.maxX - 72, row - 1.75, 26, 3.5, ink.withAlphaComponent(0.85))
+    bar(full.maxX - 40, row - 1.75, 22, 3.5, ink.withAlphaComponent(0.85))
+    NSBezierPath(ovalIn: NSRect(x: full.maxX - 12, y: row - 3.5, width: 7, height: 7)).fill()
     ctx.restoreGState()
 }
 
 func dragShot(_ ctx: CGContext, _ l: CGFloat) {
     let t = theme
-    let picked = homeFrames[2]
+    let picked = homeFrames[0]
     let grab = NSPoint(x: picked.x, y: lineY(picked.x) + 7 - picked.h / 2)
-    let drop = NSPoint(x: Chat.composer.midX - 20, y: Chat.composer.midY + 6)
-    let typeAt = NSPoint(x: Chat.composer.minX + 120, y: Chat.composer.minY + 30)
+    let drop = NSPoint(x: Chat.composer.midX - 20, y: Chat.composer.minY + Chat.closedH / 2 + 4)
+    let typeAt = NSPoint(x: Chat.composer.minX + 150, y: Chat.composer.minY + 16)
 
     // Down comes the line, the pointer takes the chart and carries it over.
     var s = spring(l, 0.15)
     let lifted = l >= 1.3
     if lifted {
         let d = l - 1.3
-        for k in 0..<2 { s.swing[k] += 4 * exp(-3 * d) * sin(9 * d) * (k == 0 ? 1 : -1) }
+        for k in 1..<3 { s.swing[k] += 4 * exp(-3 * d) * sin(9 * d) * (k == 1 ? 1 : -1) }
     }
     if l >= 3.3 { s.reveal = 1 - ramp(l, 3.3, 0.28) }
 
     var photos = homePhotos()
-    photos[2].open = ramp(l, 0.75, 0.25) * (1 - ramp(l, 1.2, 0.12))
-    photos[2].pressed = bump(l, 1.12)
-    if lifted { photos.removeLast() }
+    photos[0].open = ramp(l, 0.75, 0.25) * (1 - ramp(l, 1.2, 0.12))
+    photos[0].pressed = bump(l, 1.12)
+    if lifted { photos.removeFirst(); s.swing.removeFirst() }
 
     let carry = ramp(l, 1.3, 1.25)
     var pointer: NSPoint
@@ -505,7 +606,7 @@ func dragShot(_ ctx: CGContext, _ l: CGFloat) {
     }
     let over = l >= 2.15 && l < 2.75 ? min(ramp(l, 2.15, 0.15), 1 - ramp(l, 2.6, 0.15)) : 0
     let landed = ramp(l, 2.62, 0.22)
-    let message = L("这季度哪个月是峰值？", "Which month peaked?")
+    let message = L("把首页的下载按钮改成截图里这样", "Make the homepage download button match this screenshot")
     let typed = String(message.prefix(Int(max(0, min(CGFloat(message.count), (l - 3.05) / 0.09)))))
 
     vScene(ctx, t, photos: photos, reveal: s.reveal, swing: s.swing, cursor: pointer,
