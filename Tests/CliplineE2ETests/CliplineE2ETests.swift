@@ -29,6 +29,7 @@ class E2ETestCase: XCTestCase {
 
     override func tearDownWithError() throws {
         guard let app else { return }
+        Input.releaseModifiers()
         try? app.terminate()
         if app.isRunning { try? app.crash() }
         finderWindows.forEach(Finder.close)
@@ -39,6 +40,7 @@ class E2ETestCase: XCTestCase {
     }
 
     override class func tearDown() {
+        if ProcessInfo.processInfo.environment["CLIPLINE_E2E"] == "1" { Input.releaseModifiers() }
         E2E.removePreparedApp()
         E2E.removeSettings()
         super.tearDown()

@@ -440,19 +440,50 @@ struct AX {
 // MARK: - Keyboard and mouse
 
 enum Input {
-    private static let source = CGEventSource(stateID: .hidSystemState)
+    /// A source of its own, so the events neither take on nor change the
+    /// modifier keys the system thinks are held.
+    private static let source = CGEventSource(stateID: .privateState)
 
+    private static let modifiers: [(flag: CGEventFlags, code: CGKeyCode)] = [
+        (.maskCommand, 55), (.maskShift, 56), (.maskAlternate, 58), (.maskControl, 59),
+    ]
+
+    /// Presses the modifier keys one by one, the key, then lets go of them
+    /// in reverse, as fingers do. Flags set on the key alone once left
+    /// Control held system wide, turning every later click into a right click.
     static func key(_ code: CGKeyCode, flags: CGEventFlags = []) {
-        for down in [true, false] {
-            let event = CGEvent(keyboardEventSource: source, virtualKey: code, keyDown: down)
-            event?.flags = flags
-            event?.post(tap: .cghidEventTap)
-            pause(0.05)
+        let held = modifiers.filter { flags.contains($0.flag) }
+        var current: CGEventFlags = []
+        for modifier in held {
+            current.insert(modifier.flag)
+            post(modifier.code, down: true, flags: current, modifier: true)
         }
+        post(code, down: true, flags: current)
+        post(code, down: false, flags: current)
+        for modifier in held.reversed() {
+            current.remove(modifier.flag)
+            post(modifier.code, down: false, flags: current, modifier: true)
+        }
+    }
+
+    /// Lets go of every modifier key, whatever happened before. Run after
+    /// each test, so a test that stopped halfway leaves nothing held.
+    static func releaseModifiers() {
+        for modifier in modifiers { post(modifier.code, down: false, flags: [], modifier: true) }
+    }
+
+    private static func post(_ code: CGKeyCode, down: Bool, flags: CGEventFlags, modifier: Bool = false) {
+        guard let event = CGEvent(keyboardEventSource: source, virtualKey: code, keyDown: down) else { return }
+        if modifier { event.type = .flagsChanged }
+        event.flags = flags
+        event.post(tap: .cghidEventTap)
+        pause(0.04)
     }
 
     private static func mouse(_ type: CGEventType, at point: CGPoint) {
         let event = CGEvent(mouseEventSource: source, mouseType: type, mouseCursorPosition: point, mouseButton: .left)
+        // A plain click: no modifier key, whatever the system thinks.
+        event?.flags = []
         if type == .leftMouseDown || type == .leftMouseUp {
             event?.setIntegerValueField(.mouseEventClickState, value: 1)
         }
