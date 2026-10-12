@@ -1,6 +1,6 @@
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/images/hero-dark.png">
-  <img src="docs/images/hero-light.png" alt="Clipline. Screenshots, hung out to dry. Three screenshots in glass frames hang from a thin line under the macOS menu bar, each with a small source tag, and a clip of copied notes at the end.">
+  <img src="docs/images/hero-light.png" alt="Clipline. Screenshots and snippets, all on one line. Three screenshots in glass frames hang from a thin line under the macOS menu bar, each with a small source tag, and a clip of copied notes at the end.">
 </picture>
 
 <h3 align="center"><a href="../../releases/latest">Download the latest release&nbsp;&rsaquo;</a></h3>

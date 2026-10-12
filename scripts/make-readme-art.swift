@@ -20,7 +20,7 @@ try! FileManager.default.createDirectory(atPath: outDir, withIntermediateDirecto
 // The words drawn into the images, keyed by the English text.
 let translations: [String: [String: String]] = [
     "zh-Hans": [
-        "Screenshots, hung out to dry.": "截图，挂起来晾着。",
+        "Screenshots and snippets, all on one line.": "截图和文字，一根绳上全挂着。",
         "Copied": "已复制",
         "Photos": "照片",
         "Click to copy.": "单击复制。",
@@ -449,7 +449,7 @@ func hero(_ t: Theme) {
     draw(rep, scale: s) { ctx in
         t.page.setFill(); NSRect(x: 0, y: 0, width: W, height: H).fill()
         text("Clipline", size: 84, weight: .semibold, color: t.ink, tracking: -2.4, centerX: W / 2, baselineY: H - 128)
-        text(T("Screenshots, hung out to dry."), size: 30, weight: .regular, color: t.secondaryInk,
+        text(T("Screenshots and snippets, all on one line."), size: 30, weight: .regular, color: t.secondaryInk,
              tracking: -0.4, centerX: W / 2, baselineY: H - 182)
         let frames = [Frame(x: 240, w: 250, h: 172, tilt: 2.5, kind: 0),
                       Frame(x: 510, w: 270, h: 186, tilt: -1.2, kind: 1),

@@ -1,6 +1,6 @@
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="../images/zh-Hans/hero-dark.png">
-  <img src="../images/zh-Hans/hero-light.png" alt="Clipline。截图，挂起来晾着。三张截图装在玻璃相框里，挂在 macOS 菜单栏下方的一根细绳上，每张下面都有一个来源小标签，绳尾还夹着一叠复制的文字。">
+  <img src="../images/zh-Hans/hero-light.png" alt="Clipline。截图和文字，一根绳上全挂着。三张截图装在玻璃相框里，挂在 macOS 菜单栏下方的一根细绳上，每张下面都有一个来源小标签，绳尾还夹着一叠复制的文字。">
 </picture>
 
 <h3 align="center"><a href="../../../../releases/latest">下载最新版本&nbsp;&rsaquo;</a></h3>
