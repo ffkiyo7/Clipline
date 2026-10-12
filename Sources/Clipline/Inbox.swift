@@ -70,7 +70,12 @@ enum Inbox {
     private static let offeredKey = "inboxOffered"
     private static let savedKey = "inboxSavedSettings"
 
+    /// Clipline's folder holds the screenshots and the copied text. The
+    /// end-to-end tests point it at a folder of their own.
     static let folder: URL = {
+        if let dir = ProcessInfo.processInfo.environment["CLIPLINE_DATA_DIR"], !dir.isEmpty {
+            return URL(fileURLWithPath: dir, isDirectory: true).appendingPathComponent("Screenshots", isDirectory: true)
+        }
         let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
         return base.appendingPathComponent("Clipline/Screenshots", isDirectory: true)
     }()

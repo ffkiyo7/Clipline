@@ -182,7 +182,7 @@ scripts/build-app.sh
 open build/Clipline.app
 ```
 
-Requires the Swift toolchain. Xcode is optional. `swift test` runs the tests, which need the XCTest that comes with Xcode. With the Command Line Tools for macOS 27, the script falls back to the macOS 26 SDK they install alongside, because the new SDK needs a SwiftUI macro plugin only Xcode includes.
+Requires the Swift toolchain. Xcode is optional. `swift test` runs the tests, which need the XCTest that comes with Xcode. The end-to-end tests drive the real keyboard and mouse, so they only run when asked: build with `scripts/build-app.sh`, quit Clipline, give the terminal Accessibility access, then run `CLIPLINE_E2E=1 swift test --filter CliplineE2ETests`. With the Command Line Tools for macOS 27, the script falls back to the macOS 26 SDK they install alongside, because the new SDK needs a SwiftUI macro plugin only Xcode includes.
 
 Local builds are signed with your Apple Development certificate when you
 have one, the one Xcode makes for any Apple ID, so macOS remembers the

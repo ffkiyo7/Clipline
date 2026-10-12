@@ -20,7 +20,13 @@ final class InboxTests: XCTestCase {
         settings = FakeSettings()
         let suite = "CliplineTests-\(UUID())"
         defaults = UserDefaults(suiteName: suite)
-        addTeardownBlock { UserDefaults().removePersistentDomain(forName: suite) }
+        addTeardownBlock {
+            UserDefaults().removePersistentDomain(forName: suite)
+            // Removing the domain leaves an empty file behind.
+            let plist = FileManager.default.homeDirectoryForCurrentUser
+                .appendingPathComponent("Library/Preferences/\(suite).plist")
+            try? FileManager.default.removeItem(at: plist)
+        }
     }
 
     private func apply() { Inbox.apply(to: settings, defaults: defaults) }
