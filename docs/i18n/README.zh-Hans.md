@@ -120,9 +120,21 @@ Clipline 完全在你的 Mac 上运行，截图不会离开这台电脑。
 
 ## 安装
 
-从[最新版本](../../../../releases/latest)下载 App，拖进「应用程序」。
+用 [Homebrew](https://brew.sh) 安装：
 
-这个版本没有经过 Apple 公证。第一次打开时，按住 Control 点按 App 再选「打开」，或者在「系统设置 → 隐私与安全性」里允许它。
+```sh
+brew install --cask ffkiyo7/tap/clipline
+```
+
+也可以从[最新版本](../../../../releases/latest)下载 App，拖进「应用程序」。
+
+这个版本没有经过 Apple 公证，第一次打开会被 macOS 拦住。先运行一次下面的命令，之后就能正常打开：
+
+```sh
+xattr -dr com.apple.quarantine /Applications/Clipline.app
+```
+
+或者先打开一次，再到「系统设置 → 隐私与安全性」里点「仍要打开」。之后用 `brew upgrade --cask clipline` 升级，不会再被拦。
 
 之前用过 Tendedero？先退出它。Clipline 会带过来它的设置、绳上的照片和复制的文字。对 macOS 来说这是个新 App，所以屏幕录制和辅助功能权限要再授权一次。
 

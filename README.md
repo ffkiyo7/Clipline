@@ -132,11 +132,25 @@ Clipline runs entirely on your Mac, and your screenshots never leave it.
 
 ## Install
 
-Download the app from the [latest release](../../releases/latest) and drag it
-to Applications.
+With [Homebrew](https://brew.sh):
 
-The release is not notarized by Apple. The first time, Control-click the app
-and choose Open, or allow it under System Settings → Privacy & Security.
+```sh
+brew install --cask ffkiyo7/tap/clipline
+```
+
+Or download the app from the [latest release](../../releases/latest) and
+drag it to Applications.
+
+The release is not notarized by Apple, so macOS stops it the first time.
+Run this once, then open it as usual:
+
+```sh
+xattr -dr com.apple.quarantine /Applications/Clipline.app
+```
+
+Or open it, then choose Open Anyway under System Settings → Privacy &
+Security. Homebrew upgrades with `brew upgrade --cask clipline` open right
+away.
 
 Coming from Tendedero? Quit it first. Clipline brings over its settings,
 the photos on the line and the copied text. macOS asks once more for Screen
