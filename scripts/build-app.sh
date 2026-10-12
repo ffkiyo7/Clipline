@@ -91,6 +91,12 @@ IDENTITY="${SIGN_IDENTITY:-$(security find-identity -v -p codesigning 2>/dev/nul
 if [ -n "$IDENTITY" ]; then
   codesign --force --options runtime --timestamp --sign "$IDENTITY" "$APP"
   echo "Signed with $IDENTITY"
+# Otherwise an Apple Development certificate, the one Xcode makes for any
+# Apple ID. An ad hoc signature changes with every build, so macOS asks for
+# Screen Recording again each time; this one stays the same app to macOS.
+elif DEV="$(security find-identity -v -p codesigning 2>/dev/null | awk -F'"' '/Apple Development/{print $2; exit}')" && [ -n "$DEV" ]; then
+  codesign --force --sign "$DEV" "$APP"
+  echo "Signed with $DEV"
 else
   codesign --force --deep --sign - "$APP" >/dev/null
   echo "Signed ad hoc (no Developer ID found)"
