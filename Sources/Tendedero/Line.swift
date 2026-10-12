@@ -89,6 +89,7 @@ final class Line: ObservableObject {
 
     init() {
         restore()
+        Self.sweepUsed()
         scheduleGust()
     }
 
@@ -98,6 +99,8 @@ final class Line: ObservableObject {
     func hang(_ url: URL, source: Source? = nil, quietly: Bool = false, flying: Bool = false) -> UUID? {
         guard !items.contains(where: { $0.url == url && !$0.falling }),
               let thumb = makeThumbnail(url) else { return nil }
+        // Hung again before its file went to the Trash: it stays.
+        Self.keep(url)
         var item = Pegged(url: url, thumb: thumb, source: source)
         item.flying = flying
         items.append(item)
@@ -161,6 +164,63 @@ final class Line: ObservableObject {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.06 * Double(n)) { [weak self] in
                 self?.discard(item.id, quietly: n > 0)
             }
+        }
+    }
+
+    /// Dragged into an app, the photo has done its job: it is gone from the
+    /// line at once, without falling, since it went where you dropped it.
+    /// The app may still be reading the file, so a file from Tendedero's
+    /// folder only goes to the Trash a few minutes later.
+    func used(_ id: UUID) {
+        guard let item = items.first(where: { $0.id == id && !$0.falling }) else { return }
+        let inInbox = isInInbox(id)
+        hitRects[id] = nil
+        tagRects[id] = nil
+        if hoveredID == id { hoveredID = nil }
+        items.removeAll { $0.id == id }
+        save()
+        if inInbox { Self.trashLater(item.url) }
+    }
+
+    /// How long a used file waits before it goes to the Trash.
+    private static let usedDelay: TimeInterval = 5 * 60
+    /// Used files still waiting, by path, with when they go. Kept across
+    /// launches, so quitting in the meantime leaves nothing behind.
+    private static let usedKey = "usedFiles"
+
+    private static func trashLater(_ url: URL) {
+        var waiting = UserDefaults.standard.dictionary(forKey: usedKey) as? [String: Double] ?? [:]
+        let due = Date().addingTimeInterval(usedDelay)
+        waiting[url.path] = due.timeIntervalSince1970
+        UserDefaults.standard.set(waiting, forKey: usedKey)
+        DispatchQueue.main.asyncAfter(deadline: .now() + usedDelay + 1) { sweepUsed() }
+    }
+
+    private static func keep(_ url: URL) {
+        guard var waiting = UserDefaults.standard.dictionary(forKey: usedKey) as? [String: Double],
+              waiting.removeValue(forKey: url.path) != nil else { return }
+        UserDefaults.standard.set(waiting, forKey: usedKey)
+    }
+
+    /// Trashes the used files whose time has come, and waits for the rest.
+    private static func sweepUsed() {
+        guard var waiting = UserDefaults.standard.dictionary(forKey: usedKey) as? [String: Double],
+              !waiting.isEmpty else { return }
+        let now = Date().timeIntervalSince1970
+        for (path, due) in waiting where due <= now {
+            waiting[path] = nil
+            let url = URL(fileURLWithPath: path)
+            guard FileManager.default.fileExists(atPath: path) else { continue }
+            do {
+                try FileManager.default.trashItem(at: url, resultingItemURL: nil)
+                log.notice("Trashed used \(url.lastPathComponent, privacy: .public)")
+            } catch {
+                log.error("Could not trash used \(path, privacy: .public): \(error.localizedDescription, privacy: .public)")
+            }
+        }
+        UserDefaults.standard.set(waiting, forKey: usedKey)
+        if let next = waiting.values.min() {
+            DispatchQueue.main.asyncAfter(deadline: .now() + max(1, next - now + 1)) { sweepUsed() }
         }
     }
 

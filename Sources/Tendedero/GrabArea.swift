@@ -4,7 +4,7 @@ import SwiftUI
 /// Bridges each photo to AppKit's drag and drop, so it can be dragged into
 /// any app as a real file. Each destination means one thing:
 ///
-/// - An app gets a copy, and the photo stays on the line.
+/// - An app gets a copy, and the photo is used: it leaves the line.
 /// - A folder or the Desktop keeps the file, and the photo leaves the line.
 /// - The Trash discards it.
 /// - Nowhere that accepts it: the photo flies back to the line.
@@ -38,6 +38,7 @@ struct GrabArea: NSViewRepresentable {
             // Moved into a folder: it is saved where you wanted it.
             line.prune()
         }
+        view.onUsed = { line.used(id) }
         view.onTrash = { line.trash(id) }
         view.onDiscard = { line.discard(id) }
         view.onLongPress = { line.markup(id) }
@@ -89,6 +90,7 @@ final class GrabView: NSView, NSDraggingSource {
     var onDoubleClick: () -> Void = {}
     var onDragStart: () -> Void = {}
     var onDragEnd: () -> Void = {}
+    var onUsed: () -> Void = {}
     var onTrash: () -> Void = {}
     var onDiscard: () -> Void = {}
     var onLongPress: () -> Void = {}
@@ -215,6 +217,9 @@ final class GrabView: NSView, NSDraggingSource {
         if operation.contains(.move) {
             let done = onDragEnd
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { done() }
+        } else if !operation.isEmpty {
+            // An app took a copy.
+            onUsed()
         }
     }
 
