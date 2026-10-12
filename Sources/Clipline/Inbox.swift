@@ -14,27 +14,68 @@ import Foundation
 /// off or the app quits, so macOS is never left pointing at a folder nobody
 /// is watching.
 enum Inbox {
-    private static let domain = "com.apple.screencapture" as CFString
     /// macOS 26 and earlier read "location". macOS 27 reads
     /// "location-screenshot" and ignores the old key, so both are written.
-    private static let locationKey = "location" as CFString
-    private static let screenshotLocationKey = "location-screenshot" as CFString
-    /// macOS 27 keeps screen recordings apart, in "location-screenrecording".
-    /// Earlier versions send them wherever "location" points.
-    private static let recordingLocationKey = "location-screenrecording" as CFString
-    private static let thumbnailKey = "show-thumbnail" as CFString
+    /// macOS 27 also keeps screen recordings apart, in
+    /// "location-screenrecording"; earlier versions send them wherever
+    /// "location" points.
     /// Whether a capture is saved as a file or sent to the clipboard, Preview
-    /// and so on. macOS 26 and earlier read "target"; macOS 27 has one for
+    /// and so on: macOS 26 and earlier read "target"; macOS 27 has one for
     /// screenshots and one for recordings.
-    private static let targetKey = "target" as CFString
-    private static let screenshotTargetKey = "target-screenshot" as CFString
-    private static let recordingTargetKey = "target-screenrecording" as CFString
+    ///
+    /// Each setting is saved under a name of its own. Recordings and the
+    /// targets came later, so settings saved by an earlier version may lack
+    /// them; a flag says when they were saved.
+    private static let managed: [Managed] = [
+        Managed(key: "location", savedAs: "location", group: nil, value: .folder),
+        Managed(key: "location-screenshot", savedAs: "locationScreenshot", group: nil, value: .folder),
+        Managed(key: "show-thumbnail", savedAs: "thumbnail", group: nil, value: .bool(false)),
+        Managed(key: "location-screenrecording", savedAs: "locationRecording", group: "recordingSaved", value: .folder),
+        Managed(key: "target", savedAs: "target", group: "targetSaved", value: .string("file")),
+        Managed(key: "target-screenshot", savedAs: "targetScreenshot", group: "targetSaved", value: .string("file")),
+        Managed(key: "target-screenrecording", savedAs: "targetRecording", group: "targetSaved", value: .string("file")),
+    ]
+
+    private struct Managed {
+        enum Value { case folder, string(String), bool(Bool) }
+        let key: String
+        let savedAs: String
+        /// The flag that says this one was saved, for the later ones.
+        let group: String?
+        let value: Value
+
+        var ours: Any {
+            switch value {
+            case .folder: Inbox.folder.path
+            case .string(let v): v
+            case .bool(let v): v
+            }
+        }
+
+        /// Whether the setting still holds what Clipline put there.
+        func isOurs(_ current: Any?) -> Bool {
+            switch value {
+            case .folder: (current as? String).map(Inbox.isFolder) ?? false
+            case .string(let v): (current as? String) == v
+            case .bool(let v): (current as? Bool) == v
+            }
+        }
+
+        func wasSaved(in saved: [String: Any]) -> Bool {
+            group.map { saved[$0] != nil } ?? true
+        }
+    }
 
     private static let enabledKey = "inboxEnabled"
     private static let offeredKey = "inboxOffered"
     private static let savedKey = "inboxSavedSettings"
 
+    /// Clipline's folder holds the screenshots and the copied text. The
+    /// end-to-end tests point it at a folder of their own.
     static let folder: URL = {
+        if let dir = ProcessInfo.processInfo.environment["CLIPLINE_DATA_DIR"], !dir.isEmpty {
+            return URL(fileURLWithPath: dir, isDirectory: true).appendingPathComponent("Screenshots", isDirectory: true)
+        }
         let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
         return base.appendingPathComponent("Clipline/Screenshots", isDirectory: true)
     }()
@@ -51,57 +92,48 @@ enum Inbox {
         set { UserDefaults.standard.set(newValue, forKey: offeredKey) }
     }
 
-    /// Whether macOS is currently sending screenshots to our folder.
-    static var isApplied: Bool {
-        guard let current = CFPreferencesCopyAppValue(locationKey, domain) as? String else { return false }
-        return URL(fileURLWithPath: (current as NSString).expandingTildeInPath).standardizedFileURL
+    private static func isFolder(_ path: String) -> Bool {
+        URL(fileURLWithPath: (path as NSString).expandingTildeInPath).standardizedFileURL
             == folder.standardizedFileURL
     }
 
-    static func apply() {
+    static func apply(to settings: ScreenshotSettings = SystemScreenshotSettings(),
+                      defaults: UserDefaults = .standard) {
         try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
-        // Never save our own values as the "previous" ones, for example after
-        // a crash left them applied.
-        var saved = UserDefaults.standard.dictionary(forKey: savedKey) ?? [:]
-        if !isApplied {
-            saved = [:]
-            saved["location"] = CFPreferencesCopyAppValue(locationKey, domain) as? String
-            saved["locationScreenshot"] = CFPreferencesCopyAppValue(screenshotLocationKey, domain) as? String
-            saved["thumbnail"] = CFPreferencesCopyAppValue(thumbnailKey, domain) as? Bool
+        // A setting that still holds our value after a crash, or after the
+        // app was killed before it could restore, is not the user's: what was
+        // saved for it before stays. Anything else is the user's own now.
+        let before = defaults.dictionary(forKey: savedKey)
+        var saved: [String: Any] = [:]
+        for m in managed {
+            let current = settings[m.key]
+            if let before, m.wasSaved(in: before), m.isOurs(current) {
+                saved[m.savedAs] = before[m.savedAs]
+            } else if case .folder = m.value, m.isOurs(current) {
+                // Nothing saved for it: back to the macOS default, never to
+                // our folder once Clipline is no longer watching it.
+                saved[m.savedAs] = nil
+            } else {
+                saved[m.savedAs] = current
+            }
+            if let group = m.group { saved[group] = true }
         }
-        // Recordings and the target came later: settings saved by an earlier
-        // version lack them, and the value macOS has now is still the user's own.
-        if saved["recordingSaved"] == nil {
-            saved["locationRecording"] = CFPreferencesCopyAppValue(recordingLocationKey, domain) as? String
-            saved["recordingSaved"] = true
-        }
-        if saved["targetSaved"] == nil {
-            saved["target"] = CFPreferencesCopyAppValue(targetKey, domain) as? String
-            saved["targetScreenshot"] = CFPreferencesCopyAppValue(screenshotTargetKey, domain) as? String
-            saved["targetRecording"] = CFPreferencesCopyAppValue(recordingTargetKey, domain) as? String
-            saved["targetSaved"] = true
-        }
-        UserDefaults.standard.set(saved, forKey: savedKey)
-        set(locationKey, folder.path)
-        set(screenshotLocationKey, folder.path)
-        set(recordingLocationKey, folder.path)
-        set(targetKey, "file")
-        set(screenshotTargetKey, "file")
-        set(recordingTargetKey, "file")
-        set(thumbnailKey, false)
+        defaults.set(saved, forKey: savedKey)
+        for m in managed { settings[m.key] = m.ours }
+        settings.synchronize()
     }
 
-    static func restore() {
-        guard isApplied else { return }
-        let saved = UserDefaults.standard.dictionary(forKey: savedKey) ?? [:]
-        set(locationKey, saved["location"])
-        set(screenshotLocationKey, saved["locationScreenshot"])
-        set(recordingLocationKey, saved["locationRecording"])
-        set(targetKey, saved["target"])
-        set(screenshotTargetKey, saved["targetScreenshot"])
-        set(recordingTargetKey, saved["targetRecording"])
-        set(thumbnailKey, saved["thumbnail"])
-        UserDefaults.standard.removeObject(forKey: savedKey)
+    /// Puts back what was there before. A setting the user changed while
+    /// Clipline had them, from the Options menu of Cmd+Shift+5 for example,
+    /// is theirs and stays as it is.
+    static func restore(to settings: ScreenshotSettings = SystemScreenshotSettings(),
+                        defaults: UserDefaults = .standard) {
+        guard let saved = defaults.dictionary(forKey: savedKey) else { return }
+        for m in managed where m.isOurs(settings[m.key]) {
+            settings[m.key] = saved[m.savedAs]
+        }
+        settings.synchronize()
+        defaults.removeObject(forKey: savedKey)
     }
 
     /// Saves an image that has no file of its own, like a copied picture, in
@@ -129,11 +161,25 @@ enum Inbox {
             throw error
         }
     }
+}
 
-    /// Writes through cfprefsd, so the screenshot service sees it at once.
-    /// A nil value removes the key and returns it to the macOS default.
-    private static func set(_ key: CFString, _ value: Any?) {
-        CFPreferencesSetAppValue(key, value as CFPropertyList?, domain)
+/// The macOS screenshot settings, as Inbox reads and writes them. A nil value
+/// is no setting at all: macOS uses its default.
+protocol ScreenshotSettings {
+    subscript(key: String) -> Any? { get nonmutating set }
+    func synchronize()
+}
+
+/// Writes through cfprefsd, so the screenshot service sees it at once.
+struct SystemScreenshotSettings: ScreenshotSettings {
+    private let domain = "com.apple.screencapture" as CFString
+
+    subscript(key: String) -> Any? {
+        get { CFPreferencesCopyAppValue(key as CFString, domain) }
+        nonmutating set { CFPreferencesSetAppValue(key as CFString, newValue as CFPropertyList?, domain) }
+    }
+
+    func synchronize() {
         CFPreferencesAppSynchronize(domain)
     }
 }

@@ -37,6 +37,7 @@ struct NoteClip: View {
                 }
                 .overlay(alignment: .bottomTrailing) {
                     Text("\(notes.all.count)")
+                        .accessibilityIdentifier("clipline.noteCount")
                         .font(.system(size: 9, weight: .semibold).monospacedDigit())
                         .foregroundStyle(.secondary)
                         .padding(5)

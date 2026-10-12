@@ -66,6 +66,8 @@ struct PeggedView: View {
             .resizable()
             .interpolation(.high)
             .frame(width: photoSize.width, height: photoSize.height)
+            // How the end-to-end tests find the photo.
+            .accessibilityIdentifier("clipline.photo." + item.url.lastPathComponent)
             // Concentric corners: the photo's radius is the frame's minus the
             // inset, the way macOS rounds nested shapes.
             .clipShape(RoundedRectangle(cornerRadius: Frame.radius - Frame.inset, style: .continuous))

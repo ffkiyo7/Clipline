@@ -767,23 +767,9 @@ final class Capture: ObservableObject {
     /// the area it came from, so it flies from there to the line and a pin
     /// opens right over it.
     private static func save(_ png: Data, area: CGRect) -> URL? {
-        let fm = FileManager.default
-        let stamp: String = {
-            let f = DateFormatter()
-            f.locale = Locale(identifier: "en_US_POSIX")
-            f.dateFormat = "yyyy-MM-dd 'at' HH.mm.ss"
-            return f.string(from: Date())
-        }()
-        var url = Inbox.folder.appendingPathComponent("Screenshot \(stamp).png")
-        var n = 2
-        while fm.fileExists(atPath: url.path) {
-            url = Inbox.folder.appendingPathComponent("Screenshot \(stamp) \(n).png")
-            n += 1
-        }
+        let url: URL
         do {
-            try fm.createDirectory(at: Inbox.folder, withIntermediateDirectories: true)
-            try png.write(to: url, options: .atomic)
-            try fm.setAttributes([.posixPermissions: 0o600], ofItemAtPath: url.path)
+            url = try Inbox.keep(png, prefix: "Screenshot")
         } catch {
             log.error("Could not save a screenshot: \(error.localizedDescription, privacy: .public)")
             return nil

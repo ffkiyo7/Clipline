@@ -164,7 +164,7 @@ scripts/build-app.sh
 open build/Clipline.app
 ```
 
-需要 Swift 工具链，Xcode 可选。若使用 macOS 27 的命令行工具，脚本会回退到随其一同安装的 macOS 26 SDK，因为新版 SDK 需要只有 Xcode 才带的 SwiftUI 宏插件。
+需要 Swift 工具链，Xcode 可选。`swift test` 运行测试，需要 Xcode 自带的 XCTest。端到端测试会操作真实的键盘和鼠标，所以要单独开启：先运行 `scripts/build-app.sh`，退出 Clipline，给运行测试的终端开启辅助功能权限，然后运行 `CLIPLINE_E2E=1 swift test --filter CliplineE2ETests`。若使用 macOS 27 的命令行工具，脚本会回退到随其一同安装的 macOS 26 SDK，因为新版 SDK 需要只有 Xcode 才带的 SwiftUI 宏插件。
 
 如果你有 Apple Development 证书（任何 Apple ID 在 Xcode 里都能生成），本地构建会用它签名，重新构建后 macOS 仍然记得屏幕录制和辅助功能权限。没有的话采用 ad-hoc 签名，每次重新构建都要重新授权。
 

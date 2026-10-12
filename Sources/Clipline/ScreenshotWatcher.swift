@@ -27,7 +27,10 @@ final class ScreenshotWatcher {
 
     private static let imageExtensions: Set<String> = ["png", "jpg", "jpeg", "heic", "tif", "tiff", "gif", "webp"]
 
-    static let desktop = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Desktop")
+    /// The end-to-end tests give it a folder of their own, so they never
+    /// watch the real Desktop or ask to.
+    static let desktop = ProcessInfo.processInfo.environment["CLIPLINE_DESKTOP_DIR"].map { URL(fileURLWithPath: $0) }
+        ?? FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Desktop")
 
     /// Watches the folder macOS saves screenshots to, or a given folder.
     /// `anyImage` takes every new image even on the Desktop, for a folder

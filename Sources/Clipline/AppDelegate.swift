@@ -159,6 +159,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     func applicationWillTerminate(_ notification: Notification) {
         if Inbox.isEnabled { Inbox.restore() }
+        Notes.shared.flush()
     }
 
     // MARK: Inbox mode
@@ -263,6 +264,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             let source = DispatchSource.makeSignalSource(signal: sig, queue: .main)
             source.setEventHandler {
                 if Inbox.isEnabled { Inbox.restore() }
+                MainActor.assumeIsolated { Notes.shared.flush() }
                 exit(0)
             }
             source.resume()

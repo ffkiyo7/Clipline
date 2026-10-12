@@ -1,17 +1,6 @@
 import AppKit
 import Combine
 
-/// One piece of copied text, kept in the note clip at the end of the line.
-struct Note: Codable, Identifiable, Equatable {
-    var id = UUID()
-    var text: String
-    var date: Date
-    /// The app it was copied from, when known.
-    var source: Source?
-    /// Pinned notes stay at the top and are never trimmed.
-    var pinned = false
-}
-
 /// The text you copy, newest first. Copying the same text again moves it
 /// back to the top instead of keeping it twice. Kept in a file only you can
 /// read, in Clipline's own folder.
@@ -35,40 +24,38 @@ final class Notes: ObservableObject {
     private static let file: URL = Inbox.folder.deletingLastPathComponent()
         .appendingPathComponent("Clipboard.json")
 
+    private let saver: FileSaver
+
     private init() {
-        load()
+        // What people copy can be private: only they can read it.
+        saver = FileSaver(url: Self.file, permissions: 0o600) { error in
+            log.error("Could not save copied text: \(error.localizedDescription, privacy: .public)")
+        }
+        all = NoteList.read(from: Self.file) { message in
+            log.error("\(message, privacy: .public)")
+        }
     }
 
     /// Pinned first, then newest first.
-    var sorted: [Note] {
-        all.filter(\.pinned) + all.filter { !$0.pinned }
-    }
+    var sorted: [Note] { NoteList.sorted(all) }
 
     func add(_ text: String, source: Source?) {
-        guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
-              text.count <= Self.maxLength else { return }
-        var note = Note(text: text, date: Date(), source: source)
-        if let i = all.firstIndex(where: { $0.text == text }) {
-            note.id = all[i].id
-            note.pinned = all[i].pinned
-            all.remove(at: i)
-        }
-        all.insert(note, at: 0)
-        trim()
+        var notes = all
+        guard NoteList.add(text, source: source, to: &notes, limit: Self.limit, maxLength: Self.maxLength) else { return }
+        all = notes
         save()
     }
 
     /// Copies a note, and it moves to the top as if just copied. The
     /// clipboard watcher is told it was us.
     func copy(_ id: UUID) {
-        guard let i = all.firstIndex(where: { $0.id == id }) else { return }
+        var notes = all
+        guard let note = NoteList.bump(id, in: &notes) else { return }
+        all = notes
         let pb = NSPasteboard.general
         pb.clearContents()
-        pb.setString(all[i].text, forType: .string)
+        pb.setString(note.text, forType: .string)
         ClipboardWatcher.ownChangeCount = pb.changeCount
-        var note = all.remove(at: i)
-        note.date = Date()
-        all.insert(note, at: 0)
         save()
     }
 
@@ -89,35 +76,15 @@ final class Notes: ObservableObject {
         save()
     }
 
-    private func trim() {
-        var unpinned = 0
-        all.removeAll { note in
-            guard !note.pinned else { return false }
-            unpinned += 1
-            return unpinned > Self.limit
-        }
+    /// Writes what is still waiting, before the app quits.
+    func flush() {
+        saver.flush()
     }
 
     // MARK: File
 
-    private func load() {
-        guard let data = try? Data(contentsOf: Self.file) else { return }
-        all = (try? JSONDecoder().decode([Note].self, from: data)) ?? []
-    }
-
     private func save() {
         guard let data = try? JSONEncoder().encode(all) else { return }
-        let url = Self.file
-        DispatchQueue.global(qos: .utility).async {
-            let fm = FileManager.default
-            do {
-                try fm.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
-                try data.write(to: url, options: .atomic)
-                // What people copy can be private: only they can read it.
-                try fm.setAttributes([.posixPermissions: 0o600], ofItemAtPath: url.path)
-            } catch {
-                log.error("Could not save copied text: \(error.localizedDescription, privacy: .public)")
-            }
-        }
+        saver.save(data)
     }
 }
