@@ -107,7 +107,7 @@ struct Paperclip: View {
 
 /// Clicks reach a view on a panel that never becomes key only through
 /// AppKit, the way the photos take theirs.
-private struct ClickArea: NSViewRepresentable {
+struct ClickArea: NSViewRepresentable {
     let onClick: (NSRect) -> Void
 
     func makeNSView(context: Context) -> ClickView {

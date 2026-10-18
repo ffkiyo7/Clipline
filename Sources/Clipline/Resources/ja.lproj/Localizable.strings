@@ -62,3 +62,8 @@
 
 /* PeggedView */
 "Copied" = "コピーしました";
+
+/* LineView: the scissors */
+"Hold and sweep along the line to cut photos down" = "押したまま線に沿ってなぞると、写真を切り落とせます";
+"%d taken down" = "%d 枚を切り落としました";
+"Undo" = "取り消す";

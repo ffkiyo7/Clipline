@@ -62,3 +62,8 @@
 
 /* PeggedView */
 "Copied" = "Copié";
+
+/* LineView: the scissors */
+"Hold and sweep along the line to cut photos down" = "Maintenez et glissez le long de la corde pour décrocher les photos";
+"%d taken down" = "%d décrochées";
+"Undo" = "Annuler";

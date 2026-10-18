@@ -179,6 +179,141 @@ final class Line: ObservableObject {
         }
     }
 
+    // MARK: Cutting down with the scissors
+
+    /// Where the scissors sit on the rope, under the pointer, or nil while
+    /// the pointer is not on the rope.
+    @Published var scissorsX: CGFloat?
+    /// The way the scissors last moved, which they face.
+    @Published private(set) var scissorsFaceLeft = false
+    /// The cut in progress, while the button is held.
+    @Published private(set) var stroke: Stroke?
+    /// The last cut, while it can still be undone.
+    @Published private(set) var lastCut: Cut?
+    /// Clips just cut, each with a spark where it snapped.
+    @Published private(set) var snips: [Snip] = []
+    /// The undo pill, which catches the pointer like the photos do.
+    var undoRect: CGRect?
+
+    /// How long a cut can be undone. Files from Clipline's folder wait as
+    /// long before they go to the Trash.
+    nonisolated static let undoDelay: TimeInterval = 6
+    /// How far off the rope the pointer may wander and still cut.
+    nonisolated static let cutReach: CGFloat = 40
+
+    /// The first few times the scissors show, they say what they do.
+    nonisolated static var cutsMade: Int {
+        get { UserDefaults.standard.integer(forKey: "cutsMade") }
+        set { UserDefaults.standard.set(newValue, forKey: "cutsMade") }
+    }
+
+    private var cutWidth: CGFloat = 0
+    private var cutLastX: CGFloat = 0
+    /// The photos in order when the cut began, to put them back in place.
+    private var cutOrder: [UUID] = []
+    private var cutTaken: [Cut.Taken] = []
+
+    /// Where each hanging photo's clip grips the rope, on a line this wide,
+    /// the same way the line view lays them out.
+    func clips(width: CGFloat) -> [(id: UUID, x: CGFloat)] {
+        items.indices.filter { !items[$0].falling }.map { i in
+            let slot = place(i)
+            return (id: items[i].id, x: Layout.x(index: slot.index, count: slot.count, width: width,
+                                                visible: visibleCount, scroll: scroll))
+        }
+    }
+
+    func beginCut(at x: CGFloat, width: CGFloat) {
+        lastCut = nil
+        cutWidth = width
+        cutLastX = x
+        cutOrder = items.filter { !$0.falling }.map(\.id)
+        cutTaken = []
+        stroke = Stroke(from: x, to: x)
+        scissorsX = x
+        snip(from: x, to: x)
+    }
+
+    func moveCut(to x: CGFloat, y: CGFloat) {
+        guard var current = stroke else { return }
+        if x != cutLastX { scissorsFaceLeft = x < cutLastX }
+        current.to = x
+        stroke = current
+        scissorsX = x
+        // Wandered off the rope, the scissors stop cutting until they are back.
+        if abs(y - Layout.ropeY(x: x, width: cutWidth)) <= Self.cutReach { snip(from: cutLastX, to: x) }
+        cutLastX = x
+    }
+
+    /// The button is let go. What was cut can be undone for a moment.
+    func endCut() {
+        guard let done = stroke else { return }
+        stroke = nil
+        guard !cutTaken.isEmpty else { return }
+        let cut = Cut(taken: cutTaken, x: done.to)
+        cutTaken = []
+        lastCut = cut
+        Self.cutsMade += 1
+        DispatchQueue.main.asyncAfter(deadline: .now() + Self.undoDelay) { [weak self] in
+            if self?.lastCut?.id == cut.id { self?.lastCut = nil }
+        }
+    }
+
+    /// Every photo the cut puts back hangs where it was, swinging as it
+    /// arrives. A file from Clipline's folder is taken off its way to the Trash.
+    func undoCut() {
+        guard let cut = lastCut else { return }
+        lastCut = nil
+        for taken in cut.taken.sorted(by: { $0.index < $1.index }) {
+            guard FileManager.default.fileExists(atPath: taken.url.path),
+                  !items.contains(where: { $0.url == taken.url && !$0.falling }) else { continue }
+            Self.keep(taken.url)
+            let hanging = items.indices.filter { !items[$0].falling }
+            let at = Self.insertionIndex(for: taken.index, hanging: hanging, count: items.count)
+            items.insert(Pegged(url: taken.url, thumb: taken.thumb, source: taken.source), at: at)
+        }
+        save()
+        play("Tink", volume: 0.35)
+    }
+
+    /// Cuts every clip the scissors passed between two points on the rope.
+    /// Each photo falls the way of its corner cross, except that a file from
+    /// Clipline's folder waits for the undo before it goes to the Trash.
+    private func snip(from a: CGFloat, to b: CGFloat) {
+        let hanging = clips(width: cutWidth)
+        let passed = Self.clipsPassed(hanging.map(\.x), from: a, to: b)
+        for n in passed {
+            let (id, x) = hanging[n]
+            guard let item = items.first(where: { $0.id == id }) else { continue }
+            cutTaken.append(Cut.Taken(url: item.url, thumb: item.thumb, source: item.source,
+                                      index: cutOrder.firstIndex(of: id) ?? cutOrder.count))
+            if isInInbox(id) { Self.trashLater(item.url, after: Self.undoDelay) }
+            drop(id, quietly: true)
+            let spark = Snip(x: x)
+            snips.append(spark)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+                self?.snips.removeAll { $0.id == spark.id }
+            }
+        }
+        if !passed.isEmpty { play("Pop", volume: 0.25) }
+    }
+
+    /// The clips at `xs` that a stroke from `a` to `b` passes, in the order
+    /// it meets them. One just under where the stroke starts counts too.
+    nonisolated static func clipsPassed(_ xs: [CGFloat], from a: CGFloat, to b: CGFloat,
+                                        slack: CGFloat = 6) -> [Int] {
+        let low = min(a, b) - slack, high = max(a, b) + slack
+        let hit = xs.indices.filter { xs[$0] >= low && xs[$0] <= high }
+            .sorted { xs[$0] < xs[$1] }
+        return a <= b ? hit : hit.reversed()
+    }
+
+    /// Where a photo that was `place`th among the hanging ones goes back:
+    /// before the one now in that place, or last.
+    nonisolated static func insertionIndex(for place: Int, hanging: [Int], count: Int) -> Int {
+        place < hanging.count ? hanging[place] : count
+    }
+
     /// Dragged into an app, the photo has done its job: it is gone from the
     /// line at once, without falling, since it went where you dropped it.
     /// The app may still be reading the file, so a file from Clipline's
@@ -196,16 +331,17 @@ final class Line: ObservableObject {
 
     /// How long a used file waits before it goes to the Trash.
     private static let usedDelay: TimeInterval = 5 * 60
-    /// Used files still waiting, by path, with when they go. Kept across
-    /// launches, so quitting in the meantime leaves nothing behind.
+    /// Used and cut files still waiting, by path, with when they go. Kept
+    /// across launches, so quitting in the meantime leaves nothing behind.
     private static let usedKey = "usedFiles"
 
-    private static func trashLater(_ url: URL) {
+    private static func trashLater(_ url: URL, after delay: TimeInterval? = nil) {
+        let delay = delay ?? usedDelay
         var waiting = UserDefaults.standard.dictionary(forKey: usedKey) as? [String: Double] ?? [:]
-        let due = Date().addingTimeInterval(usedDelay)
+        let due = Date().addingTimeInterval(delay)
         waiting[url.path] = due.timeIntervalSince1970
         UserDefaults.standard.set(waiting, forKey: usedKey)
-        DispatchQueue.main.asyncAfter(deadline: .now() + usedDelay + 1) { sweepUsed() }
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay + 1) { sweepUsed() }
     }
 
     private static func keep(_ url: URL) {
@@ -472,6 +608,34 @@ final class Line: ObservableObject {
               let rep = NSBitmapImageRep(data: tiff) else { return nil }
         return rep.representation(using: .png, properties: [:])
     }
+}
+
+/// One stroke of the scissors along the rope, in the line's coordinates.
+struct Stroke: Equatable {
+    var from: CGFloat
+    var to: CGFloat
+}
+
+/// Photos cut down in one stroke, kept for a moment so it can be undone.
+struct Cut: Identifiable {
+    struct Taken {
+        let url: URL
+        let thumb: NSImage
+        let source: Source?
+        /// Its place among the hanging photos when the cut began.
+        let index: Int
+    }
+
+    let id = UUID()
+    let taken: [Taken]
+    /// Where along the line the stroke ended.
+    let x: CGFloat
+}
+
+/// A clip that just snapped.
+struct Snip: Identifiable {
+    let id = UUID()
+    let x: CGFloat
 }
 
 /// Screen recordings, as macOS saves them.

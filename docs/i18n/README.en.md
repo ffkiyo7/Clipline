@@ -50,6 +50,7 @@ Rest the pointer in the middle of the menu bar and it glides down. Move away and
 | Drag into an app | Send it. It leaves the line; a screenshot in Clipline's folder goes to the Trash a few minutes later. |
 | Drag into a folder | Keep it there. It leaves the line. |
 | Drag to the Trash, or click the cross | Let it go. |
+| Hold and sweep along the line | Like scissors through the clips: every photo it passes falls. Undo for a few seconds. |
 | Drag an image onto the line | Hang it. The photos make room as you carry it. |
 | Rest the pointer in the middle of the menu bar | Bring the line down on that screen. |
 | Click anything in the menu bar | Put it away. |
