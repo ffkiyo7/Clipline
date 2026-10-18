@@ -27,13 +27,8 @@
 "Stop Watching" = "İzləməyi dayandır";
 "Watch" = "İzlə";
 "New images saved to this folder will hang on the line." = "Bu qovluğa saxlanan yeni şəkillər ipdən asılacaq.";
-"Shortcut" = "Qısayol";
-"Change Shortcut…" = "Qısayolu dəyiş…";
-"Change Shortcut" = "Qısayolu dəyiş";
 "None" = "Yoxdur";
 "Space" = "Boşluq";
-"Press the new shortcut" = "Yeni qısayolu basın";
-"Escape cancels. Delete removes the shortcut." = "Escape ləğv edir. Sil qısayolu silir.";
 "Size" = "Ölçü";
 "Small" = "Kiçik";
 "Medium" = "Orta";
@@ -93,3 +88,19 @@
 "Click to copy" = "Kopyalamaq üçün klikləyin";
 "Press and hold to mark up" = "İşarələmək üçün basıb saxlayın";
 "Drag into a folder to keep it" = "Saxlamaq üçün qovluğa sürükləyin";
+
+/* Shortcuts */
+"Keyboard Shortcuts…" = "Klaviatura qısayolları…";
+"Keyboard Shortcuts" = "Klaviatura qısayolları";
+"They work from any app." = "İstənilən tətbiqdən işləyir.";
+"Brings the line down, or puts it away." = "İpi endirir və ya yığır.";
+"Freezes the screen so you can pick a window or an area." = "Pəncərə və ya sahə seçə bilməyiniz üçün ekranı dondurur.";
+"Click to change" = "Dəyişmək üçün klikləyin";
+"Press the new keys. Esc cancels." = "Yeni düymələri basın. Esc ləğv edir.";
+"Type the new shortcut" = "Yeni qısayolu yazın";
+"Remove Shortcut" = "Qısayolu sil";
+"Restore Default" = "Standarta qaytar";
+"Hold ⌘, ⌃ or ⌥ along with the key." = "Düymə ilə birlikdə ⌘, ⌃ və ya ⌥ basıb saxlayın.";
+"%@ is already the other shortcut." = "%@ artıq digər qısayoldur.";
+"Another app already uses %@." = "%@ başqa tətbiq tərəfindən istifadə olunur.";
+"Click a shortcut, then press the new keys with ⌘, ⌃ or ⌥. Esc cancels; Delete removes it." = "Qısayola klikləyin, sonra ⌘, ⌃ və ya ⌥ ilə yeni düymələri basın. Esc ləğv edir; Delete silir.";

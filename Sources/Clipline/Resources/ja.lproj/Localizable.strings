@@ -25,13 +25,8 @@
 "Stop Watching" = "監視を停止";
 "Watch" = "監視";
 "New images saved to this folder will hang on the line." = "このフォルダに保存された新しい画像がロープに吊るされます。";
-"Shortcut" = "ショートカット";
-"Change Shortcut…" = "ショートカットを変更…";
-"Change Shortcut" = "ショートカットを変更";
 "None" = "なし";
 "Space" = "スペース";
-"Press the new shortcut" = "新しいショートカットを押してください";
-"Escape cancels. Delete removes the shortcut." = "escでキャンセル、deleteでショートカットを削除します。";
 "Size" = "サイズ";
 "Small" = "小";
 "Medium" = "中";
@@ -91,3 +86,19 @@
 "Click to copy" = "クリックでコピー";
 "Press and hold to mark up" = "長押しで注釈";
 "Drag into a folder to keep it" = "フォルダにドラッグして保存";
+
+/* Shortcuts */
+"Keyboard Shortcuts…" = "キーボードショートカット…";
+"Keyboard Shortcuts" = "キーボードショートカット";
+"They work from any app." = "どの App からでも使えます。";
+"Brings the line down, or puts it away." = "ロープを下ろす、またはしまいます。";
+"Freezes the screen so you can pick a window or an area." = "画面を止めて、ウインドウや範囲を選べるようにします。";
+"Click to change" = "クリックして変更";
+"Press the new keys. Esc cancels." = "新しいキーを押してください。Esc でキャンセル。";
+"Type the new shortcut" = "新しいショートカットを入力";
+"Remove Shortcut" = "ショートカットを削除";
+"Restore Default" = "デフォルトに戻す";
+"Hold ⌘, ⌃ or ⌥ along with the key." = "⌘、⌃、⌥ のいずれかと一緒に押してください。";
+"%@ is already the other shortcut." = "%@ はもう一方のショートカットです。";
+"Another app already uses %@." = "%@ はほかの App が使用しています。";
+"Click a shortcut, then press the new keys with ⌘, ⌃ or ⌥. Esc cancels; Delete removes it." = "ショートカットをクリックし、⌘、⌃、⌥ を含む新しいキーを押します。Esc でキャンセル、Delete で削除。";

@@ -27,13 +27,8 @@
 "Stop Watching" = "Stop Watching";
 "Watch" = "Watch";
 "New images saved to this folder will hang on the line." = "New images saved to this folder will hang on the line.";
-"Shortcut" = "Shortcut";
-"Change Shortcut…" = "Change Shortcut…";
-"Change Shortcut" = "Change Shortcut";
 "None" = "None";
 "Space" = "Space";
-"Press the new shortcut" = "Press the new shortcut";
-"Escape cancels. Delete removes the shortcut." = "Escape cancels. Delete removes the shortcut.";
 "Size" = "Size";
 "Small" = "Small";
 "Medium" = "Medium";
@@ -119,8 +114,6 @@
 "Keep copied text" = "Keep copied text";
 "Text you copy goes into the clip at the end of the line" = "Text you copy goes into the clip at the end of the line";
 "Take Screenshot" = "Take Screenshot";
-"Take Screenshot: %@" = "Take Screenshot: %@";
-"Change Screenshot Shortcut…" = "Change Screenshot Shortcut…";
 "Clipline needs Screen Recording access to take screenshots" = "Clipline needs Screen Recording access to take screenshots";
 "Turn on Clipline in System Settings → Privacy & Security → Screen Recording, then try again." = "Turn on Clipline in System Settings → Privacy & Security → Screen Recording, then try again.";
 "Open System Settings" = "Open System Settings";
@@ -154,3 +147,19 @@
 "Click to copy" = "Click to copy";
 "Press and hold to mark up" = "Press and hold to mark up";
 "Drag into a folder to keep it" = "Drag into a folder to keep it";
+
+/* Shortcuts */
+"Keyboard Shortcuts…" = "Keyboard Shortcuts…";
+"Keyboard Shortcuts" = "Keyboard Shortcuts";
+"They work from any app." = "They work from any app.";
+"Brings the line down, or puts it away." = "Brings the line down, or puts it away.";
+"Freezes the screen so you can pick a window or an area." = "Freezes the screen so you can pick a window or an area.";
+"Click to change" = "Click to change";
+"Press the new keys. Esc cancels." = "Press the new keys. Esc cancels.";
+"Type the new shortcut" = "Type the new shortcut";
+"Remove Shortcut" = "Remove Shortcut";
+"Restore Default" = "Restore Default";
+"Hold ⌘, ⌃ or ⌥ along with the key." = "Hold ⌘, ⌃ or ⌥ along with the key.";
+"%@ is already the other shortcut." = "%@ is already the other shortcut.";
+"Another app already uses %@." = "Another app already uses %@.";
+"Click a shortcut, then press the new keys with ⌘, ⌃ or ⌥. Esc cancels; Delete removes it." = "Click a shortcut, then press the new keys with ⌘, ⌃ or ⌥. Esc cancels; Delete removes it.";

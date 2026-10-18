@@ -192,6 +192,7 @@ open build/Clipline.app
 | `ClipboardWatcher.swift` | 发现复制到剪贴板的图片和文字 |
 | `Inbox.swift` | 接管截图设置，之后再把它们放回去 |
 | `HotKey.swift` | 键盘快捷键 |
+| `Shortcuts.swift` | 两个全局快捷键，以及修改它们的窗口 |
 | `Markup.swift` | 打开系统「标记」编辑器并保存结果 |
 | `Trim.swift` | 剪辑屏幕录制并保存结果 |
 | `FullScreen.swift` | 判断何时该保持隐藏 |

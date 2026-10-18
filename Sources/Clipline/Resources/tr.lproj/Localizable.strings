@@ -25,13 +25,8 @@
 "Stop Watching" = "İzlemeyi durdur";
 "Watch" = "İzle";
 "New images saved to this folder will hang on the line." = "Bu klasöre kaydedilen yeni görseller ipe asılır.";
-"Shortcut" = "Kısayol";
-"Change Shortcut…" = "Kısayolu değiştir…";
-"Change Shortcut" = "Kısayolu değiştir";
 "None" = "Yok";
 "Space" = "Boşluk";
-"Press the new shortcut" = "Yeni kısayolu basın";
-"Escape cancels. Delete removes the shortcut." = "Escape iptal eder. Sil kısayolu kaldırır.";
 "Size" = "Boyut";
 "Small" = "Küçük";
 "Medium" = "Orta";
@@ -91,3 +86,19 @@
 "Click to copy" = "Kopyalamak için tıkla";
 "Press and hold to mark up" = "İşaretlemek için basılı tut";
 "Drag into a folder to keep it" = "Saklamak için klasöre sürükle";
+
+/* Shortcuts */
+"Keyboard Shortcuts…" = "Klavye Kestirmeleri…";
+"Keyboard Shortcuts" = "Klavye Kestirmeleri";
+"They work from any app." = "Her uygulamadan çalışırlar.";
+"Brings the line down, or puts it away." = "İpi indirir ya da toplar.";
+"Freezes the screen so you can pick a window or an area." = "Bir pencere veya alan seçebilmeniz için ekranı dondurur.";
+"Click to change" = "Değiştirmek için tıklayın";
+"Press the new keys. Esc cancels." = "Yeni tuşlara basın. Esc iptal eder.";
+"Type the new shortcut" = "Yeni kestirmeyi yazın";
+"Remove Shortcut" = "Kestirmeyi Kaldır";
+"Restore Default" = "Varsayılana Döndür";
+"Hold ⌘, ⌃ or ⌥ along with the key." = "Tuşla birlikte ⌘, ⌃ veya ⌥ basılı tutun.";
+"%@ is already the other shortcut." = "%@ zaten diğer kestirme.";
+"Another app already uses %@." = "%@ başka bir uygulama tarafından kullanılıyor.";
+"Click a shortcut, then press the new keys with ⌘, ⌃ or ⌥. Esc cancels; Delete removes it." = "Bir kestirmeye tıklayın, sonra ⌘, ⌃ veya ⌥ ile yeni tuşlara basın. Esc iptal eder; Sil kaldırır.";

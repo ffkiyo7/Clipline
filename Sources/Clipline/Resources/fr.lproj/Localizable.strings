@@ -25,13 +25,8 @@
 "Stop Watching" = "Ne plus surveiller";
 "Watch" = "Surveiller";
 "New images saved to this folder will hang on the line." = "Les nouvelles images enregistrées dans ce dossier s’accrocheront à la corde.";
-"Shortcut" = "Raccourci";
-"Change Shortcut…" = "Modifier le raccourci…";
-"Change Shortcut" = "Modifier le raccourci";
 "None" = "Aucun";
 "Space" = "Espace";
-"Press the new shortcut" = "Appuyez sur le nouveau raccourci";
-"Escape cancels. Delete removes the shortcut." = "Échap annule. Effacer supprime le raccourci.";
 "Size" = "Taille";
 "Small" = "Petite";
 "Medium" = "Moyenne";
@@ -91,3 +86,19 @@
 "Click to copy" = "Cliquez pour copier";
 "Press and hold to mark up" = "Maintenez pour annoter";
 "Drag into a folder to keep it" = "Glissez dans un dossier pour la garder";
+
+/* Shortcuts */
+"Keyboard Shortcuts…" = "Raccourcis clavier…";
+"Keyboard Shortcuts" = "Raccourcis clavier";
+"They work from any app." = "Ils fonctionnent depuis n’importe quelle app.";
+"Brings the line down, or puts it away." = "Fait descendre la corde, ou la range.";
+"Freezes the screen so you can pick a window or an area." = "Fige l’écran pour choisir une fenêtre ou une zone.";
+"Click to change" = "Cliquez pour modifier";
+"Press the new keys. Esc cancels." = "Appuyez sur les nouvelles touches. Échap annule.";
+"Type the new shortcut" = "Tapez le nouveau raccourci";
+"Remove Shortcut" = "Supprimer le raccourci";
+"Restore Default" = "Rétablir par défaut";
+"Hold ⌘, ⌃ or ⌥ along with the key." = "Maintenez ⌘, ⌃ ou ⌥ avec la touche.";
+"%@ is already the other shortcut." = "%@ est déjà l’autre raccourci.";
+"Another app already uses %@." = "Une autre app utilise déjà %@.";
+"Click a shortcut, then press the new keys with ⌘, ⌃ or ⌥. Esc cancels; Delete removes it." = "Cliquez sur un raccourci, puis appuyez sur les nouvelles touches avec ⌘, ⌃ ou ⌥. Échap annule ; Supprimer l’efface.";

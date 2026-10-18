@@ -25,13 +25,8 @@
 "Stop Watching" = "停止监视";
 "Watch" = "监视";
 "New images saved to this folder will hang on the line." = "保存到此文件夹的新图片会挂到晾衣绳上。";
-"Shortcut" = "快捷键";
-"Change Shortcut…" = "更改快捷键…";
-"Change Shortcut" = "更改快捷键";
 "None" = "无";
 "Space" = "空格";
-"Press the new shortcut" = "请按下新的快捷键";
-"Escape cancels. Delete removes the shortcut." = "按 Esc 取消，按删除键移除快捷键。";
 "Size" = "大小";
 "Small" = "小";
 "Medium" = "中";
@@ -117,8 +112,6 @@
 "Keep copied text" = "记录复制的文字";
 "Text you copy goes into the clip at the end of the line" = "复制的文字会收进绳子末端的便签夹";
 "Take Screenshot" = "截图";
-"Take Screenshot: %@" = "截图：%@";
-"Change Screenshot Shortcut…" = "更改截图快捷键…";
 "Clipline needs Screen Recording access to take screenshots" = "Clipline 需要“屏幕录制”权限才能截图";
 "Turn on Clipline in System Settings → Privacy & Security → Screen Recording, then try again." = "请在“系统设置 → 隐私与安全性 → 屏幕录制”里打开 Clipline，然后再试一次。";
 "Open System Settings" = "打开系统设置";
@@ -152,3 +145,19 @@
 "Click to copy" = "单击复制";
 "Press and hold to mark up" = "长按标注";
 "Drag into a folder to keep it" = "拖进文件夹保存";
+
+/* Shortcuts */
+"Keyboard Shortcuts…" = "快捷键…";
+"Keyboard Shortcuts" = "快捷键";
+"They work from any app." = "在任何 App 里都能用。";
+"Brings the line down, or puts it away." = "放下绳子，或者把它收起来。";
+"Freezes the screen so you can pick a window or an area." = "屏幕定格，让你选一个窗口或一块区域。";
+"Click to change" = "点击更改";
+"Press the new keys. Esc cancels." = "按下新的组合键，Esc 取消。";
+"Type the new shortcut" = "请按下新的快捷键";
+"Remove Shortcut" = "移除快捷键";
+"Restore Default" = "恢复默认";
+"Hold ⌘, ⌃ or ⌥ along with the key." = "需要同时按住 ⌘、⌃ 或 ⌥。";
+"%@ is already the other shortcut." = "%@ 已经是另一个快捷键了。";
+"Another app already uses %@." = "%@ 已被其他 App 占用。";
+"Click a shortcut, then press the new keys with ⌘, ⌃ or ⌥. Esc cancels; Delete removes it." = "点击快捷键，再按下新的组合键，需包含 ⌘、⌃ 或 ⌥。Esc 取消，删除键移除。";

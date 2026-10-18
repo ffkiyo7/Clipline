@@ -25,13 +25,8 @@
 "Stop Watching" = "지켜보기 중단";
 "Watch" = "지켜보기";
 "New images saved to this folder will hang on the line." = "이 폴더에 새로 저장되는 이미지가 빨랫줄에 걸려요.";
-"Shortcut" = "단축키";
-"Change Shortcut…" = "단축키 변경…";
-"Change Shortcut" = "단축키 변경";
 "None" = "없음";
 "Space" = "스페이스";
-"Press the new shortcut" = "새 단축키를 누르세요";
-"Escape cancels. Delete removes the shortcut." = "Esc 키를 누르면 취소되고, Delete 키를 누르면 단축키가 지워져요.";
 "Size" = "크기";
 "Small" = "작게";
 "Medium" = "중간";
@@ -91,3 +86,19 @@
 "Click to copy" = "클릭해서 복사";
 "Press and hold to mark up" = "길게 눌러 표시";
 "Drag into a folder to keep it" = "폴더로 끌어 저장";
+
+/* Shortcuts */
+"Keyboard Shortcuts…" = "키보드 단축키…";
+"Keyboard Shortcuts" = "키보드 단축키";
+"They work from any app." = "어떤 앱에서든 작동해요.";
+"Brings the line down, or puts it away." = "줄을 내리거나 다시 올려요.";
+"Freezes the screen so you can pick a window or an area." = "화면을 멈추고 윈도우나 영역을 고를 수 있게 해요.";
+"Click to change" = "클릭해서 변경";
+"Press the new keys. Esc cancels." = "새 키를 누르세요. Esc는 취소.";
+"Type the new shortcut" = "새 단축키를 입력하세요";
+"Remove Shortcut" = "단축키 제거";
+"Restore Default" = "기본값으로 복원";
+"Hold ⌘, ⌃ or ⌥ along with the key." = "⌘, ⌃ 또는 ⌥와 함께 누르세요.";
+"%@ is already the other shortcut." = "%@은(는) 이미 다른 단축키예요.";
+"Another app already uses %@." = "다른 앱이 이미 %@을(를) 사용하고 있어요.";
+"Click a shortcut, then press the new keys with ⌘, ⌃ or ⌥. Esc cancels; Delete removes it." = "단축키를 클릭한 다음 ⌘, ⌃ 또는 ⌥와 함께 새 키를 누르세요. Esc는 취소, Delete는 제거.";

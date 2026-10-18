@@ -213,6 +213,7 @@ they are signed ad hoc, and macOS asks again after each rebuild.
 | `ClipboardWatcher.swift` | Notices images and text copied to the clipboard |
 | `Inbox.swift` | Takes over screenshot settings and puts them back |
 | `HotKey.swift` | The keyboard shortcuts |
+| `Shortcuts.swift` | The two global shortcuts, and the window that changes them |
 | `Markup.swift` | Opens the system Markup editor and saves the result |
 | `Trim.swift` | Trims a screen recording and saves the result |
 | `FullScreen.swift` | Knows when to stay hidden |

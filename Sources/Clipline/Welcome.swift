@@ -47,8 +47,14 @@ final class Welcome: NSObject, NSWindowDelegate {
     }
 
     func windowWillClose(_ notification: Notification) {
+        Shortcuts.shared.stopRecording()
         Welcome.shared = nil
         onClose()
+    }
+
+    // Not key any more, so the keys pressed next are not for a shortcut field.
+    func windowDidResignKey(_ notification: Notification) {
+        Shortcuts.shared.stopRecording()
     }
 }
 
@@ -85,11 +91,11 @@ private enum Step: Int, CaseIterable {
         }
     }
 
-    /// The keys that go with the step, and what they do.
-    var keys: (shortcut: Shortcut?, label: String)? {
+    /// The shortcut that goes with the step, which can be changed right there.
+    var shortcut: Shortcuts.Kind? {
         switch self {
-        case .bringDown: (Shortcut.current, L("Show or hide the line"))
-        case .capture: (Shortcut.capture, L("Take Screenshot"))
+        case .bringDown: .line
+        case .capture: .capture
         default: nil
         }
     }
@@ -155,12 +161,13 @@ struct WelcomeView: View {
                     .lineSpacing(2)
                     .fixedSize(horizontal: false, vertical: true)
                     .frame(maxWidth: 470)
-                if let keys = step.keys, let shortcut = keys.shortcut {
-                    HStack(spacing: 8) {
-                        Keycap(text: shortcut.display)
-                        Text(keys.label)
+                if let kind = step.shortcut {
+                    HStack(alignment: .top, spacing: 10) {
+                        Text(kind.title)
                             .font(.system(size: 12))
                             .foregroundStyle(.secondary)
+                            .frame(minHeight: 30)
+                        ShortcutField(kind)
                     }
                     .padding(.top, 2)
                 }
@@ -711,7 +718,7 @@ private struct CaptureScene: View {
         let dragging = t >= 2.8 && t < 4.0
         let selection = CGRect(x: a.x, y: a.y, width: pointer.x - a.x, height: pointer.y - a.y)
         let landed = t >= 4.9
-        let shortcut = Shortcut.capture?.display
+        let shortcut = Shortcuts.shared.capture?.display
 
         let count = landed ? 3 : 2
         let hung: [(kind: Int, x: CGFloat)] = [(2, Stage.clipX(0, of: count)), (3, Stage.clipX(1, of: count))]

@@ -25,13 +25,8 @@
 "Stop Watching" = "Parar de Monitorar";
 "Watch" = "Monitorar";
 "New images saved to this folder will hang on the line." = "As novas imagens salvas nesta pasta irão para o varal.";
-"Shortcut" = "Atalho";
-"Change Shortcut…" = "Alterar Atalho…";
-"Change Shortcut" = "Alterar Atalho";
 "None" = "Nenhum";
 "Space" = "Espaço";
-"Press the new shortcut" = "Pressione o novo atalho";
-"Escape cancels. Delete removes the shortcut." = "Esc cancela. Delete remove o atalho.";
 "Size" = "Tamanho";
 "Small" = "Pequeno";
 "Medium" = "Médio";
@@ -91,3 +86,19 @@
 "Click to copy" = "Clique para copiar";
 "Press and hold to mark up" = "Segure para marcar";
 "Drag into a folder to keep it" = "Arraste para uma pasta para guardar";
+
+/* Shortcuts */
+"Keyboard Shortcuts…" = "Atalhos de Teclado…";
+"Keyboard Shortcuts" = "Atalhos de Teclado";
+"They work from any app." = "Funcionam em qualquer app.";
+"Brings the line down, or puts it away." = "Desce a corda ou a recolhe.";
+"Freezes the screen so you can pick a window or an area." = "Congela a tela para você escolher uma janela ou uma área.";
+"Click to change" = "Clique para alterar";
+"Press the new keys. Esc cancels." = "Pressione as novas teclas. Esc cancela.";
+"Type the new shortcut" = "Digite o novo atalho";
+"Remove Shortcut" = "Remover Atalho";
+"Restore Default" = "Restaurar Padrão";
+"Hold ⌘, ⌃ or ⌥ along with the key." = "Segure ⌘, ⌃ ou ⌥ junto com a tecla.";
+"%@ is already the other shortcut." = "%@ já é o outro atalho.";
+"Another app already uses %@." = "Outro app já usa %@.";
+"Click a shortcut, then press the new keys with ⌘, ⌃ or ⌥. Esc cancels; Delete removes it." = "Clique num atalho e pressione as novas teclas com ⌘, ⌃ ou ⌥. Esc cancela; Delete remove.";
