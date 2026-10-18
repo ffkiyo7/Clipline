@@ -126,3 +126,7 @@
 "Open System Settings" = "Open System Settings";
 "Find Buttons and Panels in Screenshots" = "Find Buttons and Panels in Screenshots";
 "Back to the width before scrolling" = "Back to the width before scrolling";
+
+/* LineView: the scissors */
+"Hold and sweep along the line to cut photos down" = "Hold and sweep along the line to cut photos down";
+"%d taken down" = "%d taken down";

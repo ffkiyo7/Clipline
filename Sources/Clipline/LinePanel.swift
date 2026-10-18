@@ -23,10 +23,16 @@ final class LinePanel: NSPanel {
 
     /// Two-finger swipes and the scroll wheel, for moving along a long line.
     var onScroll: ((NSEvent) -> Void)?
+    /// The left button on the rope, for the scissors. Returns whether it
+    /// took the event; otherwise it goes on to the photos as usual.
+    var onRopeMouse: ((NSEvent) -> Bool)?
 
     override func sendEvent(_ event: NSEvent) {
         if event.type == .scrollWheel, let onScroll {
             onScroll(event)
+        } else if [.leftMouseDown, .leftMouseDragged, .leftMouseUp].contains(event.type),
+                  onRopeMouse?(event) == true {
+            return
         } else {
             super.sendEvent(event)
         }

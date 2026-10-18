@@ -102,6 +102,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 ? event.scrollingDeltaX : event.scrollingDeltaY
             self?.line.scroll(by: event.hasPreciseScrollingDeltas ? delta : delta * 12)
         }
+        panel.onRopeMouse = { [weak self] event in self?.ropeMouse(event) ?? false }
         line.onFall = { [weak self] item in self?.fall(item) }
         line.onOpenNotes = { rect in NotesPanel.toggle(below: rect) }
         // Copied text only grows the clip's stack: the line stays where it is.
@@ -113,6 +114,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         line.$items
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in self?.itemsChanged() }
+            .store(in: &cancellables)
+        // A line cut empty waits while the cut can be undone.
+        line.$lastCut
+            .receive(on: RunLoop.main)
+            .sink { [weak self] cut in if cut == nil { self?.itemsChanged() } }
             .store(in: &cancellables)
         // Photos kept from last time show themselves for a moment.
         if line.liveCount > 0 { comeDown(on: nil) }
@@ -278,9 +284,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     /// clip counts: with notes in it, the line waits up there to be pulled
     /// down, though copying never brings it down by itself.
     private func itemsChanged() {
-        guard line.liveCount == 0, !line.noteClip, !keepOpen else { return }
+        guard line.liveCount == 0, !line.noteClip, !keepOpen, line.stroke == nil, line.lastCut == nil else { return }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) { [weak self] in
-            guard let self, self.line.liveCount == 0, !self.line.noteClip, !self.keepOpen else { return }
+            guard let self, self.line.liveCount == 0, !self.line.noteClip, !self.keepOpen,
+                  self.line.stroke == nil, self.line.lastCut == nil else { return }
             self.wanted = false
             self.refresh()
         }
@@ -523,6 +530,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             pinned = false
             peekUntil = .distantPast
             panel.ignoresMouseEvents = true
+            line.endCut()
+            line.scissorsX = nil
         }
     }
 
@@ -675,7 +684,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         if inside && pinned { pinned = false }
 
         let busy = pinned || GrabView.isDragging || GrabView.isShowingMenu || NotesPanel.isOpen
-            || line.pressedID != nil || now < peekUntil
+            || line.pressedID != nil || line.stroke != nil || now < peekUntil
         if inside || busy {
             awaySince = nil
         } else {
@@ -689,29 +698,77 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     /// The panel spans the whole width of the screen, so it only accepts the
-    /// mouse while the cursor is over a photo. Everywhere else, clicks go to
-    /// whatever is underneath.
+    /// mouse while the cursor is over a photo, or on the rope where the
+    /// scissors cut. Everywhere else, clicks go to whatever is underneath.
     private func updateMousePassThrough(_ mouse: NSPoint) {
         guard !GrabView.isDragging else { return }
         // A drag from another app only finds a window that takes the mouse.
         if line.carrying {
             if panel.ignoresMouseEvents { panel.ignoresMouseEvents = false }
+            if line.scissorsX != nil { line.scissorsX = nil }
             updateGap(mouse)
+            return
+        }
+        // Mid-cut, the scissors follow the drag, wherever it goes.
+        if line.stroke != nil {
+            if panel.ignoresMouseEvents { panel.ignoresMouseEvents = false }
             return
         }
         let local = panel.convertPoint(fromScreen: mouse)
         let flipped = CGPoint(x: local.x, y: panel.frame.height - local.y)
-        var overPhoto = line.hitRects.values.contains { $0.insetBy(dx: -4, dy: -4).contains(flipped) }
-            || line.tagRects.values.contains { $0.insetBy(dx: -4, dy: -4).contains(flipped) }
-            || (line.noteClip && line.clipRect?.insetBy(dx: -4, dy: -4).contains(flipped) == true)
+        var overPhoto = isOverPhoto(flipped)
         // A line longer than the screen also takes the band the photos hang
         // in, gaps included, so a swipe anywhere along it moves it.
         if !overPhoto, line.slots > line.visibleCount, Line.keepOnLine != nil {
             let band = line.hitRects.values.reduce(CGRect.null) { $0.union($1) }
             overPhoto = !band.isNull && flipped.y >= band.minY - 4 && flipped.y <= band.maxY + 4
         }
-        if panel.ignoresMouseEvents == overPhoto {
-            panel.ignoresMouseEvents = !overPhoto
+        let onRope = !overPhoto && isOnRope(flipped)
+        let scissors: CGFloat? = onRope ? flipped.x : nil
+        if line.scissorsX != scissors { line.scissorsX = scissors }
+        let overUndo = line.undoRect?.insetBy(dx: -4, dy: -4).contains(flipped) == true
+        let takes = overPhoto || onRope || overUndo
+        if panel.ignoresMouseEvents == takes {
+            panel.ignoresMouseEvents = !takes
+        }
+    }
+
+    /// Over a photo, its tag or the note clip, in the line's own coordinates,
+    /// which run down from the top of the panel.
+    private func isOverPhoto(_ p: CGPoint) -> Bool {
+        line.hitRects.values.contains { $0.insetBy(dx: -4, dy: -4).contains(p) }
+            || line.tagRects.values.contains { $0.insetBy(dx: -4, dy: -4).contains(p) }
+            || (line.noteClip && line.clipRect?.insetBy(dx: -4, dy: -4).contains(p) == true)
+    }
+
+    /// On the rope where the photos hang from it, just around the clips:
+    /// there the scissors come out.
+    private func isOnRope(_ p: CGPoint) -> Bool {
+        let width = panel.frame.width
+        let xs = line.clips(width: width).map(\.x)
+        guard let first = xs.min(), let last = xs.max(), p.x >= first - 40, p.x <= last + 40 else { return false }
+        let rope = Layout.ropeY(x: p.x, width: width)
+        return p.y >= rope - 10 && p.y <= rope + 4
+    }
+
+    /// Pressing on the rope starts a cut; every clip the drag passes snaps.
+    private func ropeMouse(_ event: NSEvent) -> Bool {
+        let p = CGPoint(x: event.locationInWindow.x, y: panel.frame.height - event.locationInWindow.y)
+        switch event.type {
+        case .leftMouseDown:
+            guard isRevealed, !line.carrying, !isOverPhoto(p), isOnRope(p) else { return false }
+            line.beginCut(at: p.x, width: panel.frame.width)
+            return true
+        case .leftMouseDragged:
+            guard line.stroke != nil else { return false }
+            line.moveCut(to: p.x, y: p.y)
+            return true
+        case .leftMouseUp:
+            guard line.stroke != nil else { return false }
+            line.endCut()
+            return true
+        default:
+            return false
         }
     }
 

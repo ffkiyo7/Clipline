@@ -64,3 +64,8 @@
 
 /* PeggedView */
 "Copied" = "Kopyalandı";
+
+/* LineView: the scissors */
+"Hold and sweep along the line to cut photos down" = "Basıb saxlayın və ip boyunca sürüşdürərək şəkilləri kəsin";
+"%d taken down" = "%d şəkil endirildi";
+"Undo" = "Geri qaytar";

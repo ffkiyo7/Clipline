@@ -124,3 +124,7 @@
 "Open System Settings" = "打开系统设置";
 "Find Buttons and Panels in Screenshots" = "截图时识别按钮和面板";
 "Back to the width before scrolling" = "恢复滚动前的粗细";
+
+/* LineView: the scissors */
+"Hold and sweep along the line to cut photos down" = "按住沿绳子一划，剪下划过的图";
+"%d taken down" = "剪下 %d 张";
