@@ -67,3 +67,27 @@
 "Hold and sweep along the line to cut photos down" = "押したまま線に沿ってなぞると、写真を切り落とせます";
 "%d taken down" = "%d 枚を切り落としました";
 "Undo" = "取り消す";
+
+/* Welcome */
+"Show Welcome…" = "ようこそ画面を表示…";
+"Welcome to Clipline" = "Clipline へようこそ";
+"Out of sight, within reach" = "見えないのに、すぐ届く";
+"Its own screenshot tool" = "専用のスクリーンショットツール";
+"A gesture for everything" = "どの操作にもジェスチャ";
+"Snip to clear" = "切ってすっきり";
+"You’re all set" = "準備ができました";
+"Every screenshot you take hangs on a line at the top of the screen, ready to copy, mark up or drag where it needs to go." = "撮ったスクリーンショットはすべて、画面上部のロープに吊るされます。コピーも、注釈も、必要な場所へのドラッグもすぐにできます。";
+"Rest the pointer in the middle of the menu bar and the line slides down. Move away and it tucks back up." = "ポインタをメニューバーの中央に置くとロープが下りてきます。離れると、また隠れます。";
+"The screen holds still. Click a window to take it, or drag out an area. Press Return and it hangs on the line." = "画面が止まります。ウインドウをクリックして撮るか、範囲をドラッグします。Return を押すとロープに吊るされます。";
+"Click a photo to copy it. Press and hold to mark it up. Drag it into an app to send it, or into a folder to keep it." = "写真をクリックでコピー、長押しで注釈。App にドラッグして送り、フォルダにドラッグして保存します。";
+"Hold the rope beside the clips and sweep sideways: every photo the scissors pass falls. Undo hangs them back." = "クリップの横でロープを押したまま横になぞると、ハサミが通った写真が落ちます。取り消すと元に戻ります。";
+"Clipline lives in the menu bar. Its menu holds every setting, and this welcome if you want to see it again." = "Clipline はメニューバーにいます。すべての設定と、このようこそ画面はそのメニューにあります。";
+"Show or hide the line" = "ロープを表示/非表示";
+"Your screenshot settings come back when you turn it off or quit Clipline." = "オフにするか Clipline を終了すると、元のスクリーンショット設定に戻ります。";
+"Skip" = "スキップ";
+"Back" = "戻る";
+"Continue" = "続ける";
+"Get Started" = "はじめる";
+"Click to copy" = "クリックでコピー";
+"Press and hold to mark up" = "長押しで注釈";
+"Drag into a folder to keep it" = "フォルダにドラッグして保存";

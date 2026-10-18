@@ -128,3 +128,27 @@
 /* LineView: the scissors */
 "Hold and sweep along the line to cut photos down" = "按住沿绳子一划，剪下划过的图";
 "%d taken down" = "剪下 %d 张";
+
+/* Welcome */
+"Show Welcome…" = "查看引导…";
+"Welcome to Clipline" = "欢迎使用 Clipline";
+"Out of sight, within reach" = "看不见，却够得着";
+"Its own screenshot tool" = "自带截图工具";
+"A gesture for everything" = "每个动作都有手势";
+"Snip to clear" = "一划就清空";
+"You’re all set" = "准备好了";
+"Every screenshot you take hangs on a line at the top of the screen, ready to copy, mark up or drag where it needs to go." = "你截的每一张图，都会挂到屏幕顶上的一根绳上，随时复制、标注，或者拖到要去的地方。";
+"Rest the pointer in the middle of the menu bar and the line slides down. Move away and it tucks back up." = "把指针停在菜单栏中间，绳子就滑下来；移开，它就收起。";
+"The screen holds still. Click a window to take it, or drag out an area. Press Return and it hangs on the line." = "屏幕定格。单击截下一个窗口，或者拖出一块区域。按回车，它就挂上了绳。";
+"Click a photo to copy it. Press and hold to mark it up. Drag it into an app to send it, or into a folder to keep it." = "单击照片复制，长按标注。拖进 App 发送，拖进文件夹保存。";
+"Hold the rope beside the clips and sweep sideways: every photo the scissors pass falls. Undo hangs them back." = "在夹子旁边按住绳子横着一划，剪刀划过的照片都会掉下来。点撤销，它们就挂回去。";
+"Clipline lives in the menu bar. Its menu holds every setting, and this welcome if you want to see it again." = "Clipline 住在菜单栏里。所有设置都在它的菜单中，想再看一遍这个引导也在那里。";
+"Show or hide the line" = "显示或隐藏绳子";
+"Your screenshot settings come back when you turn it off or quit Clipline." = "关掉这一项或退出 Clipline 时，你原来的截图设置会恢复。";
+"Skip" = "跳过";
+"Back" = "上一步";
+"Continue" = "继续";
+"Get Started" = "开始使用";
+"Click to copy" = "单击复制";
+"Press and hold to mark up" = "长按标注";
+"Drag into a folder to keep it" = "拖进文件夹保存";

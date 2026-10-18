@@ -216,6 +216,7 @@ they are signed ad hoc, and macOS asks again after each rebuild.
 | `Markup.swift` | Opens the system Markup editor and saves the result |
 | `Trim.swift` | Trims a screen recording and saves the result |
 | `FullScreen.swift` | Knows when to stay hidden |
+| `Welcome.swift` | The welcome on first launch: short scenes acting out each feature |
 
 Every image here, the icon included, is drawn in code by
 `scripts/make-icon.swift` and `scripts/make-readme-art.swift`.

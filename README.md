@@ -195,6 +195,7 @@ open build/Clipline.app
 | `Markup.swift` | 打开系统「标记」编辑器并保存结果 |
 | `Trim.swift` | 剪辑屏幕录制并保存结果 |
 | `FullScreen.swift` | 判断何时该保持隐藏 |
+| `Welcome.swift` | 首次启动时的引导：几段动画演示每个功能 |
 
 这里出现的每一张图——包括图标——都是由代码绘制的：
 `scripts/make-icon.swift` 与 `scripts/make-readme-art.swift`。

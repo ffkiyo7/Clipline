@@ -67,3 +67,27 @@
 "Hold and sweep along the line to cut photos down" = "Segure e deslize pela corda para cortar as fotos";
 "%d taken down" = "%d retiradas";
 "Undo" = "Desfazer";
+
+/* Welcome */
+"Show Welcome…" = "Mostrar boas-vindas…";
+"Welcome to Clipline" = "Boas-vindas ao Clipline";
+"Out of sight, within reach" = "Fora de vista, ao alcance";
+"Its own screenshot tool" = "Sua própria ferramenta de captura";
+"A gesture for everything" = "Um gesto para cada coisa";
+"Snip to clear" = "Corte para limpar";
+"You’re all set" = "Tudo pronto";
+"Every screenshot you take hangs on a line at the top of the screen, ready to copy, mark up or drag where it needs to go." = "Cada captura de tela fica pendurada numa corda no topo da tela, pronta para copiar, marcar ou arrastar para onde precisar.";
+"Rest the pointer in the middle of the menu bar and the line slides down. Move away and it tucks back up." = "Deixe o ponteiro no meio da barra de menus e a corda desce. Afaste-o e ela se recolhe.";
+"The screen holds still. Click a window to take it, or drag out an area. Press Return and it hangs on the line." = "A tela congela. Clique numa janela para capturá-la ou arraste uma área. Pressione Return e ela vai para a corda.";
+"Click a photo to copy it. Press and hold to mark it up. Drag it into an app to send it, or into a folder to keep it." = "Clique numa foto para copiá-la. Segure para marcá-la. Arraste para um app para enviá-la, ou para uma pasta para guardá-la.";
+"Hold the rope beside the clips and sweep sideways: every photo the scissors pass falls. Undo hangs them back." = "Segure a corda ao lado dos prendedores e deslize para o lado: cai cada foto por onde a tesoura passa. Desfazer pendura de volta.";
+"Clipline lives in the menu bar. Its menu holds every setting, and this welcome if you want to see it again." = "O Clipline fica na barra de menus. O menu dele tem todos os ajustes, e estas boas-vindas se quiser vê-las de novo.";
+"Show or hide the line" = "Mostrar ou ocultar a corda";
+"Your screenshot settings come back when you turn it off or quit Clipline." = "Seus ajustes de captura voltam quando você desativa a opção ou sai do Clipline.";
+"Skip" = "Pular";
+"Back" = "Voltar";
+"Continue" = "Continuar";
+"Get Started" = "Começar";
+"Click to copy" = "Clique para copiar";
+"Press and hold to mark up" = "Segure para marcar";
+"Drag into a folder to keep it" = "Arraste para uma pasta para guardar";

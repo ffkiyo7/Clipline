@@ -69,3 +69,27 @@
 "Hold and sweep along the line to cut photos down" = "Basıb saxlayın və ip boyunca sürüşdürərək şəkilləri kəsin";
 "%d taken down" = "%d şəkil endirildi";
 "Undo" = "Geri qaytar";
+
+/* Welcome */
+"Show Welcome…" = "Xoş gəlmisiniz ekranını göstər…";
+"Welcome to Clipline" = "Clipline-a xoş gəlmisiniz";
+"Out of sight, within reach" = "Gözdən uzaq, əl altında";
+"Its own screenshot tool" = "Öz ekran şəkli aləti";
+"A gesture for everything" = "Hər iş üçün bir jest";
+"Snip to clear" = "Kəs və təmizlə";
+"You’re all set" = "Hər şey hazırdır";
+"Every screenshot you take hangs on a line at the top of the screen, ready to copy, mark up or drag where it needs to go." = "Çəkdiyiniz hər ekran şəkli ekranın yuxarısındakı ipdən asılır: kopyalamağa, işarələməyə və ya lazım olan yerə sürükləməyə hazırdır.";
+"Rest the pointer in the middle of the menu bar and the line slides down. Move away and it tucks back up." = "Göstəricini menyu zolağının ortasında saxlayın, ip aşağı enir. Uzaqlaşın, yenidən yığılır.";
+"The screen holds still. Click a window to take it, or drag out an area. Press Return and it hangs on the line." = "Ekran donur. Pəncərəni çəkmək üçün ona klikləyin və ya bir sahə sürükləyin. Return düyməsini basın, ipdən asılır.";
+"Click a photo to copy it. Press and hold to mark it up. Drag it into an app to send it, or into a folder to keep it." = "Kopyalamaq üçün şəklə klikləyin. İşarələmək üçün basıb saxlayın. Göndərmək üçün tətbiqə, saxlamaq üçün qovluğa sürükləyin.";
+"Hold the rope beside the clips and sweep sideways: every photo the scissors pass falls. Undo hangs them back." = "Sancaqların yanında ipi basıb saxlayın və yana sürüşdürün: qayçının keçdiyi hər şəkil düşür. Geri al onları yenidən asır.";
+"Clipline lives in the menu bar. Its menu holds every setting, and this welcome if you want to see it again." = "Clipline menyu zolağında yaşayır. Bütün ayarlar və yenidən görmək istəsəniz bu ekran onun menyusundadır.";
+"Show or hide the line" = "İpi göstər və ya gizlət";
+"Your screenshot settings come back when you turn it off or quit Clipline." = "Söndürdükdə və ya Clipline-dan çıxdıqda ekran şəkli ayarlarınız geri qayıdır.";
+"Skip" = "Keç";
+"Back" = "Geri";
+"Continue" = "Davam et";
+"Get Started" = "Başla";
+"Click to copy" = "Kopyalamaq üçün klikləyin";
+"Press and hold to mark up" = "İşarələmək üçün basıb saxlayın";
+"Drag into a folder to keep it" = "Saxlamaq üçün qovluğa sürükləyin";

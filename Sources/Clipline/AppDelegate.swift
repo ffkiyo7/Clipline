@@ -144,22 +144,38 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             }
         }
 
-        if !Inbox.wasOffered {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) { [weak self] in self?.offerInbox() }
-        }
-
         if !UserDefaults.standard.bool(forKey: "welcomed") {
             UserDefaults.standard.set(true, forKey: "welcomed")
-            keepOpen = true
-            wanted = true
-            refresh()
-            reveal(pinned: true)
-            DispatchQueue.main.asyncAfter(deadline: .now() + 5) { [weak self] in
-                guard let self, self.line.liveCount == 0 else { return }
-                self.keepOpen = false
-                self.wanted = false
-                self.refresh()
-            }
+            // The welcome's last step asks about screenshots instead.
+            Inbox.wasOffered = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { [weak self] in self?.showWelcome(firstTime: true) }
+        } else if !Inbox.wasOffered {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) { [weak self] in self?.offerInbox() }
+        }
+    }
+
+    /// The scenes that show what Clipline does. The first time, the empty
+    /// line comes down once it closes, so you see where it lives.
+    private func showWelcome(firstTime: Bool = false) {
+        Welcome.show(setInbox: { [weak self] on in
+            if Inbox.isEnabled != on { self?.setInbox(on) }
+        }, onClose: { [weak self] in
+            if firstTime { self?.showEmptyLine() }
+        })
+    }
+
+    private func showEmptyLine() {
+        keepOpen = true
+        wanted = true
+        panel.placeOnScreen()
+        updateCapacity()
+        refresh()
+        reveal(pinned: true)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5) { [weak self] in
+            guard let self, self.line.liveCount == 0 else { return }
+            self.keepOpen = false
+            self.wanted = false
+            self.refresh()
         }
     }
 
@@ -1069,6 +1085,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
         login.state = SMAppService.mainApp.status == .enabled ? .on : .off
         menu.addItem(login)
+
+        menu.addItem(ClosureMenuItem(L("Show Welcome…")) { [weak self] in self?.showWelcome() })
 
         // The app never connects to anything, so it cannot tell when a new
         // version is out. The website can: it is opened with this version

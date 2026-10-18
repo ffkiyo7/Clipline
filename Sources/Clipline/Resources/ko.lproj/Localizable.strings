@@ -67,3 +67,27 @@
 "Hold and sweep along the line to cut photos down" = "누른 채 줄을 따라 그으면 사진을 잘라 낼 수 있어요";
 "%d taken down" = "%d장 잘라 냄";
 "Undo" = "실행 취소";
+
+/* Welcome */
+"Show Welcome…" = "환영 화면 보기…";
+"Welcome to Clipline" = "Clipline에 오신 것을 환영합니다";
+"Out of sight, within reach" = "보이지 않지만, 손 닿는 곳에";
+"Its own screenshot tool" = "자체 스크린샷 도구";
+"A gesture for everything" = "모든 동작에 제스처";
+"Snip to clear" = "한 번에 잘라 정리";
+"You’re all set" = "준비 완료";
+"Every screenshot you take hangs on a line at the top of the screen, ready to copy, mark up or drag where it needs to go." = "찍는 스크린샷마다 화면 위쪽 줄에 걸려요. 바로 복사하고, 표시하고, 필요한 곳으로 끌어 놓을 수 있어요.";
+"Rest the pointer in the middle of the menu bar and the line slides down. Move away and it tucks back up." = "포인터를 메뉴 막대 가운데에 두면 줄이 내려와요. 벗어나면 다시 올라가요.";
+"The screen holds still. Click a window to take it, or drag out an area. Press Return and it hangs on the line." = "화면이 멈춰요. 윈도우를 클릭해 찍거나 영역을 드래그하세요. Return을 누르면 줄에 걸려요.";
+"Click a photo to copy it. Press and hold to mark it up. Drag it into an app to send it, or into a folder to keep it." = "사진을 클릭하면 복사, 길게 누르면 표시. 앱으로 끌면 보내고, 폴더로 끌면 저장해요.";
+"Hold the rope beside the clips and sweep sideways: every photo the scissors pass falls. Undo hangs them back." = "집게 옆에서 줄을 누른 채 옆으로 그으면 가위가 지나간 사진이 떨어져요. 실행 취소하면 다시 걸려요.";
+"Clipline lives in the menu bar. Its menu holds every setting, and this welcome if you want to see it again." = "Clipline은 메뉴 막대에 있어요. 모든 설정과 이 환영 화면이 그 메뉴에 있어요.";
+"Show or hide the line" = "줄 보기 또는 숨기기";
+"Your screenshot settings come back when you turn it off or quit Clipline." = "끄거나 Clipline을 종료하면 원래 스크린샷 설정으로 돌아가요.";
+"Skip" = "건너뛰기";
+"Back" = "뒤로";
+"Continue" = "계속";
+"Get Started" = "시작하기";
+"Click to copy" = "클릭해서 복사";
+"Press and hold to mark up" = "길게 눌러 표시";
+"Drag into a folder to keep it" = "폴더로 끌어 저장";
