@@ -25,13 +25,8 @@
 "Stop Watching" = "Ne plus surveiller";
 "Watch" = "Surveiller";
 "New images saved to this folder will hang on the line." = "Les nouvelles images enregistrées dans ce dossier s’accrocheront à la corde.";
-"Shortcut" = "Raccourci";
-"Change Shortcut…" = "Modifier le raccourci…";
-"Change Shortcut" = "Modifier le raccourci";
 "None" = "Aucun";
 "Space" = "Espace";
-"Press the new shortcut" = "Appuyez sur le nouveau raccourci";
-"Escape cancels. Delete removes the shortcut." = "Échap annule. Effacer supprime le raccourci.";
 "Size" = "Taille";
 "Small" = "Petite";
 "Medium" = "Moyenne";
@@ -67,3 +62,43 @@
 "Hold and sweep along the line to cut photos down" = "Maintenez et glissez le long de la corde pour décrocher les photos";
 "%d taken down" = "%d décrochées";
 "Undo" = "Annuler";
+
+/* Welcome */
+"Show Welcome…" = "Afficher la bienvenue…";
+"Welcome to Clipline" = "Bienvenue dans Clipline";
+"Out of sight, within reach" = "Hors de vue, à portée de main";
+"Its own screenshot tool" = "Son propre outil de capture";
+"A gesture for everything" = "Un geste pour chaque chose";
+"Snip to clear" = "Coupez pour faire place nette";
+"You’re all set" = "Tout est prêt";
+"Every screenshot you take hangs on a line at the top of the screen, ready to copy, mark up or drag where it needs to go." = "Chaque capture d’écran s’accroche à une corde en haut de l’écran, prête à être copiée, annotée ou glissée là où elle doit aller.";
+"Rest the pointer in the middle of the menu bar and the line slides down. Move away and it tucks back up." = "Laissez le pointeur au milieu de la barre des menus et la corde descend. Éloignez-le et elle remonte.";
+"The screen holds still. Click a window to take it, or drag out an area. Press Return and it hangs on the line." = "L’écran se fige. Cliquez sur une fenêtre pour la capturer ou faites glisser une zone. Appuyez sur Retour et elle s’accroche à la corde.";
+"Click a photo to copy it. Press and hold to mark it up. Drag it into an app to send it, or into a folder to keep it." = "Cliquez sur une photo pour la copier. Maintenez pour l’annoter. Glissez-la dans une app pour l’envoyer, ou dans un dossier pour la garder.";
+"Hold the rope beside the clips and sweep sideways: every photo the scissors pass falls. Undo hangs them back." = "Maintenez la corde à côté des pinces et glissez sur le côté : chaque photo que passent les ciseaux tombe. Annuler les raccroche.";
+"Clipline lives in the menu bar. Its menu holds every setting, and this welcome if you want to see it again." = "Clipline vit dans la barre des menus. Son menu réunit tous les réglages, et cette bienvenue si vous voulez la revoir.";
+"Show or hide the line" = "Afficher ou masquer la corde";
+"Your screenshot settings come back when you turn it off or quit Clipline." = "Vos réglages de capture reviennent quand vous désactivez l’option ou quittez Clipline.";
+"Skip" = "Passer";
+"Back" = "Retour";
+"Continue" = "Continuer";
+"Get Started" = "Commencer";
+"Click to copy" = "Cliquez pour copier";
+"Press and hold to mark up" = "Maintenez pour annoter";
+"Drag into a folder to keep it" = "Glissez dans un dossier pour la garder";
+
+/* Shortcuts */
+"Keyboard Shortcuts…" = "Raccourcis clavier…";
+"Keyboard Shortcuts" = "Raccourcis clavier";
+"They work from any app." = "Ils fonctionnent depuis n’importe quelle app.";
+"Brings the line down, or puts it away." = "Fait descendre la corde, ou la range.";
+"Freezes the screen so you can pick a window or an area." = "Fige l’écran pour choisir une fenêtre ou une zone.";
+"Click to change" = "Cliquez pour modifier";
+"Press the new keys. Esc cancels." = "Appuyez sur les nouvelles touches. Échap annule.";
+"Type the new shortcut" = "Tapez le nouveau raccourci";
+"Remove Shortcut" = "Supprimer le raccourci";
+"Restore Default" = "Rétablir par défaut";
+"Hold ⌘, ⌃ or ⌥ along with the key." = "Maintenez ⌘, ⌃ ou ⌥ avec la touche.";
+"%@ is already the other shortcut." = "%@ est déjà l’autre raccourci.";
+"Another app already uses %@." = "Une autre app utilise déjà %@.";
+"Click a shortcut, then press the new keys with ⌘, ⌃ or ⌥. Esc cancels; Delete removes it." = "Cliquez sur un raccourci, puis appuyez sur les nouvelles touches avec ⌘, ⌃ ou ⌥. Échap annule ; Supprimer l’efface.";

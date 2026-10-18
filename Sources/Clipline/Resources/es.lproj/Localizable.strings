@@ -25,13 +25,8 @@
 "Stop Watching" = "Dejar de vigilar";
 "Watch" = "Vigilar";
 "New images saved to this folder will hang on the line." = "Las imágenes nuevas que se guarden en esta carpeta se colgarán en la cuerda.";
-"Shortcut" = "Atajo";
-"Change Shortcut…" = "Cambiar atajo…";
-"Change Shortcut" = "Cambiar atajo";
 "None" = "Ninguno";
 "Space" = "Espacio";
-"Press the new shortcut" = "Pulsa el nuevo atajo";
-"Escape cancels. Delete removes the shortcut." = "Escape cancela. Borrar quita el atajo.";
 "Size" = "Tamaño";
 "Small" = "Pequeño";
 "Medium" = "Mediano";
@@ -67,3 +62,43 @@
 "Hold and sweep along the line to cut photos down" = "Mantén pulsado y desliza por la cuerda para cortar las fotos";
 "%d taken down" = "%d descolgadas";
 "Undo" = "Deshacer";
+
+/* Welcome */
+"Show Welcome…" = "Mostrar bienvenida…";
+"Welcome to Clipline" = "Te damos la bienvenida a Clipline";
+"Out of sight, within reach" = "Fuera de la vista, a tu alcance";
+"Its own screenshot tool" = "Su propia herramienta de capturas";
+"A gesture for everything" = "Un gesto para cada cosa";
+"Snip to clear" = "Corta para despejar";
+"You’re all set" = "Todo listo";
+"Every screenshot you take hangs on a line at the top of the screen, ready to copy, mark up or drag where it needs to go." = "Cada captura que hagas se cuelga en una cuerda en la parte superior de la pantalla, lista para copiarla, marcarla o arrastrarla adonde haga falta.";
+"Rest the pointer in the middle of the menu bar and the line slides down. Move away and it tucks back up." = "Deja el puntero en el centro de la barra de menús y la cuerda baja. Aléjalo y vuelve a esconderse.";
+"The screen holds still. Click a window to take it, or drag out an area. Press Return and it hangs on the line." = "La pantalla se congela. Haz clic en una ventana para capturarla o arrastra un área. Pulsa Retorno y se cuelga en la cuerda.";
+"Click a photo to copy it. Press and hold to mark it up. Drag it into an app to send it, or into a folder to keep it." = "Haz clic en una foto para copiarla. Mantenla pulsada para marcarla. Arrástrala a una app para enviarla o a una carpeta para guardarla.";
+"Hold the rope beside the clips and sweep sideways: every photo the scissors pass falls. Undo hangs them back." = "Mantén pulsada la cuerda junto a las pinzas y desliza de lado: cae cada foto por la que pasan las tijeras. Deshacer las vuelve a colgar.";
+"Clipline lives in the menu bar. Its menu holds every setting, and this welcome if you want to see it again." = "Clipline vive en la barra de menús. Su menú tiene todos los ajustes, y esta bienvenida si quieres volver a verla.";
+"Show or hide the line" = "Mostrar u ocultar la cuerda";
+"Your screenshot settings come back when you turn it off or quit Clipline." = "Tus ajustes de captura vuelven cuando lo desactivas o sales de Clipline.";
+"Skip" = "Omitir";
+"Back" = "Atrás";
+"Continue" = "Continuar";
+"Get Started" = "Empezar";
+"Click to copy" = "Clic para copiar";
+"Press and hold to mark up" = "Mantén pulsado para marcar";
+"Drag into a folder to keep it" = "Arrastra a una carpeta para guardarla";
+
+/* Shortcuts */
+"Keyboard Shortcuts…" = "Atajos de teclado…";
+"Keyboard Shortcuts" = "Atajos de teclado";
+"They work from any app." = "Funcionan desde cualquier app.";
+"Brings the line down, or puts it away." = "Baja la cuerda o la recoge.";
+"Freezes the screen so you can pick a window or an area." = "Congela la pantalla para elegir una ventana o un área.";
+"Click to change" = "Haz clic para cambiarlo";
+"Press the new keys. Esc cancels." = "Pulsa las nuevas teclas. Esc cancela.";
+"Type the new shortcut" = "Escribe el nuevo atajo";
+"Remove Shortcut" = "Quitar atajo";
+"Restore Default" = "Restaurar valor por omisión";
+"Hold ⌘, ⌃ or ⌥ along with the key." = "Mantén ⌘, ⌃ o ⌥ junto con la tecla.";
+"%@ is already the other shortcut." = "%@ ya es el otro atajo.";
+"Another app already uses %@." = "Otra app ya usa %@.";
+"Click a shortcut, then press the new keys with ⌘, ⌃ or ⌥. Esc cancels; Delete removes it." = "Haz clic en un atajo y pulsa las nuevas teclas con ⌘, ⌃ o ⌥. Esc cancela; Suprimir lo quita.";

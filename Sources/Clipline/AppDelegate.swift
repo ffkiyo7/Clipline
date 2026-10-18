@@ -20,8 +20,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var folderWatchers: [ScreenshotWatcher] = []
     private var clipboardWatcher: ClipboardWatcher!
     private var signalSources: [DispatchSourceSignal] = []
-    private var hotKey: HotKey?
-    private var captureKey: HotKey?
     private var cancellables = Set<AnyCancellable>()
     private var mouseTimer: Timer?
 
@@ -87,7 +85,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             onText: { text, source in Notes.shared.add(text, source: source) })
         clipboardWatcher.update()
 
-        registerShortcut()
+        Shortcuts.shared.actions = [
+            .line: { [weak self] in self?.toggle() },
+            .capture: { Capture.start() },
+        ]
+        Shortcuts.shared.register()
 
         setUpStatusItem()
         watchMenuBarClicks()
@@ -144,22 +146,38 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             }
         }
 
-        if !Inbox.wasOffered {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) { [weak self] in self?.offerInbox() }
-        }
-
         if !UserDefaults.standard.bool(forKey: "welcomed") {
             UserDefaults.standard.set(true, forKey: "welcomed")
-            keepOpen = true
-            wanted = true
-            refresh()
-            reveal(pinned: true)
-            DispatchQueue.main.asyncAfter(deadline: .now() + 5) { [weak self] in
-                guard let self, self.line.liveCount == 0 else { return }
-                self.keepOpen = false
-                self.wanted = false
-                self.refresh()
-            }
+            // The welcome's last step asks about screenshots instead.
+            Inbox.wasOffered = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { [weak self] in self?.showWelcome(firstTime: true) }
+        } else if !Inbox.wasOffered {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) { [weak self] in self?.offerInbox() }
+        }
+    }
+
+    /// The scenes that show what Clipline does. The first time, the empty
+    /// line comes down once it closes, so you see where it lives.
+    private func showWelcome(firstTime: Bool = false) {
+        Welcome.show(setInbox: { [weak self] on in
+            if Inbox.isEnabled != on { self?.setInbox(on) }
+        }, onClose: { [weak self] in
+            if firstTime { self?.showEmptyLine() }
+        })
+    }
+
+    private func showEmptyLine() {
+        keepOpen = true
+        wanted = true
+        panel.placeOnScreen()
+        updateCapacity()
+        refresh()
+        reveal(pinned: true)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5) { [weak self] in
+            guard let self, self.line.liveCount == 0 else { return }
+            self.keepOpen = false
+            self.wanted = false
+            self.refresh()
         }
     }
 
@@ -772,45 +790,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
     }
 
-    // MARK: Shortcut
-
-    private func registerShortcut() {
-        hotKey = nil
-        captureKey = nil
-        if let shortcut = Shortcut.current {
-            hotKey = HotKey(shortcut, id: 1) { [weak self] in self?.toggle() }
-        }
-        if let shortcut = Shortcut.capture {
-            captureKey = HotKey(shortcut, id: 2) { Capture.start() }
-            if captureKey == nil {
-                log.error("The screenshot shortcut \(shortcut.display, privacy: .public) is taken by another app")
-            }
-        }
-    }
-
-    /// `capture`: the screenshot's shortcut rather than the line's.
-    private func changeShortcut(capture: Bool = false) {
-        // Off while recording, so pressing the current one records it
-        // instead of showing the line.
-        hotKey = nil
-        captureKey = nil
-        ShortcutRecorder.shared.record { [weak self] result in
-            guard let self else { return }
-            if let result {
-                let previous = capture ? Shortcut.capture : Shortcut.current
-                if capture { Shortcut.capture = result } else { Shortcut.current = result }
-                self.registerShortcut()
-                // Taken by another app, or by the other shortcut: keep the
-                // one that worked.
-                if result != nil && (capture ? self.captureKey : self.hotKey) == nil {
-                    NSSound.beep()
-                    if capture { Shortcut.capture = previous } else { Shortcut.current = previous }
-                }
-            }
-            self.registerShortcut()
-        }
-    }
-
     private func setKeep(_ n: Int?) {
         guard n != Line.keepOnLine else { return }
         Line.keepOnLine = n
@@ -859,16 +838,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         statusItem.button?.toolTip = description
     }
 
-    // While this menu is open, macOS holds a hot key back until it closes.
-    // Off for that time, the keys reach the menu instead, where the items
-    // carry the same shortcuts: the menu closes and the screenshot starts.
+    // While this menu is open, the keys reach the menu instead of the hot
+    // keys: the items carry the same shortcuts.
     func menuWillOpen(_ menu: NSMenu) {
-        hotKey = nil
-        captureKey = nil
+        Shortcuts.shared.pause()
     }
 
     func menuDidClose(_ menu: NSMenu) {
-        registerShortcut()
+        Shortcuts.shared.resume()
     }
 
     func menuNeedsUpdate(_ menu: NSMenu) {
@@ -1025,23 +1002,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         sizeItem.submenu = sizes
         menu.addItem(sizeItem)
 
-        let shortcutItem = NSMenuItem(title: L("Shortcut"), action: nil, keyEquivalent: "")
-        let shortcuts = NSMenu()
-        let current = NSMenuItem(title: Shortcut.current?.display ?? L("None"), action: nil, keyEquivalent: "")
-        current.isEnabled = false
-        shortcuts.addItem(current)
-        shortcuts.addItem(ClosureMenuItem(L("Change Shortcut…")) { [weak self] in self?.changeShortcut() })
-        shortcuts.addItem(.separator())
-        let captureCurrent = NSMenuItem(
-            title: String(format: L("Take Screenshot: %@"), Shortcut.capture?.display ?? L("None")),
-            action: nil, keyEquivalent: "")
-        captureCurrent.isEnabled = false
-        shortcuts.addItem(captureCurrent)
-        shortcuts.addItem(ClosureMenuItem(L("Change Screenshot Shortcut…")) { [weak self] in
-            self?.changeShortcut(capture: true)
-        })
-        shortcutItem.submenu = shortcuts
-        menu.addItem(shortcutItem)
+        menu.addItem(ClosureMenuItem(L("Keyboard Shortcuts…")) { ShortcutsWindow.show() })
 
         menu.addItem(ClosureMenuItem(L("Open screenshots folder")) { [weak self] in
             guard let self else { return }
@@ -1069,6 +1030,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
         login.state = SMAppService.mainApp.status == .enabled ? .on : .off
         menu.addItem(login)
+
+        menu.addItem(ClosureMenuItem(L("Show Welcome…")) { [weak self] in self?.showWelcome() })
 
         // The app never connects to anything, so it cannot tell when a new
         // version is out. The website can: it is opened with this version

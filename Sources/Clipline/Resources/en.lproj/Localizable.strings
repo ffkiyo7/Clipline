@@ -27,13 +27,8 @@
 "Stop Watching" = "Stop Watching";
 "Watch" = "Watch";
 "New images saved to this folder will hang on the line." = "New images saved to this folder will hang on the line.";
-"Shortcut" = "Shortcut";
-"Change Shortcut…" = "Change Shortcut…";
-"Change Shortcut" = "Change Shortcut";
 "None" = "None";
 "Space" = "Space";
-"Press the new shortcut" = "Press the new shortcut";
-"Escape cancels. Delete removes the shortcut." = "Escape cancels. Delete removes the shortcut.";
 "Size" = "Size";
 "Small" = "Small";
 "Medium" = "Medium";
@@ -119,8 +114,6 @@
 "Keep copied text" = "Keep copied text";
 "Text you copy goes into the clip at the end of the line" = "Text you copy goes into the clip at the end of the line";
 "Take Screenshot" = "Take Screenshot";
-"Take Screenshot: %@" = "Take Screenshot: %@";
-"Change Screenshot Shortcut…" = "Change Screenshot Shortcut…";
 "Clipline needs Screen Recording access to take screenshots" = "Clipline needs Screen Recording access to take screenshots";
 "Turn on Clipline in System Settings → Privacy & Security → Screen Recording, then try again." = "Turn on Clipline in System Settings → Privacy & Security → Screen Recording, then try again.";
 "Open System Settings" = "Open System Settings";
@@ -130,3 +123,43 @@
 /* LineView: the scissors */
 "Hold and sweep along the line to cut photos down" = "Hold and sweep along the line to cut photos down";
 "%d taken down" = "%d taken down";
+
+/* Welcome */
+"Show Welcome…" = "Show Welcome…";
+"Welcome to Clipline" = "Welcome to Clipline";
+"Out of sight, within reach" = "Out of sight, within reach";
+"Its own screenshot tool" = "Its own screenshot tool";
+"A gesture for everything" = "A gesture for everything";
+"Snip to clear" = "Snip to clear";
+"You’re all set" = "You’re all set";
+"Every screenshot you take hangs on a line at the top of the screen, ready to copy, mark up or drag where it needs to go." = "Every screenshot you take hangs on a line at the top of the screen, ready to copy, mark up or drag where it needs to go.";
+"Rest the pointer in the middle of the menu bar and the line slides down. Move away and it tucks back up." = "Rest the pointer in the middle of the menu bar and the line slides down. Move away and it tucks back up.";
+"The screen holds still. Click a window to take it, or drag out an area. Press Return and it hangs on the line." = "The screen holds still. Click a window to take it, or drag out an area. Press Return and it hangs on the line.";
+"Click a photo to copy it. Press and hold to mark it up. Drag it into an app to send it, or into a folder to keep it." = "Click a photo to copy it. Press and hold to mark it up. Drag it into an app to send it, or into a folder to keep it.";
+"Hold the rope beside the clips and sweep sideways: every photo the scissors pass falls. Undo hangs them back." = "Hold the rope beside the clips and sweep sideways: every photo the scissors pass falls. Undo hangs them back.";
+"Clipline lives in the menu bar. Its menu holds every setting, and this welcome if you want to see it again." = "Clipline lives in the menu bar. Its menu holds every setting, and this welcome if you want to see it again.";
+"Show or hide the line" = "Show or hide the line";
+"Your screenshot settings come back when you turn it off or quit Clipline." = "Your screenshot settings come back when you turn it off or quit Clipline.";
+"Skip" = "Skip";
+"Back" = "Back";
+"Continue" = "Continue";
+"Get Started" = "Get Started";
+"Click to copy" = "Click to copy";
+"Press and hold to mark up" = "Press and hold to mark up";
+"Drag into a folder to keep it" = "Drag into a folder to keep it";
+
+/* Shortcuts */
+"Keyboard Shortcuts…" = "Keyboard Shortcuts…";
+"Keyboard Shortcuts" = "Keyboard Shortcuts";
+"They work from any app." = "They work from any app.";
+"Brings the line down, or puts it away." = "Brings the line down, or puts it away.";
+"Freezes the screen so you can pick a window or an area." = "Freezes the screen so you can pick a window or an area.";
+"Click to change" = "Click to change";
+"Press the new keys. Esc cancels." = "Press the new keys. Esc cancels.";
+"Type the new shortcut" = "Type the new shortcut";
+"Remove Shortcut" = "Remove Shortcut";
+"Restore Default" = "Restore Default";
+"Hold ⌘, ⌃ or ⌥ along with the key." = "Hold ⌘, ⌃ or ⌥ along with the key.";
+"%@ is already the other shortcut." = "%@ is already the other shortcut.";
+"Another app already uses %@." = "Another app already uses %@.";
+"Click a shortcut, then press the new keys with ⌘, ⌃ or ⌥. Esc cancels; Delete removes it." = "Click a shortcut, then press the new keys with ⌘, ⌃ or ⌥. Esc cancels; Delete removes it.";

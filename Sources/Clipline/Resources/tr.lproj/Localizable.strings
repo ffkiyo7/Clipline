@@ -25,13 +25,8 @@
 "Stop Watching" = "İzlemeyi durdur";
 "Watch" = "İzle";
 "New images saved to this folder will hang on the line." = "Bu klasöre kaydedilen yeni görseller ipe asılır.";
-"Shortcut" = "Kısayol";
-"Change Shortcut…" = "Kısayolu değiştir…";
-"Change Shortcut" = "Kısayolu değiştir";
 "None" = "Yok";
 "Space" = "Boşluk";
-"Press the new shortcut" = "Yeni kısayolu basın";
-"Escape cancels. Delete removes the shortcut." = "Escape iptal eder. Sil kısayolu kaldırır.";
 "Size" = "Boyut";
 "Small" = "Küçük";
 "Medium" = "Orta";
@@ -67,3 +62,43 @@
 "Hold and sweep along the line to cut photos down" = "Basılı tutup ip boyunca kaydırarak fotoğrafları kesin";
 "%d taken down" = "%d fotoğraf indirildi";
 "Undo" = "Geri al";
+
+/* Welcome */
+"Show Welcome…" = "Hoş Geldin Ekranını Göster…";
+"Welcome to Clipline" = "Clipline’a hoş geldiniz";
+"Out of sight, within reach" = "Gözden uzak, el altında";
+"Its own screenshot tool" = "Kendi ekran görüntüsü aracı";
+"A gesture for everything" = "Her iş için bir hareket";
+"Snip to clear" = "Kes ve temizle";
+"You’re all set" = "Her şey hazır";
+"Every screenshot you take hangs on a line at the top of the screen, ready to copy, mark up or drag where it needs to go." = "Aldığınız her ekran görüntüsü ekranın üstündeki bir ipe asılır; kopyalamaya, işaretlemeye ya da gereken yere sürüklemeye hazır.";
+"Rest the pointer in the middle of the menu bar and the line slides down. Move away and it tucks back up." = "İmleci menü çubuğunun ortasında bekletin, ip aşağı iner. Uzaklaşın, yeniden toplanır.";
+"The screen holds still. Click a window to take it, or drag out an area. Press Return and it hangs on the line." = "Ekran donar. Bir pencereyi almak için tıklayın ya da bir alan sürükleyin. Return’e basın, ipe asılır.";
+"Click a photo to copy it. Press and hold to mark it up. Drag it into an app to send it, or into a folder to keep it." = "Kopyalamak için fotoğrafa tıklayın. İşaretlemek için basılı tutun. Göndermek için bir uygulamaya, saklamak için bir klasöre sürükleyin.";
+"Hold the rope beside the clips and sweep sideways: every photo the scissors pass falls. Undo hangs them back." = "Mandalların yanında ipi basılı tutup yana kaydırın: makasın geçtiği her fotoğraf düşer. Geri Al onları yeniden asar.";
+"Clipline lives in the menu bar. Its menu holds every setting, and this welcome if you want to see it again." = "Clipline menü çubuğunda yaşar. Tüm ayarlar ve tekrar görmek isterseniz bu hoş geldin ekranı onun menüsündedir.";
+"Show or hide the line" = "İpi göster veya gizle";
+"Your screenshot settings come back when you turn it off or quit Clipline." = "Kapattığınızda ya da Clipline’dan çıktığınızda ekran görüntüsü ayarlarınız geri gelir.";
+"Skip" = "Atla";
+"Back" = "Geri";
+"Continue" = "Devam";
+"Get Started" = "Başla";
+"Click to copy" = "Kopyalamak için tıkla";
+"Press and hold to mark up" = "İşaretlemek için basılı tut";
+"Drag into a folder to keep it" = "Saklamak için klasöre sürükle";
+
+/* Shortcuts */
+"Keyboard Shortcuts…" = "Klavye Kestirmeleri…";
+"Keyboard Shortcuts" = "Klavye Kestirmeleri";
+"They work from any app." = "Her uygulamadan çalışırlar.";
+"Brings the line down, or puts it away." = "İpi indirir ya da toplar.";
+"Freezes the screen so you can pick a window or an area." = "Bir pencere veya alan seçebilmeniz için ekranı dondurur.";
+"Click to change" = "Değiştirmek için tıklayın";
+"Press the new keys. Esc cancels." = "Yeni tuşlara basın. Esc iptal eder.";
+"Type the new shortcut" = "Yeni kestirmeyi yazın";
+"Remove Shortcut" = "Kestirmeyi Kaldır";
+"Restore Default" = "Varsayılana Döndür";
+"Hold ⌘, ⌃ or ⌥ along with the key." = "Tuşla birlikte ⌘, ⌃ veya ⌥ basılı tutun.";
+"%@ is already the other shortcut." = "%@ zaten diğer kestirme.";
+"Another app already uses %@." = "%@ başka bir uygulama tarafından kullanılıyor.";
+"Click a shortcut, then press the new keys with ⌘, ⌃ or ⌥. Esc cancels; Delete removes it." = "Bir kestirmeye tıklayın, sonra ⌘, ⌃ veya ⌥ ile yeni tuşlara basın. Esc iptal eder; Sil kaldırır.";

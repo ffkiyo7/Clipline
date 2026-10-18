@@ -25,13 +25,8 @@
 "Stop Watching" = "停止监视";
 "Watch" = "监视";
 "New images saved to this folder will hang on the line." = "保存到此文件夹的新图片会挂到晾衣绳上。";
-"Shortcut" = "快捷键";
-"Change Shortcut…" = "更改快捷键…";
-"Change Shortcut" = "更改快捷键";
 "None" = "无";
 "Space" = "空格";
-"Press the new shortcut" = "请按下新的快捷键";
-"Escape cancels. Delete removes the shortcut." = "按 Esc 取消，按删除键移除快捷键。";
 "Size" = "大小";
 "Small" = "小";
 "Medium" = "中";
@@ -117,8 +112,6 @@
 "Keep copied text" = "记录复制的文字";
 "Text you copy goes into the clip at the end of the line" = "复制的文字会收进绳子末端的便签夹";
 "Take Screenshot" = "截图";
-"Take Screenshot: %@" = "截图：%@";
-"Change Screenshot Shortcut…" = "更改截图快捷键…";
 "Clipline needs Screen Recording access to take screenshots" = "Clipline 需要“屏幕录制”权限才能截图";
 "Turn on Clipline in System Settings → Privacy & Security → Screen Recording, then try again." = "请在“系统设置 → 隐私与安全性 → 屏幕录制”里打开 Clipline，然后再试一次。";
 "Open System Settings" = "打开系统设置";
@@ -128,3 +121,43 @@
 /* LineView: the scissors */
 "Hold and sweep along the line to cut photos down" = "按住沿绳子一划，剪下划过的图";
 "%d taken down" = "剪下 %d 张";
+
+/* Welcome */
+"Show Welcome…" = "查看引导…";
+"Welcome to Clipline" = "欢迎使用 Clipline";
+"Out of sight, within reach" = "看不见，却够得着";
+"Its own screenshot tool" = "自带截图工具";
+"A gesture for everything" = "每个动作都有手势";
+"Snip to clear" = "一划就清空";
+"You’re all set" = "准备好了";
+"Every screenshot you take hangs on a line at the top of the screen, ready to copy, mark up or drag where it needs to go." = "你截的每一张图，都会挂到屏幕顶上的一根绳上，随时复制、标注，或者拖到要去的地方。";
+"Rest the pointer in the middle of the menu bar and the line slides down. Move away and it tucks back up." = "把指针停在菜单栏中间，绳子就滑下来；移开，它就收起。";
+"The screen holds still. Click a window to take it, or drag out an area. Press Return and it hangs on the line." = "屏幕定格。单击截下一个窗口，或者拖出一块区域。按回车，它就挂上了绳。";
+"Click a photo to copy it. Press and hold to mark it up. Drag it into an app to send it, or into a folder to keep it." = "单击照片复制，长按标注。拖进 App 发送，拖进文件夹保存。";
+"Hold the rope beside the clips and sweep sideways: every photo the scissors pass falls. Undo hangs them back." = "在夹子旁边按住绳子横着一划，剪刀划过的照片都会掉下来。点撤销，它们就挂回去。";
+"Clipline lives in the menu bar. Its menu holds every setting, and this welcome if you want to see it again." = "Clipline 住在菜单栏里。所有设置都在它的菜单中，想再看一遍这个引导也在那里。";
+"Show or hide the line" = "显示或隐藏绳子";
+"Your screenshot settings come back when you turn it off or quit Clipline." = "关掉这一项或退出 Clipline 时，你原来的截图设置会恢复。";
+"Skip" = "跳过";
+"Back" = "上一步";
+"Continue" = "继续";
+"Get Started" = "开始使用";
+"Click to copy" = "单击复制";
+"Press and hold to mark up" = "长按标注";
+"Drag into a folder to keep it" = "拖进文件夹保存";
+
+/* Shortcuts */
+"Keyboard Shortcuts…" = "快捷键…";
+"Keyboard Shortcuts" = "快捷键";
+"They work from any app." = "在任何 App 里都能用。";
+"Brings the line down, or puts it away." = "放下绳子，或者把它收起来。";
+"Freezes the screen so you can pick a window or an area." = "屏幕定格，让你选一个窗口或一块区域。";
+"Click to change" = "点击更改";
+"Press the new keys. Esc cancels." = "按下新的组合键，Esc 取消。";
+"Type the new shortcut" = "请按下新的快捷键";
+"Remove Shortcut" = "移除快捷键";
+"Restore Default" = "恢复默认";
+"Hold ⌘, ⌃ or ⌥ along with the key." = "需要同时按住 ⌘、⌃ 或 ⌥。";
+"%@ is already the other shortcut." = "%@ 已经是另一个快捷键了。";
+"Another app already uses %@." = "%@ 已被其他 App 占用。";
+"Click a shortcut, then press the new keys with ⌘, ⌃ or ⌥. Esc cancels; Delete removes it." = "点击快捷键，再按下新的组合键，需包含 ⌘、⌃ 或 ⌥。Esc 取消，删除键移除。";
