@@ -335,7 +335,8 @@ final class Line: ObservableObject {
     /// across launches, so quitting in the meantime leaves nothing behind.
     private static let usedKey = "usedFiles"
 
-    private static func trashLater(_ url: URL, after delay: TimeInterval = usedDelay) {
+    private static func trashLater(_ url: URL, after delay: TimeInterval? = nil) {
+        let delay = delay ?? usedDelay
         var waiting = UserDefaults.standard.dictionary(forKey: usedKey) as? [String: Double] ?? [:]
         let due = Date().addingTimeInterval(delay)
         waiting[url.path] = due.timeIntervalSince1970

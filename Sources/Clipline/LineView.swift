@@ -66,8 +66,8 @@ struct LineView: View {
                 // The pointer on the rope: the rope lights up where it can be cut.
                 if line.scissorsX != nil && line.stroke == nil {
                     Rope.path(width: width)
-                        .stroke(Color.white.opacity(0.45), style: StrokeStyle(lineWidth: 12, lineCap: .round))
-                        .blur(radius: 2)
+                        .stroke(Color.white.opacity(0.16), style: StrokeStyle(lineWidth: 8, lineCap: .round))
+                        .blur(radius: 3)
                         .allowsHitTesting(false)
                         .transition(.opacity)
                 }
