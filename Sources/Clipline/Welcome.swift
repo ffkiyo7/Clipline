@@ -885,7 +885,6 @@ private struct ScissorsScene: View {
         let xs = Self.kinds.indices.map { Stage.clipX(CGFloat($0), of: Self.kinds.count) }
         let from = xs[0] - 36, to = xs[xs.count - 1] + 30
         let cutX = mix(from, to, ramp(t, 1.3, 2.7))
-        let cutting = t >= 1.3 && t < 2.8
         let onRope = t >= 1.0 && t < 2.9
         let undoAt = 4.3
         let back = t >= undoAt + 0.1
